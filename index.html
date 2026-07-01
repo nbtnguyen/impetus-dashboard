@@ -103,7 +103,7 @@
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
   .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
-  .act{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; background:var(--surface); border-radius:22px 22px 0 0; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 18px 26px} .act.show{transform:translateX(-50%) translateY(0)}
+  .act{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:85vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 18px 26px} .act.show{transform:translateX(-50%) translateY(0)}
   .grip{width:38px; height:4px; background:#D7DCE5; border-radius:99px; margin:10px auto 2px}
   .sheet-pad{padding:6px 20px 28px}
   .sheet h2,.act h3{font-weight:800; letter-spacing:-.02em} .sheet h2{font-size:21px; margin:4px 0 2px} .act h3{font-size:17px; margin:6px 2px 2px}
@@ -257,7 +257,7 @@ $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 
 /* ===== Load ===== */
 async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi()]); }
-async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*)').order('ngay_tao',{ascending:false}); students=data||[]; }
+async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id,trang_thai)').order('ngay_tao',{ascending:false}); classes=data||[]; }
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
@@ -328,6 +328,13 @@ function openStudentDetail(s){
   const makeupBlock = `<div class="seclabel">Buổi cần học bù ${chua?`<span class="badge" style="color:var(--danger);font-weight:700">${chua} chưa bù</span>`:''}</div>
     <div class="roster" style="margin-top:8px">${mkRows}</div>
     ${canWrite()?'<button class="opt" id="addHb" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Ghi buổi vắng</button>':''}`;
+  const enr=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc);
+  const enrRows = enr.length
+    ? enr.map(d=>`<div class="rost enrrow" data-id="${d.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${d.lop_hoc.ten_lop}</div></div><span class="pill ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
+    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 2px">Chưa xếp lớp nào.</div>';
+  const classBlock = `<div class="seclabel">Lớp đang học</div>
+    <div class="roster" style="margin-top:8px">${enrRows}</div>
+    ${canWrite()?'<button class="opt" id="addLop" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Thêm / chuyển lớp</button>':''}`;
   $('#sheetBody').innerHTML=`
     <div class="det-head"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div><div class="nm">${s.ho_ten}</div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div></div>
     <div class="row"><span class="k">Mã học sinh</span><span class="v"><span class="idtag">${s.ma_hoc_sinh}</span></span></div>
@@ -338,11 +345,14 @@ function openStudentDetail(s){
     ${canSeeParent()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="v">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
     ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="v" style="font-weight:500">${s.ghi_chu}</span></div>`:''}
     ${parentBlock}
+    ${classBlock}
     ${makeupBlock}
     ${canWrite()?'<button class="save" id="editS" style="margin-top:18px">Sửa thông tin</button>':''}
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
   if(canWrite()) $('#editS').onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);};
   if(canWrite()){ const add=$('#addHb'); if(add) add.onclick=()=>openMakeupForm(s); }
+  if(canWrite()){ const al=$('#addLop'); if(al) al.onclick=()=>openStudentEnroll(s); }
+  $('#sheetBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
   $('#sheetBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
   show('#sheet');
 }
@@ -361,6 +371,7 @@ function openStudentForm(s){
     <div class="two"><div class="field"><label>Ngày bắt đầu</label><input id="f_batdau" type="date" value="${s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10)}"></div>
       ${isManager()?`<div class="field"><label>Giảm giá học phí (%)</label><input id="f_giam" type="number" min="0" max="100" value="${s?(s.giam_gia_phan_tram||0):0}"><div class="hint">Chỉ quản lý chỉnh.</div></div>`:''}</div>
     <div class="field"><label>Trạng thái</label><div class="seg" id="f_tt">${Object.entries(ST).map(([v,l])=>`<button class="${formStatus===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+    ${!s?`<div class="field"><label>Xếp vào lớp (tùy chọn)</label><select id="f_lop"><option value="">— Chưa xếp lớp —</option>${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select><div class="hint">Có thể xếp lớp sau ở tab Lớp học.</div></div>`:''}
     <div class="seclabel">Phụ huynh</div>
     <div class="field"><label>Họ tên phụ huynh</label><input id="f_phten" type="text" value="${ph?(ph.ho_ten||''):''}" placeholder="Nguyễn Thị Bình"></div>
     <div class="two"><div class="field"><label>Quan hệ</label><select id="f_phqh">${Object.entries(QH).map(([v,l])=>`<option value="${v}" ${ph&&ph.quan_he===v?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>SĐT / Zalo</label><input id="f_phsdt" type="tel" value="${ph?(ph.so_dien_thoai||''):''}" placeholder="09xx xxx xxx"></div></div>
@@ -389,6 +400,8 @@ async function saveStudent(){
     if(ex) await db.from('phu_huynh').update({ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null}).eq('id',ex.id);
     else await db.from('phu_huynh').insert({hoc_sinh_id:hsId,ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null});
   }
+  const lopSel = (!editingId && $('#f_lop')) ? $('#f_lop').value : '';
+  if(lopSel){ await db.from('dang_ky_lop').insert({hoc_sinh_id:hsId, lop_hoc_id:lopSel, trang_thai:'dang_hoc'}); await loadClasses(); }
   await loadStudents(); closeSheets(); if(view==='hoc_sinh')renderStudents(); toast(editingId?'Đã lưu thay đổi':'Đã thêm '+ten);
 }
 
@@ -457,7 +470,7 @@ function openRegStatus(r, c){
     ${Object.entries(ST).map(([v,l])=>`<button class="opt" data-v="${v}"><span class="ic pill ${v}">${l[0]}</span>${l}</button>`).join('')}`;
   $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{
     await db.from('dang_ky_lop').update({trang_thai:o.dataset.v}).eq('id',r.id);
-    closeAct(); await loadClasses(); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã cập nhật');
+    closeAct(); await Promise.all([loadClasses(), loadStudents()]); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã cập nhật');
   });
   $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
 }
@@ -471,7 +484,7 @@ function openEnroll(c){
     $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{
       const {error}=await db.from('dang_ky_lop').insert({hoc_sinh_id:o.dataset.id, lop_hoc_id:c.id, trang_thai:'dang_hoc'});
       closeAct(); if(error)return toast(error.message,false);
-      await loadClasses(); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã thêm vào lớp');
+      await Promise.all([loadClasses(), loadStudents()]); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã thêm vào lớp');
     });
     $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
   });
@@ -665,6 +678,44 @@ async function saveTc(){
   await loadThuChi(); closeSheets(); if(view==='thu_chi')renderThuChi(); toast(tcEditId?'Đã lưu':'Đã ghi khoản');
 }
 async function delTc(id){ await db.from('thu_chi').delete().eq('id',id); await loadThuChi(); closeSheets(); if(view==='thu_chi')renderThuChi(); toast('Đã xóa khoản'); }
+
+async function afterEnrollChange(){
+  await Promise.all([loadStudents(), loadClasses()]);
+  if(view==='hoc_sinh')renderStudents(); if(view==='lop')renderClasses(); if(view==='dashboard')buildDashboard();
+  if(curStudent){ curStudent=students.find(x=>x.id===curStudent.id)||curStudent; openStudentDetail(curStudent); }
+}
+function openStudentEnroll(s){
+  const activeIds=new Set((s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.id));
+  const avail=classes.filter(c=>!activeIds.has(c.id));
+  $('#actBody').innerHTML=`<h3>Thêm vào lớp</h3><p class="who2">${s.ho_ten} · chọn lớp để xếp vào.</p>
+    ${avail.length? avail.map(c=>`<button class="opt" data-id="${c.id}"><span class="ic" style="background:${avaC(c.ten_lop)};color:#fff;font-size:11px;font-weight:800">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div style="text-align:left"><div>${c.ten_lop}</div><div style="font-size:12px;color:var(--muted);font-weight:500">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để thêm</div>Em đã ở trong tất cả lớp.</div>'}`;
+  $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{
+    const {error}=await db.from('dang_ky_lop').insert({hoc_sinh_id:s.id, lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'});
+    closeAct(); if(error)return toast(error.message,false);
+    await afterEnrollChange(); toast('Đã xếp vào lớp');
+  });
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
+function openEnrollActions(reg, s){
+  if(!reg) return;
+  $('#actBody').innerHTML=`<h3>${reg.lop_hoc?reg.lop_hoc.ten_lop:''}</h3><p class="who2">${s.ho_ten} · đổi trạng thái, chuyển hoặc gỡ khỏi lớp</p>
+    ${Object.entries(ST).map(([v,l])=>`<button class="opt" data-s="${v}"><span class="ic pill ${v}">${l[0]}</span>${l}</button>`).join('')}
+    <button class="opt" id="moveLop" style="margin-top:6px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">⇄</span>Chuyển sang lớp khác</button>
+    <button class="opt" id="rmLop" style="margin-top:6px"><span class="ic" style="background:var(--danger-soft);color:var(--danger)">✕</span>Gỡ khỏi lớp</button>`;
+  $('#actBody').querySelectorAll('.opt[data-s]').forEach(o=>o.onclick=async()=>{ await db.from('dang_ky_lop').update({trang_thai:o.dataset.s}).eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã cập nhật'); });
+  $('#moveLop').onclick=()=>openMoveClass(reg, s);
+  $('#rmLop').onclick=async()=>{ await db.from('dang_ky_lop').delete().eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã gỡ khỏi lớp'); };
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
+function openMoveClass(reg, s){
+  const curId=reg.lop_hoc?reg.lop_hoc.id:null;
+  const activeIds=new Set((s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.id));
+  const avail=classes.filter(c=>c.id!==curId && !activeIds.has(c.id));
+  $('#actBody').innerHTML=`<h3>Chuyển sang lớp khác</h3><p class="who2">${s.ho_ten} · từ ${reg.lop_hoc?reg.lop_hoc.ten_lop:''}</p>
+    ${avail.length? avail.map(c=>`<button class="opt" data-id="${c.id}"><span class="ic" style="background:${avaC(c.ten_lop)};color:#fff;font-size:11px;font-weight:800">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div style="text-align:left"><div>${c.ten_lop}</div><div style="font-size:12px;color:var(--muted);font-weight:500">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để chuyển</div></div>'}`;
+  $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{ await db.from('dang_ky_lop').update({lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'}).eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã chuyển lớp'); });
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
 
 /* ===== plumbing ===== */
 function show(sel){ $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
