@@ -191,7 +191,7 @@
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="grip"></div><div class="sheet-pad" id="sheetBody"></div></div>
-<div class="act" id="actSheet"><div class="grip"></div><div id="actBody"></div></div>
+<div class="act" id="actSheet"><div class="grip" id="actGrip"></div><div id="actBody"></div><button class="ghost" id="actClose">Đóng</button></div>
 <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg">Đã lưu</span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -302,12 +302,12 @@ function renderStudents(){
   if(!rows.length){ L.innerHTML='<div class="state"><div class="big">Không tìm thấy</div>Thử đổi bộ lọc hoặc từ khóa.</div>'; return; }
   L.innerHTML='';
   rows.forEach(s=>{
-    const ph=(s.phu_huynh&&s.phu_huynh[0])||null;
+    const lops=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.ten_lop);
     const el=document.createElement('div'); el.className='scard';
     el.innerHTML=`<div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
       <div class="who"><div class="nm">${s.ho_ten}</div><div class="sub">
         <span class="idtag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="9" r="3"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0"/></svg>${s.ma_hoc_sinh}</span>
-        ${ph&&ph.so_dien_thoai?`<span class="phone">${ph.so_dien_thoai}</span>`:''}
+        ${lops.length? lops.map(l=>`<span class="lopchip">${l}</span>`).join('') : '<span class="phone" style="color:#9AA4B2">Chưa xếp lớp</span>'}
         ${owesN(s)?`<span class="phone" style="color:var(--danger);font-weight:600">Nợ ${owesN(s)} buổi</span>`:''}</div></div>
       <span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>`;
     el.onclick=()=>openStudentDetail(s);
@@ -721,6 +721,7 @@ function openMoveClass(reg, s){
 function show(sel){ $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
 function closeSheets(){ $('#scrim').classList.remove('show'); $('#sheet').classList.remove('show'); $('#actSheet').classList.remove('show'); }
 function closeAct(){ $('#actSheet').classList.remove('show'); }
+$('#actGrip').onclick=closeAct; $('#actClose').onclick=closeAct;
 $('#scrim').onclick=()=>{ if($('#actSheet').classList.contains('show')){ closeAct(); if(!$('#sheet').classList.contains('show'))$('#scrim').classList.remove('show'); } else closeSheets(); };
 let toastT; function toast(m,ok=true){ $('#toastMsg').textContent=m; $('#toast').className='toast show'+(ok?'':' err'); clearTimeout(toastT); toastT=setTimeout(()=>$('#toast').classList.remove('show'),2400); }
 </script>
