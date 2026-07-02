@@ -348,10 +348,12 @@ function openStudentDetail(s){
     ${classBlock}
     ${makeupBlock}
     ${canWrite()?'<button class="save" id="editS" style="margin-top:18px">Sửa thông tin</button>':''}
+    ${canWrite()&&s.trang_thai==='da_nghi'?'<button class="ghost del" id="delS">Xóa học sinh</button>':''}
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
   if(canWrite()) $('#editS').onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);};
   if(canWrite()){ const add=$('#addHb'); if(add) add.onclick=()=>openMakeupForm(s); }
   if(canWrite()){ const al=$('#addLop'); if(al) al.onclick=()=>openStudentEnroll(s); }
+  if(canWrite()){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
   $('#sheetBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
   $('#sheetBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
   show('#sheet');
@@ -715,6 +717,20 @@ function openMoveClass(reg, s){
     ${avail.length? avail.map(c=>`<button class="opt" data-id="${c.id}"><span class="ic" style="background:${avaC(c.ten_lop)};color:#fff;font-size:11px;font-weight:800">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div style="text-align:left"><div>${c.ten_lop}</div><div style="font-size:12px;color:var(--muted);font-weight:500">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để chuyển</div></div>'}`;
   $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{ await db.from('dang_ky_lop').update({lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'}).eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã chuyển lớp'); });
   $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
+
+function confirmDeleteStudent(s){
+  $('#actBody').innerHTML=`<h3>Xóa học sinh?</h3><p class="who2">${s.ho_ten} · ${s.ma_hoc_sinh}</p>
+    <div style="font-size:13.5px;color:var(--muted);line-height:1.5;padding:2px 2px 8px">Xóa vĩnh viễn em này cùng dữ liệu lớp, điểm danh, học bù. <b style="color:var(--danger)">Không hoàn tác được.</b></div>
+    <button class="opt" id="delYes"><span class="ic" style="background:var(--danger-soft);color:var(--danger)">✕</span><span style="color:var(--danger);font-weight:700">Xóa vĩnh viễn</span></button>`;
+  $('#delYes').onclick=()=>doDeleteStudent(s);
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
+async function doDeleteStudent(s){
+  const {error}=await db.from('hoc_sinh').delete().eq('id',s.id);
+  closeAct();
+  if(error){ toast(error.code==='23503'? 'Không xóa được: em này có lịch sử thanh toán. Giữ trạng thái Đã nghỉ để bảo toàn số liệu.' : error.message, false); return; }
+  closeSheets(); curStudent=null; await loadAll(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); toast('Đã xóa học sinh');
 }
 
 /* ===== plumbing ===== */
