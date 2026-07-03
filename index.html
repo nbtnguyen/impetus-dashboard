@@ -77,6 +77,7 @@
   .lopchip{font-size:11.5px; font-weight:600; color:#3a4660; background:var(--primary-soft); padding:2px 8px; border-radius:6px}
   .pill{flex:none; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:999px}
   .pill.dang_hoc,.pill.hoc{color:var(--ok); background:var(--ok-soft)} .pill.bao_luu,.pill.luu{color:var(--warn); background:var(--warn-soft)} .pill.da_nghi,.pill.nghi{color:var(--off); background:var(--off-soft)}
+  .pill.cho_test{color:#7C3AED; background:#F1EBFC} .pill.hoc_thu{color:#0E7490; background:#E1F1F6}
 
   /* class card */
   .ccard{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); cursor:pointer; transition:transform .12s} .ccard:active{transform:scale(.99)}
@@ -120,6 +121,7 @@
   .rost .av{width:34px; height:34px; flex:none; border-radius:10px; display:grid; place-items:center; color:#fff; font-weight:700; font-size:13px} .rost .rn{flex:1; font-weight:600; font-size:14px} .rost .pill{font-size:10.5px; padding:3px 8px}
 
   .seg{display:flex; gap:7px} .seg button{flex:1; font:inherit; font-size:14px; font-weight:600; padding:11px; cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:11px; color:var(--muted)} .seg button.on{background:var(--primary-soft); border-color:var(--primary); color:var(--primary)}
+  .seg.wrap{flex-wrap:wrap} .seg.wrap button{flex:1 1 28%; font-size:13px; padding:10px 6px}
   .daypick{display:flex; gap:5px} .daypick button{flex:1; font:inherit; font-size:13px; font-weight:600; padding:11px 0; cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:10px; color:var(--muted)} .daypick button.on{background:var(--primary-soft); border-color:var(--primary); color:var(--primary)}
   .feewrap{position:relative} .feewrap input{padding-right:42px} .feewrap .unit{position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:14px; font-weight:600}
   .addlink{font-size:13px; font-weight:600; color:var(--primary); cursor:pointer; margin-top:8px; display:inline-block}
@@ -142,6 +144,7 @@
   .tile .n{font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1}
   .tile .l{font-size:12.5px; color:var(--muted); font-weight:600; margin-top:6px}
   .tile.warn .n{color:var(--danger)}
+  .tile[data-go],.hero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.hero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
   .dsec{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:22px 4px 10px}
   .warnrow{display:flex; align-items:center; gap:11px; padding:11px 13px; background:var(--surface); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .infonote{margin-top:18px; background:var(--primary-soft); border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; font-size:12.5px; line-height:1.55; color:#2a3a63} .infonote b{color:var(--primary)}
@@ -201,7 +204,7 @@ const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const AVA=['#2747D9','#0E9F6E','#C77700','#7C3AED','#0E7490','#BE185D','#475467'];
 const DAYS=['T2','T3','T4','T5','T6','T7','CN'];
-const ST={dang_hoc:'Đang học', bao_luu:'Bảo lưu', da_nghi:'Đã nghỉ'};
+const ST={cho_test:'Chờ test', hoc_thu:'Học thử', dang_hoc:'Đang học', bao_luu:'Bảo lưu', da_nghi:'Đã nghỉ'};
 const CST={dang_tuyen:'Đang tuyển', dang_hoc:'Đang học', da_dong:'Đã đóng'};
 const QH={bo:'Bố', me:'Mẹ', khac:'Khác'};
 const $=s=>document.querySelector(s);
@@ -258,7 +261,7 @@ $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 /* ===== Load ===== */
 async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi()]); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop))').order('ngay_tao',{ascending:false}); students=data||[]; }
-async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id,trang_thai)').order('ngay_tao',{ascending:false}); classes=data||[]; }
+async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
 async function loadThuChi(){ const {data}=await db.from('thu_chi').select('*').order('ngay',{ascending:false}); thuchi=data||[]; }
@@ -286,7 +289,7 @@ function buildHocSinh(){
       <div class="titlerow" style="margin:0 0 12px"><h1>Học sinh</h1><span class="count" id="count">${students.length}</span></div>
       <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
       <div class="filters" id="filters">
-        ${['all','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="chip ${sqFilter===f?'active':''}" data-f="${f}">${({all:'Tất cả',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
+        ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="chip ${sqFilter===f?'active':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
         <button class="chip hb ${sqFilter==='can_hoc_bu'?'active':''}" data-f="can_hoc_bu">Cần học bù${oweCount()?`<span class="cnt">${oweCount()}</span>`:''}</button>
       </div>
     </div>
@@ -342,13 +345,14 @@ function openStudentDetail(s){
     <div class="row"><span class="k">Giới tính</span><span class="v">${s.gioi_tinh||'—'}</span></div>
     <div class="row"><span class="k">Trường</span><span class="v">${s.truong_hoc||'—'}</span></div>
     <div class="row"><span class="k">Ngày bắt đầu</span><span class="v">${fmtDate(s.ngay_bat_dau)}</span></div>
+    ${s.ngay_hen_test?`<div class="row"><span class="k">Ngày hẹn test</span><span class="v">${fmtDate(s.ngay_hen_test)}</span></div>`:''}
     ${canSeeParent()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="v">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
     ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="v" style="font-weight:500">${s.ghi_chu}</span></div>`:''}
     ${parentBlock}
     ${classBlock}
     ${makeupBlock}
     ${canWrite()?'<button class="save" id="editS" style="margin-top:18px">Sửa thông tin</button>':''}
-    ${canWrite()&&s.trang_thai==='da_nghi'?'<button class="ghost del" id="delS">Xóa học sinh</button>':''}
+    ${canWrite()&&['cho_test','hoc_thu','da_nghi'].includes(s.trang_thai)?'<button class="ghost del" id="delS">Xóa học sinh</button>':''}
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
   if(canWrite()) $('#editS').onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);};
   if(canWrite()){ const add=$('#addHb'); if(add) add.onclick=()=>openMakeupForm(s); }
@@ -372,7 +376,8 @@ function openStudentForm(s){
     <div class="field"><label>Trường học</label><input id="f_truong" type="text" value="${s?(s.truong_hoc||''):''}" placeholder="THCS Cổ Loa"></div>
     <div class="two"><div class="field"><label>Ngày bắt đầu</label><input id="f_batdau" type="date" value="${s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10)}"></div>
       ${isManager()?`<div class="field"><label>Giảm giá học phí (%)</label><input id="f_giam" type="number" min="0" max="100" value="${s?(s.giam_gia_phan_tram||0):0}"><div class="hint">Chỉ quản lý chỉnh.</div></div>`:''}</div>
-    <div class="field"><label>Trạng thái</label><div class="seg" id="f_tt">${Object.entries(ST).map(([v,l])=>`<button class="${formStatus===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+    <div class="field"><label>Trạng thái</label><div class="seg wrap" id="f_tt">${Object.entries(ST).map(([v,l])=>`<button class="${formStatus===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+    <div class="field"><label>Ngày hẹn test (nếu chờ test)</label><input id="f_hentest" type="date" value="${s?(s.ngay_hen_test||''):''}"></div>
     ${!s?`<div class="field"><label>Xếp vào lớp (tùy chọn)</label><select id="f_lop"><option value="">— Chưa xếp lớp —</option>${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select><div class="hint">Có thể xếp lớp sau ở tab Lớp học.</div></div>`:''}
     <div class="seclabel">Phụ huynh</div>
     <div class="field"><label>Họ tên phụ huynh</label><input id="f_phten" type="text" value="${ph?(ph.ho_ten||''):''}" placeholder="Nguyễn Thị Bình"></div>
@@ -390,7 +395,7 @@ async function saveStudent(){
   if(!ten) return toast('Chưa nhập họ tên',false);
   if(!ma) return toast('Chưa nhập mã học sinh',false);
   const btn=$('#saveS'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
-  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:$('#f_gt').value, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null};
+  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:$('#f_gt').value, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null, ngay_hen_test:($('#f_hentest')&&$('#f_hentest').value)||null};
   if(isManager()&&$('#f_giam')) payload.giam_gia_phan_tram=+$('#f_giam').value||0;
   let hsId=editingId, err=null;
   if(editingId){ const r=await db.from('hoc_sinh').update(payload).eq('id',editingId); err=r.error; }
@@ -408,7 +413,7 @@ async function saveStudent(){
 }
 
 /* ===== LỚP HỌC ===== */
-const headcount=c=>(c.dang_ky_lop||[]).filter(d=>d.trang_thai==='dang_hoc'||d.trang_thai==='bao_luu').length;
+const headcount=c=>(c.dang_ky_lop||[]).filter(d=>d.trang_thai!=='da_nghi' && d.hoc_sinh && (d.hoc_sinh.trang_thai==='dang_hoc'||d.hoc_sinh.trang_thai==='bao_luu')).length;
 function buildLop(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
@@ -454,15 +459,18 @@ async function openClassDetail(c){
   if(isManager()) $('#editC').onclick=()=>{closeSheets(); setTimeout(()=>openClassForm(c),260);};
   if(canWrite()) $('#enroll').onclick=()=>openEnroll(c);
   // load roster
-  const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten)').eq('lop_hoc_id',c.id);
+  const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id);
   const list=(reg||[]).filter(r=>r.hoc_sinh);
-  $('#rcount').textContent=list.filter(r=>r.trang_thai!=='da_nghi').length+' đang theo';
+  const official=list.filter(r=>r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')).length;
+  $('#rcount').textContent=official+' chính thức';
   const R=$('#roster');
   if(!list.length){ R.innerHTML='<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Chưa có học sinh nào trong lớp.</div>'; return; }
   R.innerHTML='';
   list.forEach(r=>{
+    const trial=(r.hoc_sinh.trang_thai==='cho_test'||r.hoc_sinh.trang_thai==='hoc_thu');
+    const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
     const el=document.createElement('div'); el.className='rost';
-    el.innerHTML=`<div class="av" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div><div class="rn">${r.hoc_sinh.ho_ten}</div><span class="idtag">${r.hoc_sinh.ma_hoc_sinh}</span><span class="pill ${r.trang_thai}">${ST[r.trang_thai]||r.trang_thai}</span>`;
+    el.innerHTML=`<div class="av" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div><div class="rn">${r.hoc_sinh.ho_ten}</div><span class="idtag">${r.hoc_sinh.ma_hoc_sinh}</span><span class="pill ${disp}">${ST[disp]||disp}</span>`;
     if(canWrite()) el.onclick=()=>openRegStatus(r, c);
     R.appendChild(el);
   });
@@ -604,24 +612,40 @@ function buildDashboard(){
   const dChi=inM.filter(t=>t.loai==='chi').reduce((a,t)=>a+Number(t.so_tien),0);
   const dConlai=dThu-dChi;
   const owing=students.filter(s=>studentOwes(s));
+  const choTest=students.filter(s=>s.trang_thai==='cho_test');
+  const hocThu=students.filter(s=>s.trang_thai==='hoc_thu');
+  const prospects=[...choTest,...hocThu];
   const warnRows = owing.length
     ? owing.slice(0,8).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}</div></div><span class="pill bao_luu">Nợ ${owesN(s)} buổi</span></div>`).join('')
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang nợ buổi.</div>';
+  const prospectRows = prospects.length
+    ? prospects.slice(0,10).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}${s.ngay_hen_test?' · test '+fmtDate(s.ngay_hen_test):''}</div></div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]}</span></div>`).join('')
+    : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang chờ test / học thử.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
       <div class="titlerow" style="margin:2px 0 14px"><h1>Tổng quan</h1></div>
-      <div class="hero"><div class="lbl">Dòng tiền tháng ${month}</div><div class="big" style="${dConlai<0?'color:#ff9b8e':''}">${vnd(dConlai)}<span>đ</span></div><div class="note">${dThu||dChi?`Thu ${vnd(dThu)}đ · Chi ${vnd(dChi)}đ`:'Chưa có giao dịch — ghi ở tab Thu chi. Học phí sẽ tự vào khi bật SePay.'}</div></div>
+      <div class="hero" data-go="thu_chi"><div class="lbl">Dòng tiền tháng ${month}</div><div class="big" style="${dConlai<0?'color:#ff9b8e':''}">${vnd(dConlai)}<span>đ</span></div><div class="note">${dThu||dChi?`Thu ${vnd(dThu)}đ · Chi ${vnd(dChi)}đ`:'Chưa có giao dịch — ghi ở tab Thu chi. Học phí sẽ tự vào khi bật SePay.'}</div></div>
       <div class="tiles">
-        <div class="tile"><div class="n">${dangHoc}</div><div class="l">Học sinh đang học</div></div>
-        <div class="tile"><div class="n">${lopActive}</div><div class="l">Lớp đang hoạt động</div></div>
-        <div class="tile warn"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
-        <div class="tile"><div class="n">0</div><div class="l">Đang nợ học phí</div></div>
+        <div class="tile" data-go="hs:dang_hoc"><div class="n">${dangHoc}</div><div class="l">Học sinh đang học</div></div>
+        <div class="tile" data-go="lop"><div class="n">${lopActive}</div><div class="l">Lớp đang hoạt động</div></div>
+        <div class="tile" data-go="hs:cho_test"><div class="n" style="color:#7C3AED">${choTest.length}</div><div class="l">Chờ test</div></div>
+        <div class="tile" data-go="hs:hoc_thu"><div class="n" style="color:#0E7490">${hocThu.length}</div><div class="l">Học thử</div></div>
+        <div class="tile warn" data-go="hs:can_hoc_bu"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
+        <div class="tile tile-off"><div class="n">0</div><div class="l">Đang nợ học phí</div></div>
       </div>
+      <div class="dsec">Tuyển sinh — chờ test / học thử</div>
+      ${prospectRows}
       <div class="dsec">Cần chú ý — nợ buổi học bù</div>
       ${warnRows}
       <div class="infonote"><b>Sắp có:</b> doanh thu, công nợ học phí và cảnh báo vắng nhiều sẽ tự hiện ở đây khi mình bật <b>điểm danh (máy Hikvision)</b> và <b>thu học phí (SePay)</b>.</div>
     </div>`;
   $('#screen').querySelectorAll('.warnrow').forEach(r=>r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)));
+  $('#screen').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{
+    const g=el.dataset.go;
+    if(g==='lop'){ lopQuery=''; switchView('lop'); }
+    else if(g==='thu_chi'){ switchView('thu_chi'); }
+    else if(g.startsWith('hs:')){ sqQuery=''; sqFilter=g.slice(3); switchView('hoc_sinh'); }
+  });
 }
 
 /* ===== THU CHI (chỉ quản lý) ===== */
