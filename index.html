@@ -1066,9 +1066,10 @@ function showQR(p){
   show('#sheet');
 }
 async function confirmPaid(p){
-  const {error}=await db.from('thanh_toan').update({trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString()}).eq('id',p.id);
+  const {data,error}=await db.from('thanh_toan').update({trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString()}).eq('id',p.id).eq('trang_thai','cho_thanh_toan').select('id');
   if(error)return toast(error.message,false);
-  await loadPayments();
+  if(data && data.length){ await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:p.so_tien, ngay:new Date().toISOString().slice(0,10), ghi_chu:((p.hoc_sinh&&p.hoc_sinh.ho_ten)||'')+' · CK'}); }
+  await Promise.all([loadPayments(), loadThuChi()]);
   if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
   else if(curStudent){ openStudentDetail(curStudent); }
   else closeSheets();
