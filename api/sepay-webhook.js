@@ -81,6 +81,11 @@ module.exports = async (req, res) => {
         method: 'PATCH', headers: minimal,
         body: JSON.stringify({ trang_thai: 'da_thu', sepay_transaction_id: sepayId, ngay_thanh_toan: new Date().toISOString() })
       });
+      // ghi vào dòng tiền (Thu chi)
+      await fetch(rest('thu_chi'), {
+        method: 'POST', headers: minimal,
+        body: JSON.stringify({ loai: 'thu', danh_muc: 'Học phí', so_tien: amount, ngay: new Date().toISOString().slice(0, 10), ghi_chu: 'SePay · ' + (matched.noi_dung_ck || '') })
+      });
       return res.status(200).json({ success: true, message: 'Khớp & đã thu' });
     }
 
