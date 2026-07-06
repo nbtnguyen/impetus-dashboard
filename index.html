@@ -87,6 +87,25 @@
   .clbl{flex:none; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px}
   .clbl.dang_hoc{color:var(--ok); background:var(--ok-soft)} .clbl.dang_tuyen{color:var(--warn); background:var(--warn-soft)} .clbl.da_dong{color:var(--off); background:var(--off-soft)}
   .week{display:flex; gap:4px; margin-top:13px} .day{flex:1; text-align:center; font-size:11px; font-weight:600; padding:5px 0; border-radius:7px; background:#F1F3F8; color:#A7B0BE} .day.on{background:var(--primary-soft); color:var(--primary)}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); margin-bottom:10px}
+  .det-actions{display:flex; gap:8px; flex:none}
+  .icobtn{width:38px; height:38px; border-radius:11px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--primary)} .icobtn:active{background:var(--primary-soft)}
+  .acc{border:1px solid var(--line); border-radius:14px; margin-top:10px; overflow:hidden; background:var(--surface)}
+  .acc-h{width:100%; display:flex; align-items:center; gap:8px; padding:13px 14px; border:0; background:transparent; font:inherit; font-size:14.5px; font-weight:700; color:var(--ink); cursor:pointer; text-align:left}
+  .acc-h .chev{margin-left:auto; color:var(--faint); transition:transform .2s} .acc.open .acc-h .chev{transform:rotate(180deg)}
+  .acc-badge{font-size:11.5px; font-weight:700; color:var(--danger); background:var(--danger-soft); padding:2px 8px; border-radius:999px}
+  .acc-b{display:none; padding:0 14px 14px} .acc.open .acc-b{display:block} .acc-b .row:first-child{border-top:0}
+  .payline{display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line)} .payline:first-child{border-top:0}
+  .payline .pn{flex:1; min-width:0} .payline .pn .t{font-weight:600; font-size:14px} .payline .pn .d{font-size:12px; margin-top:2px; color:var(--muted)}
+  .miniqr{flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); border:0; border-radius:9px; padding:8px 12px; cursor:pointer} .miniqr:active{opacity:.8}
+  .backbtn{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--ink); margin-right:4px; flex:none; padding:0}
+  .det-actions{display:flex; gap:8px; margin-left:auto}
+  .det-actions button{width:38px; height:38px; border-radius:11px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--primary)} .det-actions button:active{background:#F1F3F8}
+  .acc{border:1px solid var(--line); border-radius:14px; margin-top:12px; background:var(--surface); overflow:hidden}
+  .acc-h{display:flex; align-items:center; gap:8px; padding:13px 14px; cursor:pointer; user-select:none}
+  .acc-h .t{font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:8px} .acc-h .t .cnt{font-size:12px; font-weight:600; color:var(--muted)}
+  .acc-h .chev{margin-left:auto; color:var(--faint); transition:transform .2s} .acc.open .chev{transform:rotate(180deg)}
+  .acc-b{padding:0 14px 14px; display:none} .acc.open .acc-b{display:block}
   .cardfoot{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:11px; border-top:1px solid var(--line)}
   .stat{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); font-weight:600} .stat b{color:var(--ink)} .stat svg{color:var(--faint)}
   .fee{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:13.5px} .fee span{color:var(--faint); font-weight:500; font-family:'Be Vietnam Pro'}
@@ -158,6 +177,17 @@
   .tcrow{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:12px 14px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .tcrow .cat{flex:1; min-width:0} .tcrow .cat .t{font-weight:600; font-size:14.5px} .tcrow .cat .d{font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .tcrow .amt{font-family:'Spline Sans Mono',monospace; font-weight:700; font-size:15px; flex:none} .tcrow .amt.thu{color:var(--ok)} .tcrow .amt.chi{color:var(--danger)}
+  .subtabs{display:flex; gap:7px; padding:0 0 12px}
+  .subtab{flex:1; position:relative; font:inherit; font-size:13px; font-weight:700; padding:9px 6px; border-radius:11px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer}
+  .subtab.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .subtab .dot{position:absolute; top:-5px; right:-5px; min-width:18px; height:18px; padding:0 5px; border-radius:99px; background:var(--danger); color:#fff; font-size:11px; font-weight:700; display:grid; place-items:center}
+  .deadline{font-size:12px; font-weight:700; padding:3px 9px; border-radius:999px} .deadline.over{color:var(--danger); background:var(--danger-soft)} .deadline.soon{color:var(--warn); background:var(--warn-soft)} .deadline.new{color:#7C3AED; background:#F1EBFC}
+  .qrcard{margin-top:8px; border:1px solid var(--line); border-radius:18px; padding:18px; text-align:center; background:linear-gradient(180deg,#FBFCFE,#F5F7FB)}
+  .qrbox{width:212px; height:212px; margin:0 auto; background:#fff; border-radius:14px; padding:8px; box-shadow:var(--shadow); border:1px solid var(--line)} .qrbox img{width:100%; height:100%; object-fit:contain; display:block}
+  .qramt{font-family:'Spline Sans Mono',monospace; font-weight:700; font-size:24px; margin-top:14px}
+  .qrinfo{margin-top:14px; border-top:1px dashed var(--line); padding-top:12px; text-align:left; display:flex; flex-direction:column; gap:8px}
+  .qrinfo .r{display:flex; justify-content:space-between; gap:12px; font-size:13px} .qrinfo .r .k{color:var(--muted); flex:none} .qrinfo .r .v{font-weight:600; text-align:right} .qrinfo .r .v.mono{font-family:'Spline Sans Mono',monospace}
+  .waitbar{margin-top:14px; background:var(--warn-soft); color:#8a5a00; border-radius:12px; padding:11px 14px; font-size:12.5px; font-weight:600; text-align:center}
   .toast{position:fixed; left:50%; transform:translateX(-50%) translateY(20px); bottom:80px; z-index:90; background:var(--ink); color:#fff; font-size:14px; font-weight:600; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:.25s; display:flex; align-items:center; gap:9px; box-shadow:var(--shadow)} .toast.show{opacity:1; transform:translateX(-50%) translateY(0)} .toast.err{background:#8a231a} .toast svg{color:#5ee0a0} .toast.err svg{display:none}
 </style>
 </head>
@@ -218,6 +248,11 @@ const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
 let students=[], classes=[], teachers=[], makeups=[], curStudent=null;
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
+let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
+const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
+const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
+const addMonths=(d,n)=>{const x=new Date(d); x.setMonth(x.getMonth()+n); return x;};
+const toISO=d=>d.toISOString().slice(0,10);
 const CAT={chi:['Thuê nhà','Điện nước','Lương','Mua sắm/Thiết bị','Marketing','Khác'], thu:['Học phí','Bán sách','Khác']};
 let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null;
 
@@ -259,8 +294,10 @@ async function enterApp(){
 $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi()]); }
-async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop))').order('ngay_tao',{ascending:false}); students=data||[]; }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched()]); }
+async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
+async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh)').order('ngay_tao',{ascending:false}); payments=data||[]; }
+async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
 async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
@@ -271,7 +308,7 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else buildThuChi();
+  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
 function updateFab(){
@@ -317,49 +354,90 @@ function renderStudents(){
     L.appendChild(el);
   });
 }
+function accSection(key,title,body,open,badge){
+  return `<div class="acc ${open?'open':''}" data-acc="${key}"><button class="acc-h">${title}${badge?`<span class="acc-badge">${badge}</span>`:''}<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button><div class="acc-b">${body}</div></div>`;
+}
+function bindAccordion(){ $('#sheetBody').querySelectorAll('.acc-h').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open')); }
+function studentPayLines(s){
+  const lines=[];
+  (s.dang_ky_lop||[]).forEach(d=>{
+    if(!d.lop_hoc || d.trang_thai==='da_nghi') return;
+    let maxKy=null, pending=null;
+    payments.forEach(p=>{ if(p.loai!=='hoc_phi'||p.dang_ky_lop_id!==d.id) return; if(p.trang_thai==='da_thu'&&p.ky_den){ if(!maxKy||p.ky_den>maxKy) maxKy=p.ky_den; } if(p.trang_thai==='cho_thanh_toan') pending=p; });
+    lines.push({hsId:s.id, ma:s.ma_hoc_sinh, hoTen:s.ho_ten, enrollId:d.id, lopTen:d.lop_hoc.ten_lop, fee:Number(d.lop_hoc.hoc_phi_thang)||0, giam:Number(s.giam_gia_phan_tram)||0, maxKyDen:maxKy, pending});
+  });
+  return lines;
+}
+function openStudentPhieuPicker(s){
+  const lines=studentPayLines(s);
+  if(!lines.length){ toast('Em chưa xếp lớp',false); return; }
+  $('#actBody').innerHTML=`<h3>Tạo phiếu học phí</h3><p class="who2">${s.ho_ten} · chọn lớp.</p>
+    ${lines.map(l=>`<button class="opt" data-enroll="${l.enrollId}" ${l.pending?`data-pending="${l.pending.id}"`:''}><span class="ic" style="background:${avaC(l.lopTen)};color:#fff;font-size:11px;font-weight:800">${l.lopTen.slice(0,3).toUpperCase()}</span><div style="text-align:left;flex:1"><div>${l.lopTen}</div><div style="font-size:12px;color:var(--muted);font-weight:500">${l.pending?'Có phiếu chờ — xem QR':(l.maxKyDen?'Đã đóng tới '+l.maxKyDen.split('-').reverse().join('/'):'Chưa đóng')}</div></div></button>`).join('')}`;
+  $('#actBody').querySelectorAll('.opt').forEach(o=>o.onclick=()=>{ closeAct(); const l=lines.find(x=>x.enrollId===o.dataset.enroll); if(l) openPayLineActions(l); });
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
 function openStudentDetail(s){
   curStudent=s;
   const ph=canSeeParent()? ((s.phu_huynh&&s.phu_huynh[0])||null) : null;
-  const parentBlock = canSeeParent()
-    ? `<div class="seclabel">Phụ huynh</div>${ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="v">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="v">${ph.so_dien_thoai||'—'}</span></div>`:'<div class="row"><span class="k" style="font-weight:500;color:#9AA4B2">Chưa có thông tin phụ huynh</span><span class="v"></span></div>'}`
-    : '';
+  const enr=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc);
+  const enrRows = enr.length
+    ? enr.map(d=>`<div class="rost enrrow" data-id="${d.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${d.lop_hoc.ten_lop}</div></div><span class="pill ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
+    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Chưa xếp lớp nào.</div>';
+  const classBody = `<div class="roster">${enrRows}</div>${canWrite()?'<button class="opt" id="addLop" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Thêm / chuyển lớp</button>':''}`;
   const mk=makeups.filter(m=>m.hoc_sinh_id===s.id);
   const chua=mk.filter(m=>m.trang_thai==='chua_bu').length;
   const mkRows = mk.length
     ? mk.map(m=>{const done=m.trang_thai==='da_bu'; return `<div class="rost hbrow" data-id="${m.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${m.lop_hoc?m.lop_hoc.ten_lop:'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Vắng ${fmtDate(m.ngay_vang)}${done?' · bù '+fmtDate(m.ngay_bu):''}</div></div><span class="pill ${done?'dang_hoc':'bao_luu'}">${done?'Đã bù':'Chưa bù'}</span></div>`;}).join('')
-    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 2px">Không có buổi cần học bù.</div>';
-  const makeupBlock = `<div class="seclabel">Buổi cần học bù ${chua?`<span class="badge" style="color:var(--danger);font-weight:700">${chua} chưa bù</span>`:''}</div>
-    <div class="roster" style="margin-top:8px">${mkRows}</div>
-    ${canWrite()?'<button class="opt" id="addHb" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Ghi buổi vắng</button>':''}`;
-  const enr=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc);
-  const enrRows = enr.length
-    ? enr.map(d=>`<div class="rost enrrow" data-id="${d.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${d.lop_hoc.ten_lop}</div></div><span class="pill ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
-    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 2px">Chưa xếp lớp nào.</div>';
-  const classBlock = `<div class="seclabel">Lớp đang học</div>
-    <div class="roster" style="margin-top:8px">${enrRows}</div>
-    ${canWrite()?'<button class="opt" id="addLop" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Thêm / chuyển lớp</button>':''}`;
-  $('#sheetBody').innerHTML=`
-    <div class="det-head"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div><div class="nm">${s.ho_ten}</div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div></div>
+    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Không có buổi cần học bù.</div>';
+  const makeupBody = `<div class="roster">${mkRows}</div>${canWrite()?'<button class="opt" id="addHb" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Ghi buổi vắng</button>':''}`;
+  let hpBody='', hpBadge='';
+  if(isManager()){
+    const lines=studentPayLines(s); let overdue=0;
+    hpBody = lines.length ? lines.map(l=>{
+      let st, cls='color:var(--muted)';
+      if(l.pending){ st='Có phiếu chờ chuyển'; cls='color:var(--warn);font-weight:600'; }
+      else if(l.maxKyDen){ const over=new Date(l.maxKyDen)<new Date(); st=(over?'Quá hạn · đóng tới ':'Đã đóng tới ')+l.maxKyDen.split('-').reverse().join('/'); if(over){cls='color:var(--danger);font-weight:600';overdue++;} }
+      else { st='Chưa đóng'; cls='color:var(--danger);font-weight:600'; overdue++; }
+      const btn=`<button class="miniqr" data-enroll="${l.enrollId}">${l.pending?'Phiếu chờ':'Thu học phí'}</button>`;
+      return `<div class="payline"><div class="pn"><div class="t">${l.lopTen}</div><div class="d" style="${cls}">${st}</div></div>${btn}</div>`;
+    }).join('') : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Chưa xếp lớp nên chưa có học phí.</div>';
+    if(overdue) hpBadge=overdue+' cần thu';
+  }
+  const infoBody = `
     <div class="row"><span class="k">Mã học sinh</span><span class="v"><span class="idtag">${s.ma_hoc_sinh}</span></span></div>
     <div class="row"><span class="k">Ngày sinh</span><span class="v">${fmtDate(s.ngay_sinh)}</span></div>
     <div class="row"><span class="k">Giới tính</span><span class="v">${s.gioi_tinh||'—'}</span></div>
     <div class="row"><span class="k">Trường</span><span class="v">${s.truong_hoc||'—'}</span></div>
     <div class="row"><span class="k">Ngày bắt đầu</span><span class="v">${fmtDate(s.ngay_bat_dau)}</span></div>
     ${s.ngay_hen_test?`<div class="row"><span class="k">Ngày hẹn test</span><span class="v">${fmtDate(s.ngay_hen_test)}</span></div>`:''}
-    ${canSeeParent()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="v">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
+    ${isManager()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="v">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
     ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="v" style="font-weight:500">${s.ghi_chu}</span></div>`:''}
-    ${parentBlock}
-    ${classBlock}
-    ${makeupBlock}
-    ${canWrite()?'<button class="save" id="editS" style="margin-top:18px">Sửa thông tin</button>':''}
-    ${canWrite()&&['cho_test','hoc_thu','da_nghi'].includes(s.trang_thai)?'<button class="ghost del" id="delS">Xóa học sinh</button>':''}
+    ${canSeeParent()?(ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="v">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="v">${ph.so_dien_thoai||'—'}</span></div>`:'<div class="row"><span class="k" style="font-weight:500;color:#9AA4B2">Chưa có thông tin phụ huynh</span><span class="v"></span></div>'):''}`;
+  const canDel=canWrite()&&['cho_test','hoc_thu','da_nghi'].includes(s.trang_thai);
+  $('#sheetBody').innerHTML=`
+    <div class="det-head">
+      <div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
+      <div style="flex:1;min-width:0"><div class="nm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.ho_ten}</div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div>
+      <div class="det-actions">
+        ${isManager()?`<button class="icobtn" id="hsQR" title="Tạo phiếu QR"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M20 20v.01M17 20h.01M20 17h.01M14 20h.01"/></svg></button>`:''}
+        ${canWrite()?`<button class="icobtn" id="hsEdit" title="Sửa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}
+      </div>
+    </div>
+    ${isManager()?accSection('hp','Học phí',hpBody,true,hpBadge):''}
+    ${accSection('lop','Lớp đang học',classBody,true,'')}
+    ${accSection('hb','Buổi cần học bù',makeupBody,true,chua?chua+' chưa bù':'')}
+    ${accSection('info','Thông tin & phụ huynh',infoBody,false,'')}
+    ${canDel?'<button class="ghost del" id="delS" style="margin-top:14px">Xóa học sinh</button>':''}
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
-  if(canWrite()) $('#editS').onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);};
-  if(canWrite()){ const add=$('#addHb'); if(add) add.onclick=()=>openMakeupForm(s); }
+  bindAccordion();
+  if(isManager()){ const q=$('#hsQR'); if(q) q.onclick=()=>openStudentPhieuPicker(s); }
+  if(canWrite()){ const e=$('#hsEdit'); if(e) e.onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);}; }
   if(canWrite()){ const al=$('#addLop'); if(al) al.onclick=()=>openStudentEnroll(s); }
-  if(canWrite()){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
+  if(canWrite()){ const ah=$('#addHb'); if(ah) ah.onclick=()=>openMakeupForm(s); }
+  if(canDel){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
   $('#sheetBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
   $('#sheetBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
+  $('#sheetBody').querySelectorAll('.miniqr').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
   show('#sheet');
 }
 function nextMa(){ let m=0; students.forEach(s=>{const n=parseInt((s.ma_hoc_sinh||'').replace(/\D/g,''))||0; if(n>m)m=n;}); return 'HS'+String(m+1).padStart(3,'0'); }
@@ -631,7 +709,7 @@ function buildDashboard(){
         <div class="tile" data-go="hs:cho_test"><div class="n" style="color:#7C3AED">${choTest.length}</div><div class="l">Chờ test</div></div>
         <div class="tile" data-go="hs:hoc_thu"><div class="n" style="color:#0E7490">${hocThu.length}</div><div class="l">Học thử</div></div>
         <div class="tile warn" data-go="hs:can_hoc_bu"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
-        <div class="tile tile-off"><div class="n">0</div><div class="l">Đang nợ học phí</div></div>
+        <div class="tile" data-go="hoc_phi"><div class="n" style="color:var(--danger)">${(typeof dueList==='function')?dueList().length:0}</div><div class="l">Đến hạn đóng</div></div>
       </div>
       <div class="dsec">Tuyển sinh — chờ test / học thử</div>
       ${prospectRows}
@@ -644,6 +722,7 @@ function buildDashboard(){
     const g=el.dataset.go;
     if(g==='lop'){ lopQuery=''; switchView('lop'); }
     else if(g==='thu_chi'){ switchView('thu_chi'); }
+    else if(g==='hoc_phi'){ switchView('hoc_phi'); }
     else if(g.startsWith('hs:')){ sqQuery=''; sqFilter=g.slice(3); switchView('hoc_sinh'); }
   });
 }
@@ -755,6 +834,270 @@ async function doDeleteStudent(s){
   closeAct();
   if(error){ toast(error.code==='23503'? 'Không xóa được: em này có lịch sử thanh toán. Giữ trạng thái Đã nghỉ để bảo toàn số liệu.' : error.message, false); return; }
   closeSheets(); curStudent=null; await loadAll(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); toast('Đã xóa học sinh');
+}
+
+/* ===== HỌC PHÍ (chỉ quản lý) — tạo phiếu + QR VietQR thật ===== */
+function genCK(ma){ const mm=String(new Date().getMonth()+1).padStart(2,'0'); const r=Math.random().toString(36).slice(2,4).toUpperCase(); return (ma+'T'+mm+r).toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function qrUrl(sotien, nd){ return `https://img.vietqr.io/image/${BANK.bin}-${BANK.stk}-qr_only.png?amount=${sotien}&addInfo=${encodeURIComponent(nd)}&accountName=${encodeURIComponent(BANK.ten)}`; }
+function dueList(){
+  // các phiếu học phí đã thu / đang chờ, gom theo đăng ký lớp
+  const paidMax={}, pending={};
+  payments.forEach(p=>{
+    if(p.loai!=='hoc_phi'||!p.dang_ky_lop_id) return;
+    if(p.trang_thai==='da_thu' && p.ky_den){ if(!paidMax[p.dang_ky_lop_id]||p.ky_den>paidMax[p.dang_ky_lop_id]) paidMax[p.dang_ky_lop_id]=p.ky_den; }
+    if(p.trang_thai==='cho_thanh_toan') pending[p.dang_ky_lop_id]=true;
+  });
+  const today=toISO(new Date()); const list=[];
+  students.forEach(s=>{
+    if(s.trang_thai!=='dang_hoc'&&s.trang_thai!=='bao_luu') return;
+    (s.dang_ky_lop||[]).forEach(d=>{
+      if(!d.lop_hoc||d.trang_thai==='da_nghi') return;
+      if(pending[d.id]) return; // đã có phiếu chờ, không tính đến hạn
+      const maxKy=paidMax[d.id]||null;
+      let due=false, kind='new';
+      if(!maxKy){ due=true; kind='new'; }
+      else { const dl=Math.round((new Date(maxKy)-new Date(today))/86400000); if(dl<0){due=true;kind='over';} else if(dl<=7){due=true;kind='soon';} }
+      if(due) list.push({hsId:s.id, ma:s.ma_hoc_sinh, hoTen:s.ho_ten, enrollId:d.id, lopTen:d.lop_hoc.ten_lop, fee:Number(d.lop_hoc.hoc_phi_thang)||0, giam:Number(s.giam_gia_phan_tram)||0, maxKyDen:maxKy, kind});
+    });
+  });
+  return list;
+}
+function buildHocPhi(){
+  const pend=payments.filter(p=>p.trang_thai==='cho_thanh_toan').length;
+  $('#screen').innerHTML=`
+    <div class="dash">
+      <div class="titlerow" style="margin:2px 0 12px;align-items:center"><button class="backbtn" onclick="switchView('dashboard')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg></button><h1>Học phí</h1></div>
+      <div class="subtabs" id="hpsub">
+        <button class="subtab ${hpTab==='due'?'on':''}" data-t="due">Đến hạn</button>
+        <button class="subtab ${hpTab==='pending'?'on':''}" data-t="pending">Phiếu chờ${pend?`<span class="dot">${pend}</span>`:''}</button>
+        <button class="subtab ${hpTab==='unmatched'?'on':''}" data-t="unmatched">Chưa khớp${unmatched.length?`<span class="dot">${unmatched.length}</span>`:''}</button>
+      </div>
+      <div id="hplist"></div>
+    </div>`;
+  $('#hpsub').addEventListener('click',e=>{const b=e.target.closest('.subtab'); if(!b)return; hpTab=b.dataset.t; document.querySelectorAll('#hpsub .subtab').forEach(x=>x.classList.toggle('on',x===b)); renderHocPhi();});
+  renderHocPhi();
+}
+function renderHocPhi(){
+  const L=$('#hplist');
+  if(hpTab==='due') renderDue(L); else if(hpTab==='pending') renderPending(L); else renderUnmatched(L);
+}
+function renderDue(L){
+  const list=dueList().sort((a,b)=>(a.maxKyDen||'0')<(b.maxKyDen||'0')?-1:1);
+  if(!list.length){ L.innerHTML='<div class="state"><div class="big">Không ai đến hạn</div>Mọi học sinh đã đóng đủ, hoặc đã có phiếu chờ.</div>'; return; }
+  L.innerHTML='';
+  list.forEach(e=>{
+    let tag;
+    if(e.kind==='new') tag='<span class="deadline new">Chưa đóng</span>';
+    else if(e.kind==='over'){ const dl=Math.round((new Date()-new Date(e.maxKyDen))/86400000); tag=`<span class="deadline over">Quá hạn ${dl} ngày</span>`; }
+    else { const dl=Math.round((new Date(e.maxKyDen)-new Date())/86400000); tag=`<span class="deadline soon">Còn ${dl} ngày</span>`; }
+    const el=document.createElement('div'); el.className='card';
+    el.innerHTML=`<div class="crow" style="display:flex;gap:11px;align-items:center">
+        <div class="avatar" style="width:42px;height:42px;background:${avaC(e.ma)}">${ini1(e.hoTen)}</div>
+        <div class="who" style="flex:1"><div class="nm">${e.hoTen}</div><div class="sub"><span class="idtag">${e.ma}</span><span class="lopchip">${e.lopTen}</span>${e.giam?`<span class="lopchip" style="background:var(--ok-soft);color:#0a6b4a">−${e.giam}%</span>`:''}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)">
+        <span style="font-size:12.5px;color:var(--muted)">${e.maxKyDen?`Đã đóng tới <b style="color:var(--ink)">${e.maxKyDen.split('-').reverse().join('/')}</b>`:'Chưa từng đóng'}</span>${tag}
+      </div>
+      <button class="save" style="margin-top:12px">Tạo phiếu &amp; QR</button>`;
+    el.querySelector('.save').onclick=()=>openCreatePhieu(e);
+    L.appendChild(el);
+  });
+}
+function renderPending(L){
+  const list=payments.filter(p=>p.trang_thai==='cho_thanh_toan');
+  if(!list.length){ L.innerHTML='<div class="state"><div class="big">Không có phiếu chờ</div>Phiếu đã tạo sẽ hiện ở đây tới khi tiền về.</div>'; return; }
+  L.innerHTML='';
+  list.forEach(p=>{
+    const el=document.createElement('div'); el.className='card'; el.style.cursor='pointer';
+    el.innerHTML=`<div class="crow" style="display:flex;gap:11px;align-items:center">
+        <div class="avatar" style="width:42px;height:42px;background:${avaC(p.hoc_sinh?.ma_hoc_sinh)}">${ini1(p.hoc_sinh?.ho_ten)}</div>
+        <div class="who" style="flex:1"><div class="nm">${p.hoc_sinh?.ho_ten||'—'}</div><div class="sub"><span class="idtag">${p.hoc_sinh?.ma_hoc_sinh||''}</span><span class="lopchip">${p.so_thang} tháng</span></div></div>
+        <div style="font-family:'Spline Sans Mono',monospace;font-weight:700;font-size:15px">${vnd(p.so_tien)}đ</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)"><span>ND: <span style="font-family:'Spline Sans Mono',monospace;font-weight:600;color:#3a4660;background:#F4F5F9;padding:2px 7px;border-radius:6px">${p.noi_dung_ck}</span></span><span style="color:var(--warn);font-weight:700">Chờ chuyển khoản</span></div>`;
+    el.onclick=()=>showQR(p);
+    L.appendChild(el);
+  });
+}
+function renderUnmatched(L){
+  if(!unmatched.length){ L.innerHTML='<div class="state"><div class="big">Không có giao dịch lạ</div>Tiền về khớp tự động (khi bật SePay) sẽ không hiện ở đây.</div>'; return; }
+  L.innerHTML='';
+  unmatched.forEach(u=>{
+    const el=document.createElement('div'); el.className='card';
+    el.innerHTML=`<div style="font-family:'Spline Sans Mono',monospace;font-weight:700;font-size:17px;color:var(--ok)">+${vnd(u.so_tien)}đ</div>
+      <div style="font-size:13.5px;font-weight:600;margin-top:3px">Nội dung: <span style="color:var(--danger)">"${u.noi_dung_ck||'—'}"</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(u.ngay_giao_dich).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})} · không tự khớp</div>
+      <button class="save" style="margin-top:12px">Gán cho phiếu</button>`;
+    el.querySelector('.save').onclick=()=>openAssign(u);
+    L.appendChild(el);
+  });
+}
+function openCreatePhieu(e){
+  hpCtx=e; hpMonths=1;
+  $('#sheetBody').innerHTML=`
+    <h2>Tạo phiếu học phí</h2><p class="lead">Chọn số tháng phụ huynh đóng đợt này.</p>
+    <div class="summ" style="display:flex;align-items:center;gap:12px;background:#F7F8FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px">
+      <div class="avatar" style="width:40px;height:40px;background:${avaC(e.ma)}">${ini1(e.hoTen)}</div>
+      <div><div style="font-weight:700;font-size:15px">${e.hoTen}</div><div style="font-size:12.5px;color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Số tháng đóng</div>
+    <div class="seg" id="hpseg"><button class="on" data-m="1">1 tháng</button><button data-m="2">2 tháng</button><button data-m="3">3 tháng</button></div>
+    <div id="hpcalc"></div>
+    <button class="save" id="hpmk">Tạo phiếu &amp; sinh QR</button>
+    <button class="ghost" onclick="closeSheets()">Hủy</button>`;
+  drawHpCalc();
+  $('#hpseg').addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b)return; hpMonths=+b.dataset.m; document.querySelectorAll('#hpseg button').forEach(x=>x.classList.toggle('on',x===b)); drawHpCalc();});
+  $('#hpmk').onclick=doCreatePhieu;
+  show('#sheet');
+}
+function drawHpCalc(){
+  const e=hpCtx, m=hpMonths, sub=e.fee*m, disc=Math.round(sub*e.giam/100), tot=sub-disc;
+  const kyTu=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date();
+  const kyDen=addDays(addMonths(kyTu,m),-1);
+  $('#hpcalc').innerHTML=`<div style="margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Đóng tới hết</span><span style="font-weight:600">${toISO(kyDen).split('-').reverse().join('/')}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:14px;background:#F7F8FB;border-top:1px solid var(--line)"><span style="font-weight:700">Phụ huynh chuyển</span><span style="font-weight:700;font-size:20px;color:var(--primary)">${vnd(tot)}đ</span></div>
+  </div>`;
+}
+async function doCreatePhieu(){
+  const e=hpCtx, m=hpMonths;
+  const tot=Math.round(e.fee*m*(1-e.giam/100));
+  const kyTu=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date();
+  const kyDen=addDays(addMonths(kyTu,m),-1);
+  const btn=$('#hpmk'); btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Đang tạo…';
+  let created=null, err=null;
+  for(let i=0;i<5;i++){
+    const nd=genCK(e.ma);
+    const {data,error}=await db.from('thanh_toan').insert({hoc_sinh_id:e.hsId, loai:'hoc_phi', dang_ky_lop_id:e.enrollId, so_thang:m, ky_tu:toISO(kyTu), ky_den:toISO(kyDen), so_tien:tot, noi_dung_ck:nd, trang_thai:'cho_thanh_toan'}).select('*, hoc_sinh(ho_ten, ma_hoc_sinh)').single();
+    if(!error){ created=data; break; }
+    if(error.code==='23505'){ continue; } err=error; break;
+  }
+  btn.disabled=false; btn.textContent='Tạo phiếu & sinh QR';
+  if(err||!created){ toast(err?err.message:'Không tạo được phiếu',false); return; }
+  await loadPayments(); showQR(created);
+}
+function openPayLineActions(e){
+  const p=e.pending;
+  $('#actBody').innerHTML=`<h3>${e.hoTen}</h3><p class="who2">${e.lopTen}${e.maxKyDen?' · đã đóng tới '+e.maxKyDen.split('-').reverse().join('/'):''}</p>
+    ${p?`<button class="opt" id="pa_view"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">QR</span>Xem lại QR phiếu chờ</button>
+        <button class="opt" id="pa_cancel"><span class="ic" style="background:var(--danger-soft);color:var(--danger)">✕</span>Hủy phiếu chờ</button>`:''}
+    <button class="opt" id="pa_qr"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Tạo mã QR chuyển khoản</button>
+    <button class="opt" id="pa_cash"><span class="ic" style="background:var(--ok-soft);color:var(--ok)">₫</span>Ghi đã đóng — tiền mặt / CK tay</button>`;
+  if(p){ $('#pa_view').onclick=()=>{closeAct(); showQR(p);}; $('#pa_cancel').onclick=()=>{closeAct(); cancelPhieu(p);}; }
+  $('#pa_qr').onclick=()=>{closeAct(); openCreatePhieu(e);};
+  $('#pa_cash').onclick=()=>{closeAct(); openMarkPaidForm(e);};
+  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+}
+function markPeriod(){
+  const startYM=($('#mpstart')&&$('#mpstart').value)||hpStart;
+  const [y,m]=startYM.split('-').map(Number);
+  return { kyTu:new Date(y,m-1,1), kyDen:new Date(y,m-1+hpMonths,0) };
+}
+function drawMarkCalc(){
+  const e=hpCtx, m=hpMonths, sub=e.fee*m, disc=Math.round(sub*e.giam/100), tot=sub-disc;
+  const {kyTu,kyDen}=markPeriod();
+  $('#mpcalc').innerHTML=`<div style="margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Kỳ đóng</span><span style="font-weight:600">${toISO(kyTu).split('-').reverse().join('/')} – ${toISO(kyDen).split('-').reverse().join('/')}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:14px;background:#F0FAF4;border-top:1px solid var(--line)"><span style="font-weight:700">Đã thu</span><span style="font-weight:700;font-size:20px;color:var(--ok)">${vnd(tot)}đ</span></div>
+  </div>`;
+}
+function openMarkPaidForm(e){
+  hpCtx=e; hpMonths=1; hpMethod='Tiền mặt';
+  const d=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date(); hpStart=d.toISOString().slice(0,7);
+  $('#sheetBody').innerHTML=`
+    <h2>Ghi đã đóng</h2><p class="lead">Ghi nhận khoản đã thu (tiền mặt / CK tay / đóng từ trước).</p>
+    <div class="summ" style="display:flex;align-items:center;gap:12px;background:#F7F8FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px">
+      <div class="avatar" style="width:40px;height:40px;background:${avaC(e.ma)}">${ini1(e.hoTen)}</div>
+      <div><div style="font-weight:700;font-size:15px">${e.hoTen}</div><div style="font-size:12.5px;color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Hình thức</div>
+    <div class="seg" id="mpmethod"><button class="on" data-v="Tiền mặt">Tiền mặt</button><button data-v="CK tay">CK tay</button></div>
+    <div style="margin-top:14px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Số tháng đóng</div>
+    <div class="seg" id="mpseg"><button class="on" data-m="1">1 tháng</button><button data-m="2">2 tháng</button><button data-m="3">3 tháng</button></div>
+    <div class="field" style="margin-top:14px"><label>Tính từ tháng</label><input id="mpstart" type="month" value="${hpStart}"><div class="hint">Đóng từ trước khi có app thì chọn đúng tháng bắt đầu.</div></div>
+    <div id="mpcalc"></div>
+    <button class="save" id="mpmk">Xác nhận đã đóng</button>
+    <button class="ghost" id="mpcancel">Hủy</button>`;
+  drawMarkCalc();
+  $('#mpmethod').addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b)return; hpMethod=b.dataset.v; document.querySelectorAll('#mpmethod button').forEach(x=>x.classList.toggle('on',x===b));});
+  $('#mpseg').addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b)return; hpMonths=+b.dataset.m; document.querySelectorAll('#mpseg button').forEach(x=>x.classList.toggle('on',x===b)); drawMarkCalc();});
+  $('#mpstart').addEventListener('change',drawMarkCalc);
+  $('#mpmk').onclick=doMarkPaid;
+  $('#mpcancel').onclick=()=>{ if(curStudent)openStudentDetail(curStudent); else closeSheets(); };
+  show('#sheet');
+}
+async function doMarkPaid(){
+  const e=hpCtx, m=hpMonths;
+  const tot=Math.round(e.fee*m*(1-e.giam/100));
+  const {kyTu,kyDen}=markPeriod();
+  const btn=$('#mpmk'); btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+  const {error}=await db.from('thanh_toan').insert({hoc_sinh_id:e.hsId, loai:'hoc_phi', dang_ky_lop_id:e.enrollId, so_thang:m, ky_tu:toISO(kyTu), ky_den:toISO(kyDen), so_tien:tot, noi_dung_ck:null, trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString(), ghi_chu:hpMethod});
+  if(error){ btn.disabled=false; btn.textContent='Xác nhận đã đóng'; return toast(error.message,false); }
+  await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:tot, ngay:new Date().toISOString().slice(0,10), ghi_chu:e.hoTen+' · '+hpMethod});
+  await Promise.all([loadPayments(), loadThuChi()]);
+  if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
+  else if(curStudent){ openStudentDetail(curStudent); }
+  else closeSheets();
+  toast('Đã ghi thu '+vnd(tot)+'đ ('+hpMethod+')');
+}
+function showQR(p){
+  $('#sheetBody').innerHTML=`
+    <h2>Phiếu học phí</h2><p class="lead">Gửi QR này cho phụ huynh — quét là chuyển đúng số tiền.</p>
+    <div class="qrcard">
+      <div class="qrbox"><img src="${qrUrl(p.so_tien,p.noi_dung_ck)}" alt="QR" onerror="this.parentNode.innerHTML='<div style=&quot;padding:20px;font-size:13px;color:#9AA4B2&quot;>Không tải được ảnh QR (cần mạng). Nội dung CK: '+'${p.noi_dung_ck}'+'</div>'"></div>
+      <div class="qramt">${vnd(p.so_tien)}đ</div>
+      <div class="qrinfo">
+        <div class="r"><span class="k">Học sinh</span><span class="v">${p.hoc_sinh?.ho_ten||''} · ${p.hoc_sinh?.ma_hoc_sinh||''}</span></div>
+        <div class="r"><span class="k">Nội dung CK</span><span class="v mono">${p.noi_dung_ck}</span></div>
+        <div class="r"><span class="k">Ngân hàng</span><span class="v">${BANK.nganHang}</span></div>
+        <div class="r"><span class="k">Số tài khoản</span><span class="v mono">${BANK.stk}</span></div>
+      </div>
+    </div>
+    <div class="waitbar">Chờ phụ huynh chuyển — sẽ tự xác nhận khi bật SePay. Giờ tạm xác nhận tay.</div>
+    <button class="save" id="hpConfirm" style="margin-top:12px">Xác nhận đã nhận tiền</button>
+    <button class="ghost del" id="hpCancel">Hủy phiếu này</button>
+    <button class="ghost" onclick="closeSheets()">Đóng</button>`;
+  $('#hpConfirm').onclick=()=>confirmPaid(p);
+  $('#hpCancel').onclick=()=>cancelPhieu(p);
+  show('#sheet');
+}
+async function confirmPaid(p){
+  const {error}=await db.from('thanh_toan').update({trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString()}).eq('id',p.id);
+  if(error)return toast(error.message,false);
+  await loadPayments();
+  if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
+  else if(curStudent){ openStudentDetail(curStudent); }
+  else closeSheets();
+  toast('Đã ghi nhận thu '+vnd(p.so_tien)+'đ');
+}
+async function cancelPhieu(p){
+  const {error}=await db.from('thanh_toan').update({trang_thai:'huy'}).eq('id',p.id);
+  if(error)return toast(error.message,false);
+  await loadPayments();
+  if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
+  else if(curStudent){ openStudentDetail(curStudent); }
+  else closeSheets();
+  toast('Đã hủy phiếu');
+}
+function openAssign(u){
+  const pend=payments.filter(p=>p.trang_thai==='cho_thanh_toan');
+  $('#sheetBody').innerHTML=`
+    <h2>Gán khoản tiền</h2><p class="lead">Tiền về <b style="color:var(--ok)">+${vnd(u.so_tien)}đ</b>, nội dung "${u.noi_dung_ck||''}" không tự khớp. Chọn phiếu để gán.</p>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
+    ${pend.length? pend.map(p=>`<button class="opt" data-id="${p.id}"><div style="font-family:'Spline Sans Mono',monospace;font-weight:700;color:var(--primary);flex:none">${vnd(p.so_tien)}đ</div><div style="flex:1;text-align:left;margin-left:10px"><div>${p.hoc_sinh?.ho_ten||''}</div><div style="font-size:12px;color:var(--muted)">ND: ${p.noi_dung_ck}</div></div>${p.so_tien===u.so_tien?'<span class="pill dang_hoc" style="flex:none">Khớp tiền</span>':''}</button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Chưa có phiếu chờ</div>Tạo phiếu trước rồi gán.</div>'}
+    </div>
+    <button class="ghost" onclick="closeSheets()">Đóng</button>`;
+  $('#sheetBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{
+    const p=pend.find(x=>x.id===o.dataset.id);
+    await db.from('thanh_toan').update({trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString(), sepay_transaction_id:u.sepay_transaction_id}).eq('id',p.id);
+    await db.from('giao_dich_chua_khop').update({trang_thai:'da_gan', thanh_toan_gan_id:p.id}).eq('id',u.id);
+    closeSheets(); await Promise.all([loadPayments(), loadUnmatched()]); if(view==='hoc_phi')renderHocPhi(); toast('Đã gán '+vnd(u.so_tien)+'đ');
+  });
+  show('#sheet');
 }
 
 /* ===== plumbing ===== */
