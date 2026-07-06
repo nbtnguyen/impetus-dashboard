@@ -101,6 +101,9 @@
   .payright{display:flex; align-items:center; gap:8px; flex:none}
   .paidtag{display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:700; color:#0E9463; background:var(--ok-soft); padding:5px 11px; border-radius:999px}
   .miniico{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--faint); font-size:17px; line-height:1; display:grid; place-items:center; cursor:pointer; flex:none} .miniico:active{background:#F4F5F9}
+  .qracts{display:flex; gap:8px; margin-top:16px}
+  .qact{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px; border-radius:14px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font:inherit; font-size:12px; font-weight:600; color:var(--ink)} .qact svg{color:var(--muted)} .qact:active{transform:scale(.97)}
+  .qact.primary{background:var(--primary); border:0; color:#fff} .qact.primary svg{color:#fff}
   .backbtn{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--ink); margin-right:4px; flex:none; padding:0}
   .det-actions{display:flex; gap:8px; margin-left:auto}
   .det-actions button{width:38px; height:38px; border-radius:11px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--primary)} .det-actions button:active{background:#F1F3F8}
@@ -1056,9 +1059,77 @@ async function doMarkPaid(){
   else closeSheets();
   toast('Đã ghi thu '+vnd(tot)+'đ ('+hpMethod+')');
 }
+function qrShareText(p){
+  return `HỌC PHÍ IMPETUS\nHọc sinh: ${(p.hoc_sinh&&p.hoc_sinh.ho_ten)||''}\nSố tiền: ${vnd(p.so_tien)}đ\nNgân hàng: ${BANK.nganHang}\nSố TK: ${BANK.stk}\nChủ TK: ${BANK.ten}\nNội dung CK: ${p.noi_dung_ck}\n\nQuét mã QR hoặc chuyển đúng nội dung để hệ thống tự ghi nhận đã đóng.`;
+}
+function getQRBlob(url){
+  return new Promise(resolve=>{
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=img.naturalWidth||360; c.height=img.naturalHeight||360; c.getContext('2d').drawImage(img,0,0); c.toBlob(b=>resolve(b),'image/png'); }catch(e){ resolve(null); } };
+    img.onerror=()=>resolve(null); img.src=url;
+  });
+}
+function _rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function buildPhieuImage(p){
+  return new Promise(async(resolve)=>{
+    try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch(e){}
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>{
+      try{
+        const S=2, W=720, pad=48, qr=360, qx=(W-qr)/2;
+        const F=(w,s)=>`${w} ${s}px "Be Vietnam Pro", system-ui, sans-serif`;
+        const rows=[['Học sinh',(p.hoc_sinh&&p.hoc_sinh.ho_ten)||''],['Ngân hàng',BANK.nganHang],['Số tài khoản',BANK.stk],['Chủ tài khoản',BANK.ten],['Nội dung CK',p.noi_dung_ck||'']];
+        const qrTop=120, qrBox=qr+36, amountY=qrTop+qrBox+46, divY=amountY+40, infoTop=divY+38, step=46;
+        const footY=infoTop+(rows.length-1)*step+44, H=footY+40;
+        const c=document.createElement('canvas'); c.width=W*S; c.height=H*S;
+        const x=c.getContext('2d'); x.scale(S,S); x.textBaseline='middle';
+        x.fillStyle='#FFFFFF'; x.fillRect(0,0,W,H);
+        // header
+        x.fillStyle='#2747D9'; _rr(x,pad,42,46,46,13); x.fill();
+        x.fillStyle='#fff'; x.font=F(800,25); x.textAlign='center'; x.fillText('I',pad+23,66);
+        x.textAlign='left'; x.fillStyle='#16202E'; x.font=F(800,23); x.fillText('Impetus',pad+60,56);
+        x.fillStyle='#6B7686'; x.font=F(500,15); x.fillText('Phiếu học phí',pad+60,78);
+        // qr box
+        x.fillStyle='#FFFFFF'; x.strokeStyle='#ECECEF'; x.lineWidth=1.5; _rr(x,qx-18,qrTop,qr+36,qr+36,22); x.fill(); x.stroke();
+        x.drawImage(img,qx,qrTop+18,qr,qr);
+        // amount
+        x.textAlign='center'; x.fillStyle='#2747D9'; x.font=F(800,42); x.fillText(vnd(p.so_tien)+' đ',W/2,amountY);
+        // divider
+        x.strokeStyle='#ECECEF'; x.lineWidth=1; x.beginPath(); x.moveTo(pad,divY); x.lineTo(W-pad,divY); x.stroke();
+        // info
+        let iy=infoTop;
+        rows.forEach(([k,v])=>{ x.fillStyle='#6B7686'; x.font=F(500,16); x.textAlign='left'; x.fillText(k,pad,iy); x.fillStyle='#16202E'; x.font=F(700,16); x.textAlign='right'; x.fillText(String(v),W-pad,iy); iy+=step; });
+        // footer
+        x.textAlign='center'; x.fillStyle='#9AA4B2'; x.font=F(500,13.5); x.fillText('Quét QR hoặc chuyển đúng nội dung — hệ thống tự ghi nhận đã đóng.',W/2,footY);
+        c.toBlob(b=>resolve(b),'image/png');
+      }catch(e){ resolve(null); }
+    };
+    img.onerror=()=>resolve(null);
+    img.src=qrUrl(p.so_tien,p.noi_dung_ck);
+  });
+}
+async function shareQR(p){
+  const info=qrShareText(p), url=qrUrl(p.so_tien,p.noi_dung_ck);
+  const blob=await buildPhieuImage(p);
+  if(blob && navigator.canShare){
+    const file=new File([blob],'phieu-hocphi.png',{type:'image/png'});
+    if(navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], text:info}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
+  }
+  if(navigator.share){ try{ await navigator.share({text:info, url}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
+  copyQRInfo(p);
+}
+async function saveQR(p){
+  const blob=await buildPhieuImage(p);
+  if(blob){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download='phieu-hocphi-'+(p.noi_dung_ck||'')+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),3000); toast('Đã lưu ảnh phiếu'); }
+  else { window.open(qrUrl(p.so_tien,p.noi_dung_ck),'_blank'); toast('Không tạo được ảnh — đã mở QR để lưu tay',false); }
+}
+async function copyQRInfo(p){
+  try{ await navigator.clipboard.writeText(qrShareText(p)); toast('Đã sao chép thông tin CK'); }
+  catch(e){ toast('Không copy được — chép tay giúp em',false); }
+}
 function showQR(p){
   $('#sheetBody').innerHTML=`
-    <h2>Phiếu học phí</h2><p class="lead">Gửi QR này cho phụ huynh — quét là chuyển đúng số tiền.</p>
+    <h2>Phiếu học phí</h2><p class="lead">Gửi QR này cho phụ huynh qua Zalo để tự đóng.</p>
     <div class="qrcard">
       <div class="qrbox"><img src="${qrUrl(p.so_tien,p.noi_dung_ck)}" alt="QR" onerror="this.parentNode.innerHTML='<div style=&quot;padding:20px;font-size:13px;color:#9AA4B2&quot;>Không tải được ảnh QR (cần mạng). Nội dung CK: '+'${p.noi_dung_ck}'+'</div>'"></div>
       <div class="qramt">${vnd(p.so_tien)}đ</div>
@@ -1069,10 +1140,18 @@ function showQR(p){
         <div class="r"><span class="k">Số tài khoản</span><span class="v mono">${BANK.stk}</span></div>
       </div>
     </div>
-    <div class="waitbar">Chờ phụ huynh chuyển — sẽ tự xác nhận khi bật SePay. Giờ tạm xác nhận tay.</div>
-    <button class="save" id="hpConfirm" style="margin-top:12px">Xác nhận đã nhận tiền</button>
+    <div class="qracts">
+      <button class="qact primary" id="qShare"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>Chia sẻ QR</button>
+      <button class="qact" id="qSave"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg>Lưu ảnh</button>
+      <button class="qact" id="qCopy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy CK</button>
+    </div>
+    <div class="waitbar" style="margin-top:14px">Tiền về sẽ TỰ xác nhận (SePay). Cần thì đánh dấu tay bên dưới.</div>
+    <button class="ghost" id="hpConfirm">Đánh dấu đã nhận tiền (thủ công)</button>
     <button class="ghost del" id="hpCancel">Hủy phiếu này</button>
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
+  $('#qShare').onclick=()=>shareQR(p);
+  $('#qSave').onclick=()=>saveQR(p);
+  $('#qCopy').onclick=()=>copyQRInfo(p);
   $('#hpConfirm').onclick=()=>confirmPaid(p);
   $('#hpCancel').onclick=()=>cancelPhieu(p);
   show('#sheet');
