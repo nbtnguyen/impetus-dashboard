@@ -49,7 +49,11 @@ module.exports = async (req, res) => {
   const content = String(data.content || data.description || '');
   const normContent = content.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-  const headers = { apikey: SR, Authorization: 'Bearer ' + SR, 'Content-Type': 'application/json' };
+  // Key mới (sb_secret_...) chỉ dùng header apikey; key cũ (JWT service_role) cần thêm Authorization Bearer
+  const isNewKey = SR.startsWith('sb_');
+  const headers = isNewKey
+    ? { apikey: SR, 'Content-Type': 'application/json' }
+    : { apikey: SR, Authorization: 'Bearer ' + SR, 'Content-Type': 'application/json' };
   const minimal = Object.assign({ Prefer: 'return=minimal' }, headers);
   const rest = (p) => SUPABASE_URL + '/rest/v1/' + p;
 
