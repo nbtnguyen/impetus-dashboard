@@ -302,7 +302,7 @@ $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 /* ===== Load ===== */
 async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched()]); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
-async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh)').order('ngay_tao',{ascending:false}); payments=data||[]; }
+async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
 async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
@@ -334,6 +334,7 @@ function buildHocSinh(){
       <div class="filters" id="filters">
         ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="chip ${sqFilter===f?'active':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
         <button class="chip hb ${sqFilter==='can_hoc_bu'?'active':''}" data-f="can_hoc_bu">Cần học bù${oweCount()?`<span class="cnt">${oweCount()}</span>`:''}</button>
+        ${isManager()?`<button class="chip ${sqFilter==='da_dong'?'active':''}" data-f="da_dong">Đã đóng</button><button class="chip ${sqFilter==='chua_dong'?'active':''}" data-f="chua_dong">Chưa đóng</button>`:''}
       </div>
     </div>
     <div class="list" id="list"></div>`;
@@ -343,17 +344,19 @@ function buildHocSinh(){
 }
 function renderStudents(){
   const L=$('#list');
-  const rows=students.filter(s=>{ if(sqFilter==='can_hoc_bu'){ if(!studentOwes(s))return false; } else if(sqFilter!=='all'&&s.trang_thai!==sqFilter){return false;} if(sqQuery){const q=norm(sqQuery); if(!norm(s.ho_ten).includes(q)&&!norm(s.ma_hoc_sinh).includes(q))return false;} return true; });
+  const rows=students.filter(s=>{ if(sqFilter==='can_hoc_bu'){ if(!studentOwes(s))return false; } else if(sqFilter==='da_dong'){ if(studentPayStatus(s)!=='paid')return false; } else if(sqFilter==='chua_dong'){ if(studentPayStatus(s)!=='due')return false; } else if(sqFilter!=='all'&&s.trang_thai!==sqFilter){return false;} if(sqQuery){const q=norm(sqQuery); if(!norm(s.ho_ten).includes(q)&&!norm(s.ma_hoc_sinh).includes(q))return false;} return true; });
   if(!students.length){ L.innerHTML='<div class="state"><div class="big">Chưa có học sinh nào</div>'+(canWrite()?'Bấm “Thêm học sinh” để tạo em đầu tiên.':'Chưa có dữ liệu.')+'</div>'; return; }
   if(!rows.length){ L.innerHTML='<div class="state"><div class="big">Không tìm thấy</div>Thử đổi bộ lọc hoặc từ khóa.</div>'; return; }
   L.innerHTML='';
   rows.forEach(s=>{
     const lops=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.ten_lop);
+    const ps=isManager()?studentPayStatus(s):null;
     const el=document.createElement('div'); el.className='scard';
     el.innerHTML=`<div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
       <div class="who"><div class="nm">${s.ho_ten}</div><div class="sub">
         <span class="idtag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="9" r="3"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0"/></svg>${s.ma_hoc_sinh}</span>
         ${lops.length? lops.map(l=>`<span class="lopchip">${l}</span>`).join('') : '<span class="phone" style="color:#9AA4B2">Chưa xếp lớp</span>'}
+        ${ps?`<span class="phone" style="color:${ps==='paid'?'#0E9463':'var(--danger)'};font-weight:700">${ps==='paid'?'✓ Đã đóng':'Chưa đóng'}</span>`:''}
         ${owesN(s)?`<span class="phone" style="color:var(--danger);font-weight:600">Nợ ${owesN(s)} buổi</span>`:''}</div></div>
       <span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>`;
     el.onclick=()=>openStudentDetail(s);
@@ -373,6 +376,12 @@ function studentPayLines(s){
     lines.push({hsId:s.id, ma:s.ma_hoc_sinh, hoTen:s.ho_ten, enrollId:d.id, lopTen:d.lop_hoc.ten_lop, fee:Number(d.lop_hoc.hoc_phi_thang)||0, giam:Number(s.giam_gia_phan_tram)||0, maxKyDen:maxKy, pending});
   });
   return lines;
+}
+function studentPayStatus(s){
+  const lines=studentPayLines(s);
+  if(!lines.length) return null;
+  const allPaid=lines.every(l=> l.maxKyDen && new Date(l.maxKyDen)>=new Date());
+  return allPaid ? 'paid' : 'due';
 }
 function openStudentPhieuPicker(s){
   const lines=studentPayLines(s);
@@ -1017,8 +1026,8 @@ function drawMarkCalc(){
     <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace">${vnd(sub)}đ</span></div>
     ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
     <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Kỳ đóng</span><span style="font-weight:600">${toISO(kyTu).split('-').reverse().join('/')} – ${toISO(kyDen).split('-').reverse().join('/')}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:14px;background:#F0FAF4;border-top:1px solid var(--line)"><span style="font-weight:700">Đã thu</span><span style="font-weight:700;font-size:20px;color:var(--ok)">${vnd(tot)}đ</span></div>
   </div>`;
+  const inp=$('#mpamount'); if(inp) inp.value=tot;
 }
 function openMarkPaidForm(e){
   hpCtx=e; hpMonths=1; hpMethod='Tiền mặt';
@@ -1035,6 +1044,7 @@ function openMarkPaidForm(e){
     <div class="seg" id="mpseg"><button class="on" data-m="1">1 tháng</button><button data-m="2">2 tháng</button><button data-m="3">3 tháng</button></div>
     <div class="field" style="margin-top:14px"><label>Tính từ tháng</label><input id="mpstart" type="month" value="${hpStart}"><div class="hint">Đóng từ trước khi có app thì chọn đúng tháng bắt đầu.</div></div>
     <div id="mpcalc"></div>
+    <div class="field" style="margin-top:14px"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div>
     <button class="save" id="mpmk">Xác nhận đã đóng</button>
     <button class="ghost" id="mpcancel">Hủy</button>`;
   drawMarkCalc();
@@ -1047,12 +1057,14 @@ function openMarkPaidForm(e){
 }
 async function doMarkPaid(){
   const e=hpCtx, m=hpMonths;
-  const tot=Math.round(e.fee*m*(1-e.giam/100));
+  const raw=($('#mpamount')&&$('#mpamount').value)||'';
+  const tot=Math.round(Number(String(raw).replace(/[^\d]/g,''))||0);
+  if(!tot) return toast('Nhập số tiền thu',false);
   const {kyTu,kyDen}=markPeriod();
   const btn=$('#mpmk'); btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
   const {error}=await db.from('thanh_toan').insert({hoc_sinh_id:e.hsId, loai:'hoc_phi', dang_ky_lop_id:e.enrollId, so_thang:m, ky_tu:toISO(kyTu), ky_den:toISO(kyDen), so_tien:tot, noi_dung_ck:null, trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString(), ghi_chu:hpMethod});
   if(error){ btn.disabled=false; btn.textContent='Xác nhận đã đóng'; return toast(error.message,false); }
-  await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:tot, ngay:new Date().toISOString().slice(0,10), ghi_chu:e.hoTen+' · '+hpMethod});
+  await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:tot, ngay:new Date().toISOString().slice(0,10), ghi_chu:e.hoTen+(e.lopTen?' · '+e.lopTen:'')+' · '+hpMethod});
   await Promise.all([loadPayments(), loadThuChi()]);
   if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
   else if(curStudent){ openStudentDetail(curStudent); }
@@ -1159,7 +1171,7 @@ function showQR(p){
 async function confirmPaid(p){
   const {data,error}=await db.from('thanh_toan').update({trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString()}).eq('id',p.id).eq('trang_thai','cho_thanh_toan').select('id');
   if(error)return toast(error.message,false);
-  if(data && data.length){ await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:p.so_tien, ngay:new Date().toISOString().slice(0,10), ghi_chu:((p.hoc_sinh&&p.hoc_sinh.ho_ten)||'')+' · CK'}); }
+  if(data && data.length){ const lop=(p.dang_ky_lop&&p.dang_ky_lop.lop_hoc&&p.dang_ky_lop.lop_hoc.ten_lop)||''; await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:p.so_tien, ngay:new Date().toISOString().slice(0,10), ghi_chu:((p.hoc_sinh&&p.hoc_sinh.ho_ten)||'')+(lop?' · '+lop:'')+' · CK'}); }
   await Promise.all([loadPayments(), loadThuChi()]);
   if(view==='hoc_phi'){ closeSheets(); renderHocPhi(); }
   else if(curStudent){ openStudentDetail(curStudent); }
