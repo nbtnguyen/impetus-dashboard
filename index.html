@@ -98,6 +98,9 @@
   .payline{display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line)} .payline:first-child{border-top:0}
   .payline .pn{flex:1; min-width:0} .payline .pn .t{font-weight:600; font-size:14px} .payline .pn .d{font-size:12px; margin-top:2px; color:var(--muted)}
   .miniqr{flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); border:0; border-radius:9px; padding:8px 12px; cursor:pointer} .miniqr:active{opacity:.8}
+  .payright{display:flex; align-items:center; gap:8px; flex:none}
+  .paidtag{display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:700; color:#0E9463; background:var(--ok-soft); padding:5px 11px; border-radius:999px}
+  .miniico{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--faint); font-size:17px; line-height:1; display:grid; place-items:center; cursor:pointer; flex:none} .miniico:active{background:#F4F5F9}
   .backbtn{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--ink); margin-right:4px; flex:none; padding:0}
   .det-actions{display:flex; gap:8px; margin-left:auto}
   .det-actions button{width:38px; height:38px; border-radius:11px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--primary)} .det-actions button:active{background:#F1F3F8}
@@ -394,12 +397,21 @@ function openStudentDetail(s){
   if(isManager()){
     const lines=studentPayLines(s); let overdue=0;
     hpBody = lines.length ? lines.map(l=>{
-      let st, cls='color:var(--muted)';
-      if(l.pending){ st='Có phiếu chờ chuyển'; cls='color:var(--warn);font-weight:600'; }
-      else if(l.maxKyDen){ const over=new Date(l.maxKyDen)<new Date(); st=(over?'Quá hạn · đóng tới ':'Đã đóng tới ')+l.maxKyDen.split('-').reverse().join('/'); if(over){cls='color:var(--danger);font-weight:600';overdue++;} }
-      else { st='Chưa đóng'; cls='color:var(--danger);font-weight:600'; overdue++; }
-      const btn=`<button class="miniqr" data-enroll="${l.enrollId}">${l.pending?'Phiếu chờ':'Thu học phí'}</button>`;
-      return `<div class="payline"><div class="pn"><div class="t">${l.lopTen}</div><div class="d" style="${cls}">${st}</div></div>${btn}</div>`;
+      const over = l.maxKyDen && new Date(l.maxKyDen) < new Date();
+      const paid = l.maxKyDen && !over && !l.pending;
+      let st, cls='color:var(--muted)', right;
+      if(l.pending){
+        st='Chờ chuyển khoản'; cls='color:var(--warn);font-weight:600';
+        right = `<button class="miniqr" data-enroll="${l.enrollId}">Phiếu chờ</button>`;
+      } else if(paid){
+        st='Đóng tới '+l.maxKyDen.split('-').reverse().join('/');
+        right = `<div class="payright"><span class="paidtag"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Đã đóng</span><button class="miniico" data-enroll="${l.enrollId}" title="Thu thêm">＋</button></div>`;
+      } else {
+        if(over){ st='Quá hạn · tới '+l.maxKyDen.split('-').reverse().join('/'); overdue++; } else { st='Chưa đóng'; overdue++; }
+        cls='color:var(--danger);font-weight:600';
+        right = `<button class="miniqr" data-enroll="${l.enrollId}">Thu học phí</button>`;
+      }
+      return `<div class="payline"><div class="pn"><div class="t">${l.lopTen}</div><div class="d" style="${cls}">${st}</div></div>${right}</div>`;
     }).join('') : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Chưa xếp lớp nên chưa có học phí.</div>';
     if(overdue) hpBadge=overdue+' cần thu';
   }
@@ -437,7 +449,7 @@ function openStudentDetail(s){
   if(canDel){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
   $('#sheetBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
   $('#sheetBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
-  $('#sheetBody').querySelectorAll('.miniqr').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
+  $('#sheetBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
   show('#sheet');
 }
 function nextMa(){ let m=0; students.forEach(s=>{const n=parseInt((s.ma_hoc_sinh||'').replace(/\D/g,''))||0; if(n>m)m=n;}); return 'HS'+String(m+1).padStart(3,'0'); }
