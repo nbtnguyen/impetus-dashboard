@@ -52,7 +52,7 @@
   .brand .me .who b{font-weight:700; font-size:12.5px} .brand .me .who .r{color:var(--muted); font-weight:600}
   .iconbtn{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--muted)}
   .titlerow{display:flex; align-items:baseline; gap:9px; margin-top:14px}
-  .titlerow h1{font-size:25px; font-weight:800; letter-spacing:-.03em; margin:0}
+  .titlerow h1{font-size:26px; font-weight:700; letter-spacing:-.03em; margin:0}
   .titlerow .count{font-size:13px; font-weight:600; color:var(--muted); background:var(--surface); border:1px solid var(--line); padding:2px 9px; border-radius:999px}
 
   .controls{padding:12px 18px 6px}
@@ -115,7 +115,7 @@
   .acc-b{padding:0 14px 14px; display:none} .acc.open .acc-b{display:block}
   .cardfoot{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:11px; border-top:1px solid var(--line)}
   .stat{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); font-weight:600} .stat b{color:var(--ink)} .stat svg{color:var(--faint)}
-  .fee{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:13.5px} .fee span{color:var(--faint); font-weight:500; font-family:'Be Vietnam Pro'}
+  .fee{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:13.5px} .fee span{color:var(--faint); font-weight:500}
 
   .state{text-align:center; padding:60px 30px; color:var(--muted)} .state .big{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:6px}
   .spin{width:26px; height:26px; border:3px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:sp .7s linear infinite; margin:0 auto 14px} @keyframes sp{to{transform:rotate(360deg)}}
@@ -125,7 +125,7 @@
   .fab:active{background:var(--primary-press); transform:translateX(-50%) scale(.99)}
 
   .bottomnav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:440px; background:var(--surface); border-top:1px solid var(--line); display:flex; height:62px; z-index:45}
-  .navitem{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--faint); font-size:11px; font-weight:600; cursor:pointer; border:0; background:transparent} .navitem i{font-size:23px; line-height:1}
+  .navitem{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--faint); font-size:11px; font-weight:600; cursor:pointer; border:0; background:transparent} .navitem i{font-size:23px; line-height:1} .search i{font-size:19px; color:var(--faint); flex:none} .icobtn i{font-size:19px; line-height:1} .backbtn i{font-size:20px; line-height:1} .fab i{font-size:20px; line-height:1}
   .navitem.active{color:var(--primary)}
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
@@ -320,7 +320,7 @@ function switchView(v){
 }
 function updateFab(){
   const fab=$('#fab');
-  if(view==='hoc_sinh' && canWrite()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Thêm học sinh'; fab.onclick=()=>openStudentForm(null); }
+  if(view==='hoc_sinh' && canWrite()){ fab.classList.remove('hide'); fab.innerHTML='<i class="hgi-stroke hgi-add-01"></i>Thêm học sinh'; fab.onclick=()=>openStudentForm(null); }
   else if(view==='lop' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Tạo lớp mới'; fab.onclick=()=>openClassForm(null); }
   else if(view==='thu_chi' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Ghi khoản'; fab.onclick=()=>openTcForm(null); }
   else fab.classList.add('hide');
@@ -331,7 +331,7 @@ function buildHocSinh(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
       <div class="titlerow" style="margin:0 0 12px"><h1>Học sinh</h1><span class="count" id="count">${students.length}</span></div>
-      <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
+      <div class="search"><i class="hgi-stroke hgi-search-01"></i><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
       <div class="filters" id="filters">
         ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="chip ${sqFilter===f?'active':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
         <button class="chip hb ${sqFilter==='can_hoc_bu'?'active':''}" data-f="can_hoc_bu">Cần học bù${oweCount()?`<span class="cnt">${oweCount()}</span>`:''}</button>
@@ -444,8 +444,8 @@ function openStudentDetail(s){
       <div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
       <div style="flex:1;min-width:0"><div class="nm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.ho_ten}</div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div>
       <div class="det-actions">
-        ${isManager()?`<button class="icobtn" id="hsQR" title="Tạo phiếu QR"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M20 20v.01M17 20h.01M20 17h.01M14 20h.01"/></svg></button>`:''}
-        ${canWrite()?`<button class="icobtn" id="hsEdit" title="Sửa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`:''}
+        ${isManager()?`<button class="icobtn" id="hsQR" title="Tạo phiếu QR"><i class="hgi-stroke hgi-qr-code"></i></button>`:''}
+        ${canWrite()?`<button class="icobtn" id="hsEdit" title="Sửa"><i class="hgi-stroke hgi-pencil-edit-02"></i></button>`:''}
       </div>
     </div>
     ${isManager()?accSection('hp','Học phí',hpBody,true,hpBadge):''}
@@ -521,7 +521,7 @@ function buildLop(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
       <div class="titlerow" style="margin:0 0 12px"><h1>Lớp học</h1><span class="count">${classes.length}</span></div>
-      <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="lq" type="text" placeholder="Tìm lớp hoặc giáo viên…" value="${lopQuery}"></div>
+      <div class="search"><i class="hgi-stroke hgi-search-01"></i><input id="lq" type="text" placeholder="Tìm lớp hoặc giáo viên…" value="${lopQuery}"></div>
     </div>
     <div class="list" id="list"></div>`;
   $('#lq').addEventListener('input',e=>{lopQuery=e.target.value; renderClasses();});
@@ -891,7 +891,7 @@ function buildHocPhi(){
   const pend=payments.filter(p=>p.trang_thai==='cho_thanh_toan').length;
   $('#screen').innerHTML=`
     <div class="dash">
-      <div class="titlerow" style="margin:2px 0 12px;align-items:center"><button class="backbtn" onclick="switchView('dashboard')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg></button><h1>Học phí</h1></div>
+      <div class="titlerow" style="margin:2px 0 12px;align-items:center"><button class="backbtn" onclick="switchView('dashboard')"><i class="hgi-stroke hgi-arrow-left-01"></i></button><h1>Học phí</h1></div>
       <div class="subtabs" id="hpsub">
         <button class="subtab ${hpTab==='due'?'on':''}" data-t="due">Đến hạn</button>
         <button class="subtab ${hpTab==='pending'?'on':''}" data-t="pending">Phiếu chờ${pend?`<span class="dot">${pend}</span>`:''}</button>
@@ -1090,7 +1090,7 @@ function buildPhieuImage(p){
     img.onload=()=>{
       try{
         const S=2, W=720, pad=48, qr=360, qx=(W-qr)/2;
-        const F=(w,s)=>`${w} ${s}px "Be Vietnam Pro", system-ui, sans-serif`;
+        const F=(w,s)=>`${w} ${s}px "Inter", system-ui, sans-serif`;
         const rows=[['Học sinh',(p.hoc_sinh&&p.hoc_sinh.ho_ten)||''],['Ngân hàng',BANK.nganHang],['Số tài khoản',BANK.stk],['Chủ tài khoản',BANK.ten],['Nội dung CK',p.noi_dung_ck||'']];
         const qrTop=120, qrBox=qr+36, amountY=qrTop+qrBox+46, divY=amountY+40, infoTop=divY+38, step=46;
         const footY=infoTop+(rows.length-1)*step+44, H=footY+40;
