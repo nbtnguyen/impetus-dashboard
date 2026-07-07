@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Impetus</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/800.css">
 <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
 <style>
   :root{
@@ -73,7 +76,7 @@
   .avatar{width:46px; height:46px; flex:none; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:17px; color:#fff}
   .who{flex:1; min-width:0} .who .nm{font-weight:700; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .who .sub{display:flex; align-items:center; gap:7px; margin-top:5px; flex-wrap:wrap}
-  .idtag{display:inline-flex; align-items:center; gap:5px; font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:12px; color:#27324a; background:#F1F3F8; border:1px solid #E0E4EC; padding:2px 7px 2px 6px; border-radius:7px} .idtag svg{color:var(--primary)}
+  .idtag{display:inline-flex; align-items:center; gap:5px; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; color:#27324a; background:#F1F3F8; border:1px solid #E0E4EC; padding:2px 7px 2px 6px; border-radius:7px} .idtag svg{color:var(--primary)}
   .phone{font-size:12px; color:var(--muted); font-weight:500}
   .lopchip{font-size:11.5px; font-weight:600; color:#3a4660; background:var(--primary-soft); padding:2px 8px; border-radius:6px}
   .pill{flex:none; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:999px}
@@ -115,7 +118,7 @@
   .acc-b{padding:0 14px 14px; display:none} .acc.open .acc-b{display:block}
   .cardfoot{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:11px; border-top:1px solid var(--line)}
   .stat{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); font-weight:600} .stat b{color:var(--ink)} .stat svg{color:var(--faint)}
-  .fee{font-family:'Spline Sans Mono',monospace; font-weight:600; font-size:13.5px} .fee span{color:var(--faint); font-weight:500}
+  .fee{font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px} .fee span{color:var(--faint); font-weight:500}
 
   .state{text-align:center; padding:60px 30px; color:var(--muted)} .state .big{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:6px}
   .spin{width:26px; height:26px; border:3px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:sp .7s linear infinite; margin:0 auto 14px} @keyframes sp{to{transform:rotate(360deg)}}
@@ -151,7 +154,7 @@
   .daypick{display:flex; gap:5px} .daypick button{flex:1; font:inherit; font-size:13px; font-weight:600; padding:11px 0; cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:10px; color:var(--muted)} .daypick button.on{background:var(--primary-soft); border-color:var(--primary); color:var(--primary)}
   .feewrap{position:relative} .feewrap input{padding-right:42px} .feewrap .unit{position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:14px; font-weight:600}
   .addlink{font-size:13px; font-weight:600; color:var(--primary); cursor:pointer; margin-top:8px; display:inline-block}
-  .callout{margin-top:16px; background:#F4F8FF; border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; display:flex; gap:11px} .callout svg{flex:none; color:var(--primary); margin-top:1px} .callout .ct{font-size:13px; line-height:1.5; color:#2a3a63} .callout .ct b{color:var(--primary)} .callout .code{font-family:'Spline Sans Mono',monospace; font-weight:600; background:#fff; border:1px solid #cdd9f5; padding:1px 6px; border-radius:6px}
+  .callout{margin-top:16px; background:#F4F8FF; border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; display:flex; gap:11px} .callout svg{flex:none; color:var(--primary); margin-top:1px} .callout .ct{font-size:13px; line-height:1.5; color:#2a3a63} .callout .ct b{color:var(--primary)} .callout .code{font-family:'Inter',sans-serif; font-weight:600; background:#fff; border:1px solid #cdd9f5; padding:1px 6px; border-radius:6px}
 
   .opt{width:100%; display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:13px; background:var(--surface); font:inherit; font-size:15px; font-weight:600; cursor:pointer; margin-top:9px; color:var(--ink)} .opt:active{background:#FAFBFD}
   .opt .ic{width:28px; height:28px; border-radius:8px; display:grid; place-items:center; flex:none; font-size:13px; font-weight:800}
@@ -162,7 +165,7 @@
   .dash{padding:14px 16px 150px}
   .hero{background:var(--ink); color:#fff; border-radius:18px; padding:18px; box-shadow:0 10px 28px rgba(16,32,55,.22)}
   .hero .lbl{font-size:12px; font-weight:600; color:#A9B4C6}
-  .hero .big{font-family:'Spline Sans Mono',monospace; font-size:30px; font-weight:700; margin-top:4px; letter-spacing:-.01em}
+  .hero .big{font-family:'Inter',sans-serif; font-size:30px; font-weight:700; margin-top:4px; letter-spacing:-.01em}
   .hero .big span{font-size:16px; color:#9aa7bd}
   .hero .note{font-size:12px; color:#8f9bb0; margin-top:8px; line-height:1.4}
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px}
@@ -179,11 +182,11 @@
   .monthnav .mlabel{font-weight:700; font-size:15px}
   .tcsum{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px}
   .tcsum .c{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:11px 8px; text-align:center; box-shadow:var(--shadow)}
-  .tcsum .c .n{font-family:'Spline Sans Mono',monospace; font-weight:700; font-size:14px} .tcsum .c .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
+  .tcsum .c .n{font-family:'Inter',sans-serif; font-weight:700; font-size:14px} .tcsum .c .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
   .tcsum .c.thu .n{color:var(--ok)} .tcsum .c.chi .n{color:var(--danger)}
   .tcrow{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:12px 14px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .tcrow .cat{flex:1; min-width:0} .tcrow .cat .t{font-weight:600; font-size:14.5px} .tcrow .cat .d{font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .tcrow .amt{font-family:'Spline Sans Mono',monospace; font-weight:700; font-size:15px; flex:none} .tcrow .amt.thu{color:var(--ok)} .tcrow .amt.chi{color:var(--danger)}
+  .tcrow .amt{font-family:'Inter',sans-serif; font-weight:700; font-size:15px; flex:none} .tcrow .amt.thu{color:var(--ok)} .tcrow .amt.chi{color:var(--danger)}
   .subtabs{display:flex; gap:7px; padding:0 0 12px}
   .subtab{flex:1; position:relative; font:inherit; font-size:13px; font-weight:700; padding:9px 6px; border-radius:11px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer}
   .subtab.on{background:var(--ink); color:#fff; border-color:var(--ink)}
@@ -191,9 +194,9 @@
   .deadline{font-size:12px; font-weight:700; padding:3px 9px; border-radius:999px} .deadline.over{color:var(--danger); background:var(--danger-soft)} .deadline.soon{color:var(--warn); background:var(--warn-soft)} .deadline.new{color:#7C3AED; background:#F1EBFC}
   .qrcard{margin-top:8px; border:1px solid var(--line); border-radius:18px; padding:18px; text-align:center; background:linear-gradient(180deg,#FBFCFE,#F5F7FB)}
   .qrbox{width:212px; height:212px; margin:0 auto; background:#fff; border-radius:14px; padding:8px; box-shadow:var(--shadow); border:1px solid var(--line)} .qrbox img{width:100%; height:100%; object-fit:contain; display:block}
-  .qramt{font-family:'Spline Sans Mono',monospace; font-weight:700; font-size:24px; margin-top:14px}
+  .qramt{font-family:'Inter',sans-serif; font-weight:700; font-size:24px; margin-top:14px}
   .qrinfo{margin-top:14px; border-top:1px dashed var(--line); padding-top:12px; text-align:left; display:flex; flex-direction:column; gap:8px}
-  .qrinfo .r{display:flex; justify-content:space-between; gap:12px; font-size:13px} .qrinfo .r .k{color:var(--muted); flex:none} .qrinfo .r .v{font-weight:600; text-align:right} .qrinfo .r .v.mono{font-family:'Spline Sans Mono',monospace}
+  .qrinfo .r{display:flex; justify-content:space-between; gap:12px; font-size:13px} .qrinfo .r .k{color:var(--muted); flex:none} .qrinfo .r .v{font-weight:600; text-align:right} .qrinfo .r .v.mono{font-family:'Inter',sans-serif}
   .waitbar{margin-top:14px; background:var(--warn-soft); color:#8a5a00; border-radius:12px; padding:11px 14px; font-size:12.5px; font-weight:600; text-align:center}
   .toast{position:fixed; left:50%; transform:translateX(-50%) translateY(20px); bottom:80px; z-index:90; background:var(--ink); color:#fff; font-size:14px; font-weight:600; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:.25s; display:flex; align-items:center; gap:9px; box-shadow:var(--shadow)} .toast.show{opacity:1; transform:translateX(-50%) translateY(0)} .toast.err{background:#8a231a} .toast svg{color:#5ee0a0} .toast.err svg{display:none}
 </style>
@@ -937,9 +940,9 @@ function renderPending(L){
     el.innerHTML=`<div class="crow" style="display:flex;gap:11px;align-items:center">
         <div class="avatar" style="width:42px;height:42px;background:${avaC(p.hoc_sinh?.ma_hoc_sinh)}">${ini1(p.hoc_sinh?.ho_ten)}</div>
         <div class="who" style="flex:1"><div class="nm">${p.hoc_sinh?.ho_ten||'—'}</div><div class="sub"><span class="idtag">${p.hoc_sinh?.ma_hoc_sinh||''}</span><span class="lopchip">${p.so_thang} tháng</span></div></div>
-        <div style="font-family:'Spline Sans Mono',monospace;font-weight:700;font-size:15px">${vnd(p.so_tien)}đ</div>
+        <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:15px">${vnd(p.so_tien)}đ</div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)"><span>ND: <span style="font-family:'Spline Sans Mono',monospace;font-weight:600;color:#3a4660;background:#F4F5F9;padding:2px 7px;border-radius:6px">${p.noi_dung_ck}</span></span><span style="color:var(--warn);font-weight:700">Chờ chuyển khoản</span></div>`;
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)"><span>ND: <span style="font-family:'Inter',sans-serif;font-weight:600;color:#3a4660;background:#F4F5F9;padding:2px 7px;border-radius:6px">${p.noi_dung_ck}</span></span><span style="color:var(--warn);font-weight:700">Chờ chuyển khoản</span></div>`;
     el.onclick=()=>showQR(p);
     L.appendChild(el);
   });
@@ -949,7 +952,7 @@ function renderUnmatched(L){
   L.innerHTML='';
   unmatched.forEach(u=>{
     const el=document.createElement('div'); el.className='card';
-    el.innerHTML=`<div style="font-family:'Spline Sans Mono',monospace;font-weight:700;font-size:17px;color:var(--ok)">+${vnd(u.so_tien)}đ</div>
+    el.innerHTML=`<div style="font-family:'Inter',sans-serif;font-weight:700;font-size:17px;color:var(--ok)">+${vnd(u.so_tien)}đ</div>
       <div style="font-size:13.5px;font-weight:600;margin-top:3px">Nội dung: <span style="color:var(--danger)">"${u.noi_dung_ck||'—'}"</span></div>
       <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(u.ngay_giao_dich).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})} · không tự khớp</div>
       <button class="save" style="margin-top:12px">Gán cho phiếu</button>`;
@@ -980,8 +983,8 @@ function drawHpCalc(){
   const kyTu=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date();
   const kyDen=addDays(addMonths(kyTu,m),-1);
   $('#hpcalc').innerHTML=`<div style="margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace">${vnd(sub)}đ</span></div>
-    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
     <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Đóng tới hết</span><span style="font-weight:600">${toISO(kyDen).split('-').reverse().join('/')}</span></div>
     <div style="display:flex;justify-content:space-between;padding:14px;background:#F7F8FB;border-top:1px solid var(--line)"><span style="font-weight:700">Phụ huynh chuyển</span><span style="font-weight:700;font-size:20px;color:var(--primary)">${vnd(tot)}đ</span></div>
   </div>`;
@@ -1024,8 +1027,8 @@ function drawMarkCalc(){
   const e=hpCtx, m=hpMonths, sub=e.fee*m, disc=Math.round(sub*e.giam/100), tot=sub-disc;
   const {kyTu,kyDen}=markPeriod();
   $('#mpcalc').innerHTML=`<div style="margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace">${vnd(sub)}đ</span></div>
-    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Spline Sans Mono',monospace;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
     <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Kỳ đóng</span><span style="font-weight:600">${toISO(kyTu).split('-').reverse().join('/')} – ${toISO(kyDen).split('-').reverse().join('/')}</span></div>
   </div>`;
   const inp=$('#mpamount'); if(inp) inp.value=tot;
@@ -1193,7 +1196,7 @@ function openAssign(u){
   $('#sheetBody').innerHTML=`
     <h2>Gán khoản tiền</h2><p class="lead">Tiền về <b style="color:var(--ok)">+${vnd(u.so_tien)}đ</b>, nội dung "${u.noi_dung_ck||''}" không tự khớp. Chọn phiếu để gán.</p>
     <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
-    ${pend.length? pend.map(p=>`<button class="opt" data-id="${p.id}"><div style="font-family:'Spline Sans Mono',monospace;font-weight:700;color:var(--primary);flex:none">${vnd(p.so_tien)}đ</div><div style="flex:1;text-align:left;margin-left:10px"><div>${p.hoc_sinh?.ho_ten||''}</div><div style="font-size:12px;color:var(--muted)">ND: ${p.noi_dung_ck}</div></div>${p.so_tien===u.so_tien?'<span class="pill dang_hoc" style="flex:none">Khớp tiền</span>':''}</button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Chưa có phiếu chờ</div>Tạo phiếu trước rồi gán.</div>'}
+    ${pend.length? pend.map(p=>`<button class="opt" data-id="${p.id}"><div style="font-family:'Inter',sans-serif;font-weight:700;color:var(--primary);flex:none">${vnd(p.so_tien)}đ</div><div style="flex:1;text-align:left;margin-left:10px"><div>${p.hoc_sinh?.ho_ten||''}</div><div style="font-size:12px;color:var(--muted)">ND: ${p.noi_dung_ck}</div></div>${p.so_tien===u.so_tien?'<span class="pill dang_hoc" style="flex:none">Khớp tiền</span>':''}</button>`).join('') : '<div class="state" style="padding:24px"><div class="big">Chưa có phiếu chờ</div>Tạo phiếu trước rồi gán.</div>'}
     </div>
     <button class="ghost" onclick="closeSheets()">Đóng</button>`;
   $('#sheetBody').querySelectorAll('.opt').forEach(o=>o.onclick=async()=>{
