@@ -72,6 +72,11 @@
   .titlerow{display:flex; align-items:baseline; gap:9px; margin-top:14px}
   .titlerow h1{font-size:26px; font-weight:700; letter-spacing:-.03em; margin:0}
   .titlerow .count{font-size:13px; font-weight:600; color:var(--muted); background:var(--surface); border:1px solid var(--line); padding:2px 9px; border-radius:999px}
+  .pagetitle{display:flex; align-items:center; justify-content:space-between}
+  .pagetitle h1{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0}
+  .pagetitle h1 .n{color:var(--faint); font-weight:600}
+  .addbtn{width:40px; height:40px; border-radius:var(--r-pill); background:var(--primary); color:#fff; border:0; display:grid; place-items:center; cursor:pointer; flex:none}
+  .addbtn i{font-size:20px}
 
   .controls{padding:12px 18px 6px}
   .search{display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:11px 13px; box-shadow:var(--shadow)}
@@ -142,7 +147,7 @@
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
   .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
-  .act{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:85vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 18px 26px} .act.show{transform:translateX(-50%) translateY(0)}
+  .act{position:fixed; left:50%; bottom:calc(14px + var(--safe-b)); transform:translateX(-50%) translateY(100%); width:calc(100% - 28px); max-width:412px; max-height:80vh; overflow-y:auto; background:var(--surface); border-radius:20px; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 18px 18px} .act.show{transform:translateX(-50%) translateY(0)}
   .grip{width:38px; height:4px; background:#D7DCE5; border-radius:99px; margin:10px auto 2px}
   .sheet-pad{padding:6px 20px 28px}
   .sheet h2,.act h3{font-weight:800; letter-spacing:-.02em} .sheet h2{font-size:21px; margin:4px 0 2px} .act h3{font-size:17px; margin:6px 2px 2px}
@@ -432,8 +437,7 @@ function switchView(v){
 }
 function updateFab(){
   const fab=$('#fab');
-  if(view==='hoc_sinh' && canWrite()){ fab.classList.remove('hide'); fab.innerHTML='<i class="hgi-stroke hgi-add-01"></i>Thêm học sinh'; fab.onclick=()=>openStudentForm(null); }
-  else if(view==='lop' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Tạo lớp mới'; fab.onclick=()=>openClassForm(null); }
+  if(view==='lop' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Tạo lớp mới'; fab.onclick=()=>openClassForm(null); }
   else if(view==='thu_chi' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Ghi khoản'; fab.onclick=()=>openTcForm(null); }
   else fab.classList.add('hide');
 }
@@ -442,7 +446,7 @@ function updateFab(){
 function buildHocSinh(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
-      <div class="titlerow" style="margin:0 0 12px"><h1>Học sinh</h1><span class="count" id="count">${students.length}</span></div>
+      <div class="pagetitle" style="margin:0 0 12px"><h1>Học sinh <span class="n">${students.length}</span></h1>${canWrite()?'<button class="addbtn" id="addStudentBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
       <div class="searchbar"><i class="hgi-stroke hgi-search-01"></i><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
       <div class="pills" id="filters" style="margin-top:11px">
         ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="pillf ${sqFilter===f?'on':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
@@ -453,6 +457,7 @@ function buildHocSinh(){
     <div class="list" id="list"></div>`;
   $('#q').addEventListener('input',e=>{sqQuery=e.target.value; renderStudents();});
   $('#filters').addEventListener('click',e=>{const b=e.target.closest('.pillf'); if(!b)return; sqFilter=b.dataset.f; document.querySelectorAll('#filters .pillf').forEach(c=>c.classList.toggle('on',c===b)); renderStudents();});
+  if(canWrite()){ const ab=$('#addStudentBtn'); if(ab) ab.onclick=()=>openStudentForm(null); }
   renderStudents();
 }
 function renderStudents(){
@@ -465,13 +470,13 @@ function renderStudents(){
     const ps=isManager()?studentPayStatus(s):null;
     const parts=[s.ma_hoc_sinh];
     if(lops.length) lops.forEach(l=>parts.push(l)); else parts.push('Chưa xếp lớp');
-    if(ps) parts.push(`<span class="${ps==='paid'?'paid':'unpaid'}">${ps==='paid'?'✓ Đã đóng':'Chưa đóng'}</span>`);
+    if(ps==='due') parts.push(`<span class="unpaid">Chưa đóng</span>`);
     if(owesN(s)) parts.push(`<span class="unpaid">Nợ ${owesN(s)} buổi</span>`);
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="row tap haslead" data-id="${s.id}">
       <div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div>
       <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div>
-      <span class="stt ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>
+      ${s.trang_thai!=='dang_hoc'?`<span class="stt ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>`:''}
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
   }).join('')+'</div>';
