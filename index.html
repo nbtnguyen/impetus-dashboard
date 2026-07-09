@@ -13,13 +13,27 @@
 <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
 <style>
   :root{
-    --bg:#F6F6F6; --surface:#FFFFFF; --ink:#191c1f; --muted:#505a63; --faint:#8d969e; --line:#E6E6EA;
-    --primary:#494fdf; --primary-press:#3a40c4; --primary-soft:#EAEAFB;
-    --ok:#0E9F6E; --ok-soft:#E3F4EC; --warn:#C77700; --warn-soft:#FBF0DC;
-    --danger:#D92D20; --danger-soft:#FDECEA; --off:#7A8696; --off-soft:#EDEFF3;
-    --shadow:0 1px 3px rgba(20,22,28,.05);
-    --sheet-shadow:0 -8px 40px rgba(20,22,28,.16);
-  }
+  /* ===== GIỮ NGUYÊN — không đổi giá trị ===== */
+  --bg:#F6F6F6; --surface:#FFFFFF; --ink:#191c1f; --muted:#505a63; --faint:#8d969e; --line:#E6E6EA;
+  --primary:#494fdf; --primary-press:#3a40c4; --primary-soft:#EAEAFB;
+  --ok:#0E9F6E; --ok-soft:#E3F4EC; --warn:#C77700; --warn-soft:#FBF0DC;
+  --danger:#D92D20; --danger-soft:#FDECEA;
+
+  /* ===== THÊM MỚI — token chuẩn còn thiếu ===== */
+  --soft:#ECECEE;
+  --r-group:20px; --r-card:16px; --r-input:14px; --r-chip:8px; --r-pill:999px;
+  --text-page:28px; --text-section:12px; --text-name:16.5px; --text-body:15px; --text-meta:13px; --text-sub:12.5px; --text-fine:12px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+  --safe-b:env(safe-area-inset-bottom, 0px);
+
+  /* ===== TẠM GIỮ — token dư, xoá sau khi mọi module refactor xong (mục 1 checklist)
+     Đang dùng ở: --off/--off-soft → .clbl.da_dong, .pill.da_nghi/.pill.nghi
+                  --shadow → .ccard, .tile, .warnrow, .search, .scard, .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast
+                  --sheet-shadow → .sheet, .act ===== */
+  --off:#7A8696; --off-soft:#EDEFF3;
+  --shadow:0 1px 3px rgba(20,22,28,.05);
+  --sheet-shadow:0 -8px 40px rgba(20,22,28,.16);
+}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; display:flex; justify-content:center}
