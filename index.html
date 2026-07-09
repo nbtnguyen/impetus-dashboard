@@ -25,10 +25,11 @@
   --text-page:28px; --text-section:12px; --text-name:16.5px; --text-body:15px; --text-meta:13px; --text-sub:12.5px; --text-fine:12px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
   --safe-b:env(safe-area-inset-bottom, 0px);
+  --st-dang-hoc:#0E9F6E; --st-cho-test:#7C3AED; --st-hoc-thu:#0E7490; --st-bao-luu:#C77700; --st-da-nghi:#7A8696;
 
   /* ===== TẠM GIỮ — token dư, xoá sau khi mọi module refactor xong (mục 1 checklist)
      Đang dùng ở: --off/--off-soft → .clbl.da_dong, .pill.da_nghi/.pill.nghi
-                  --shadow → .ccard, .tile, .warnrow, .search, .scard, .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast
+                  --shadow → .ccard, .tile, .warnrow, .search, .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast
                   --sheet-shadow → .sheet, .act ===== */
   --off:#7A8696; --off-soft:#EDEFF3;
   --shadow:0 1px 3px rgba(20,22,28,.05);
@@ -77,21 +78,15 @@
   .search:focus-within{border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft)}
   .search svg{flex:none; color:var(--faint)}
   .search input{border:0; outline:0; width:100%; font:inherit; font-size:15px; background:transparent; color:var(--ink)}
-  .filters{display:flex; gap:7px; margin-top:11px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none} .filters::-webkit-scrollbar{display:none}
-  .chip{flex:none; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-size:13px; font-weight:600; padding:7px 13px; border-radius:999px; cursor:pointer; transition:.15s}
-  .chip.active{background:var(--ink); color:#fff; border-color:var(--ink)}
-  .chip.hb{border-color:#F1C7C2} .chip .cnt{display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; padding:0 4px; margin-left:5px; border-radius:99px; background:var(--danger); color:#fff; font-size:10.5px; font-weight:700}
 
   .list{padding:8px 14px 150px; display:flex; flex-direction:column; gap:10px}
 
   /* student card */
-  .scard{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:13px 14px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:center; cursor:pointer; transition:transform .12s}
-  .scard:active{transform:scale(.985)}
   .avatar{width:46px; height:46px; flex:none; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:17px; color:#fff}
+  .avatar.lg{width:88px; height:88px; font-size:34px}
   .who{flex:1; min-width:0} .who .nm{font-weight:700; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .who .sub{display:flex; align-items:center; gap:7px; margin-top:5px; flex-wrap:wrap}
   .idtag{display:inline-flex; align-items:center; gap:5px; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; color:#27324a; background:#F1F3F8; border:1px solid #E0E4EC; padding:2px 7px 2px 6px; border-radius:7px} .idtag svg{color:var(--primary)}
-  .phone{font-size:12px; color:var(--muted); font-weight:500}
   .lopchip{font-size:11.5px; font-weight:600; color:#3a4660; background:var(--primary-soft); padding:2px 8px; border-radius:6px}
   .pill{flex:none; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:999px}
   .pill.dang_hoc,.pill.hoc{color:var(--ok); background:var(--ok-soft)} .pill.bao_luu,.pill.luu{color:var(--warn); background:var(--warn-soft)} .pill.da_nghi,.pill.nghi{color:var(--off); background:var(--off-soft)}
@@ -153,11 +148,26 @@
   .sheet h2,.act h3{font-weight:800; letter-spacing:-.02em} .sheet h2{font-size:21px; margin:4px 0 2px} .act h3{font-size:17px; margin:6px 2px 2px}
   .sheet .lead,.act .who2{color:var(--muted); font-size:13.5px; margin:0 0 6px}
 
-  .det-head{display:flex; gap:13px; align-items:center; padding:8px 0 16px}
-  .det-head .avatar{width:54px; height:54px; font-size:20px; border-radius:50%}
-  .det-head .nm{font-size:20px; font-weight:800; letter-spacing:-.02em} .det-head .pill{margin-top:6px}
   .dh{padding:8px 2px 6px} .dh .nm{font-size:21px; font-weight:800; letter-spacing:-.02em} .dh .meta{color:var(--muted); font-size:13.5px; font-weight:500; margin-top:5px; display:flex; gap:8px; align-items:center; flex-wrap:wrap} .dh .lvl{font-size:12px; font-weight:700; color:#3a4660; background:var(--primary-soft); padding:3px 10px; border-radius:7px}
-  .row{display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-top:1px solid var(--line); font-size:14.5px} .row .k{color:var(--muted); font-weight:500; flex:none} .row .v{text-align:right; font-weight:600}
+  .kv{display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-top:1px solid var(--line); font-size:14.5px} .kv .k{color:var(--muted); font-weight:500; flex:none} .kv .v{text-align:right; font-weight:600}
+  /* Group + Row (mục 6 design-system) — component danh sách chuẩn */
+  .group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
+  .row{display:flex; align-items:center; gap:12px; padding:14px 16px; position:relative; background:var(--surface)}
+  .row + .row::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
+  .row.tap{cursor:pointer} .row.tap:active{background:#F2F2F4}
+  .row .lead{width:44px; flex:none}
+  .row.haslead + .row.haslead::before{left:72px}
+  .row .main{flex:1; min-width:0}
+  .row .main .t{font-size:var(--text-name); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .row .main .d,.row .main .meta{font-size:var(--text-sub); font-weight:500; color:var(--faint); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .row .rchev{color:var(--faint); flex:none}
+  .row .addico{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; font-size:19px; flex:none}
+  .row.add .t{font-weight:600; font-size:15px}
+  .row .k{font-size:var(--text-body); color:var(--muted)}
+  .row .val{margin-left:auto; font-size:var(--text-body); font-weight:600; color:var(--ink); text-align:right}
+  .meta .sep{margin:0 4px 0 3px; opacity:.5}
+  .paid{color:var(--ok); font-weight:600}
+  .unpaid{color:var(--danger); font-weight:600}
   .seclabel{display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:20px 0 4px} .seclabel .badge{font-size:12px; color:var(--muted); text-transform:none; letter-spacing:0; font-weight:600}
   .roster{display:flex; flex-direction:column; gap:8px; margin-top:8px}
   .rost{display:flex; align-items:center; gap:11px; padding:9px 11px; border:1px solid var(--line); border-radius:12px; cursor:pointer} .rost:active{background:#FAFBFD}
@@ -172,22 +182,72 @@
 
   .opt{width:100%; display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:13px; background:var(--surface); font:inherit; font-size:15px; font-weight:600; cursor:pointer; margin-top:9px; color:var(--ink)} .opt:active{background:#FAFBFD}
   .opt .ic{width:28px; height:28px; border-radius:8px; display:grid; place-items:center; flex:none; font-size:13px; font-weight:800}
+  .chipset{display:flex; gap:7px; flex-wrap:wrap; margin-top:2px}
+  .choice{font:inherit; font-size:14px; font-weight:600; padding:9px 14px; border-radius:var(--r-pill); background:var(--soft); color:var(--muted); border:0; cursor:pointer}
+  .choice.on{background:var(--primary); color:#fff}
+  .optrow{display:flex; align-items:center; gap:var(--sp-3); padding:13px 10px; border-radius:13px; cursor:pointer; font-size:var(--text-body); font-weight:600; color:var(--ink)}
+  .optrow:active{background:#F2F2F4}
+  .optrow i{font-size:19px; color:var(--ink); flex:none}
+
+  /* Pill lọc (mục 9) */
+  .pills{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px} .pills::-webkit-scrollbar{display:none}
+  .pillf{flex:none; font:inherit; font-size:14px; font-weight:600; padding:8px 15px; border-radius:var(--r-pill); background:var(--soft); color:var(--ink); border:0; cursor:pointer; display:inline-flex; align-items:center}
+  .pillf.on{background:var(--ink); color:#fff}
+  .pillf .cnt{display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; padding:0 4px; margin-left:5px; border-radius:99px; background:var(--danger); color:#fff; font-size:10.5px; font-weight:700}
+
+  /* Chip trạng thái (mục 10) */
+  .stt{font-size:13.5px; font-weight:600}
+  .stt.dang_hoc{color:var(--st-dang-hoc)} .stt.cho_test{color:var(--st-cho-test)} .stt.hoc_thu{color:var(--st-hoc-thu)} .stt.bao_luu{color:var(--st-bao-luu)} .stt.da_nghi{color:var(--st-da-nghi)}
+  .spill{font-size:13px; font-weight:600; padding:5px 13px; border-radius:var(--r-pill); display:inline-block}
+  .spill.dang_hoc{color:var(--st-dang-hoc); background:#E3F4EC} .spill.cho_test{color:var(--st-cho-test); background:#F1EBFC} .spill.hoc_thu{color:var(--st-hoc-thu); background:#E1F1F6} .spill.bao_luu{color:var(--st-bao-luu); background:#FBF0DC} .spill.da_nghi{color:var(--st-da-nghi); background:#EDEFF0}
+
+  /* Ô tìm kiếm (mục 11) */
+  .searchbar{display:flex; align-items:center; gap:9px; background:var(--soft); border-radius:var(--r-input); padding:12px 14px; color:var(--faint)}
+  .searchbar i{font-size:19px}
+  .searchbar input{border:0; outline:0; background:transparent; font:inherit; font-size:16px; width:100%; color:var(--ink)}
+  .searchbar input::placeholder{color:var(--faint)}
+
+  /* Nav trang form push (mục 20) */
+  .formnav{height:52px; display:flex; align-items:center; justify-content:space-between; background:rgba(246,246,246,.9); backdrop-filter:blur(18px); padding:0 14px; position:sticky; top:0; z-index:5; flex:none}
+  .formnav .cancel{color:var(--muted); font-size:16px; font-weight:500; background:0; border:0; cursor:pointer; padding:8px 12px; font-family:inherit}
+  .formnav .ftitle{font-size:16px; font-weight:700}
+  .formnav .spacer{width:64px}
+
+  /* Trang push toàn màn (trượt từ phải) */
+  .page{position:fixed; top:0; left:50%; width:100%; max-width:440px; height:100vh; background:var(--bg); z-index:47; transform:translateX(calc(-50% + 100%)); transition:transform .3s cubic-bezier(.32,.72,0,1); display:flex; flex-direction:column}
+  .page.show{transform:translateX(-50%)}
+  .page-body{flex:1; overflow-y:auto; padding:8px 14px calc(28px + var(--safe-b))}
+
+  /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
+  .datefield{position:relative; width:100%; min-width:0}
+  .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box}
+  .datefield input[type="date"].empty{color:transparent}
+  .datefield .dfph{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:15px; pointer-events:none; z-index:2}
+  .datefield input[type="date"]:not(.empty) + .dfph{display:none}
 
   .save{width:100%; margin-top:20px; background:var(--primary); color:#fff; border:0; border-radius:13px; padding:15px; font:inherit; font-size:15.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px} .save:active{background:var(--primary-press)} .save:disabled{opacity:.6}
   .ghost{width:100%; margin-top:9px; background:transparent; color:var(--muted); border:0; padding:10px; font:inherit; font-size:14px; font-weight:600; cursor:pointer}
 
   .dash{padding:14px 16px 150px}
-  .hero{background:var(--ink); color:#fff; border-radius:18px; padding:18px; box-shadow:0 10px 28px rgba(16,32,55,.22)}
-  .hero .lbl{font-size:12px; font-weight:600; color:#A9B4C6}
-  .hero .big{font-family:'Inter',sans-serif; font-size:30px; font-weight:700; margin-top:4px; letter-spacing:-.01em}
-  .hero .big span{font-size:16px; color:#9aa7bd}
-  .hero .note{font-size:12px; color:#8f9bb0; margin-top:8px; line-height:1.4}
+  .cfhero{background:var(--surface); border-radius:var(--r-group); padding:20px 18px}
+  .cfhero .lbl{font-size:13px; color:var(--muted); font-weight:600}
+  .cfhero .big{font-size:34px; font-weight:700; letter-spacing:-.03em; margin-top:4px}
+  .cfhero .big.neg{color:var(--danger)}
+  .cfhero .note{font-size:12.5px; color:var(--faint); margin-top:6px}
+  /* Hero avatar — đầu trang chi tiết (Học sinh/Lớp) */
+  .hero{text-align:center; padding:8px 0 4px}
+  .hero .dname{font-size:24px; font-weight:700; letter-spacing:-.03em; margin-top:12px}
+  .acttiles{display:flex; gap:10px}
+  .acttile{flex:1; background:var(--surface); border:0; border-radius:var(--r-card); padding:14px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; font:inherit}
+  .acttile:active{background:#F2F2F4}
+  .acttile i{font-size:20px; color:var(--ink); line-height:1}
+  .acttile span{font-size:12px; font-weight:600; color:var(--ink)}
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px}
   .tile{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 15px; box-shadow:var(--shadow)}
   .tile .n{font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1}
   .tile .l{font-size:12.5px; color:var(--muted); font-weight:600; margin-top:6px}
   .tile.warn .n{color:var(--danger)}
-  .tile[data-go],.hero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.hero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
+  .tile[data-go],.cfhero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.cfhero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
   .dsec{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:22px 4px 10px}
   .warnrow{display:flex; align-items:center; gap:11px; padding:11px 13px; background:var(--surface); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .infonote{margin-top:18px; background:var(--primary-soft); border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; font-size:12.5px; line-height:1.55; color:#2a3a63} .infonote b{color:var(--primary)}
@@ -213,6 +273,38 @@
   .qrinfo .r{display:flex; justify-content:space-between; gap:12px; font-size:13px} .qrinfo .r .k{color:var(--muted); flex:none} .qrinfo .r .v{font-weight:600; text-align:right} .qrinfo .r .v.mono{font-family:'Inter',sans-serif}
   .waitbar{margin-top:14px; background:var(--warn-soft); color:#8a5a00; border-radius:12px; padding:11px 14px; font-size:12.5px; font-weight:600; text-align:center}
   .toast{position:fixed; left:50%; transform:translateX(-50%) translateY(20px); bottom:80px; z-index:90; background:var(--ink); color:#fff; font-size:14px; font-weight:600; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:.25s; display:flex; align-items:center; gap:9px; box-shadow:var(--shadow)} .toast.show{opacity:1; transform:translateX(-50%) translateY(0)} .toast.err{background:#8a231a} .toast svg{color:#5ee0a0} .toast.err svg{display:none}
+
+  /* ===== BỔ SUNG refactor Học sinh — Section (mục 7), Nav bar trang chi tiết (mục 12), Nút chuẩn (mục 8), Dialog xác nhận (mục 22) ===== */
+  .section{margin-top:22px}
+  .section > .lbl{font-size:var(--text-section); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:0 4px 9px; display:flex; align-items:center; gap:7px}
+  .section > .lbl .badge{color:var(--danger); text-transform:none; letter-spacing:0; font-weight:600}
+
+  .navbar{height:52px; display:flex; align-items:center; justify-content:space-between; background:rgba(246,246,246,.9); backdrop-filter:blur(18px); padding:0 4px; position:sticky; top:0; z-index:5; flex:none}
+  .navbar .back{display:flex; align-items:center; gap:1px; color:var(--ink); font-size:16px; font-weight:600; background:0; border:0; cursor:pointer; font-family:inherit; padding:8px}
+  .navbar .back i{font-size:22px}
+  .navbar .edit{color:var(--ink); font-size:14px; font-weight:600; background:var(--soft); border:0; border-radius:var(--r-pill); padding:7px 15px; cursor:pointer; font-family:inherit}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; font:inherit; font-weight:700; font-size:var(--text-body); border:0; border-radius:var(--r-input); padding:13px 18px; cursor:pointer; letter-spacing:-.01em}
+  .btn.primary{background:var(--primary); color:#fff} .btn.primary:active{background:var(--primary-press)}
+  .btn.soft{background:var(--soft); color:var(--ink)}
+  .btn.ghost{background:transparent; color:var(--muted)}
+  .btn.danger{background:transparent; color:var(--danger)}
+  .btn.block{width:100%}
+  .btn.pill{border-radius:var(--r-pill)}
+  .btn i{font-size:19px; line-height:1}
+  .btn.mini{padding:9px 16px; font-size:13.5px; border-radius:var(--r-pill)}
+  .btn:disabled,.btn.loading{opacity:.7; pointer-events:none}
+
+  .dialogscrim{position:fixed; inset:0; background:rgba(20,22,28,.4); display:grid; place-items:center; padding:24px; z-index:95}
+  .dialogcard{background:var(--surface); border-radius:20px; max-width:300px; width:100%; overflow:hidden; text-align:center}
+  .dialogcard .dbody{padding:22px 20px 18px}
+  .dialogcard .dtitle{font-size:var(--text-name); font-weight:700}
+  .dialogcard .dmsg{font-size:var(--text-meta); color:var(--muted); margin-top:6px; line-height:1.5}
+  .dialogcard .dacts{display:flex; border-top:1px solid var(--line)}
+  .dialogcard .dacts button{flex:1; padding:14px 0; font:inherit; font-size:var(--text-body); font-weight:600; border:0; background:transparent; cursor:pointer}
+  .dialogcard .dacts button+button{border-left:1px solid var(--line)}
+  .dialogcard .dacts .dcancel{color:var(--ink)}
+  .dialogcard .dacts .ddanger{color:var(--danger); font-weight:700}
 </style>
 </head>
 <body>
@@ -250,6 +342,9 @@
 <div class="sheet" id="sheet"><div class="grip"></div><div class="sheet-pad" id="sheetBody"></div></div>
 <div class="act" id="actSheet"><div class="grip" id="actGrip"></div><div id="actBody"></div><button class="ghost" id="actClose">Đóng</button></div>
 <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg">Đã lưu</span></div>
+<div class="dialogscrim hide" id="dialogScrim"><div class="dialogcard"><div class="dbody"><div class="dtitle" id="dlgTitle"></div><div class="dmsg" id="dlgMsg"></div></div><div class="dacts"><button class="dcancel" id="dlgCancel">Hủy</button><button class="ddanger" id="dlgConfirm">Xóa</button></div></div></div>
+<div class="page" id="detailPage"><div class="navbar"><button class="back" id="detailBack"><i class="hgi-stroke hgi-arrow-left-01"></i>Học sinh</button></div><div class="page-body" id="detailBody"></div></div>
+<div class="page" id="page"><div class="formnav"><button class="cancel" id="pageCancel">Hủy</button><span class="ftitle" id="pageTitle"></span><span class="spacer"></span></div><div class="page-body" id="pageBody"></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -278,7 +373,7 @@ const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
 const addMonths=(d,n)=>{const x=new Date(d); x.setMonth(x.getMonth()+n); return x;};
 const toISO=d=>d.toISOString().slice(0,10);
 const CAT={chi:['Thuê nhà','Điện nước','Lương','Mua sắm/Thiết bị','Marketing','Khác'], thu:['Học phí','Bán sách','Khác']};
-let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null;
+let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null;
 
 const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
@@ -348,16 +443,16 @@ function buildHocSinh(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
       <div class="titlerow" style="margin:0 0 12px"><h1>Học sinh</h1><span class="count" id="count">${students.length}</span></div>
-      <div class="search"><i class="hgi-stroke hgi-search-01"></i><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
-      <div class="filters" id="filters">
-        ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="chip ${sqFilter===f?'active':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
-        <button class="chip hb ${sqFilter==='can_hoc_bu'?'active':''}" data-f="can_hoc_bu">Cần học bù${oweCount()?`<span class="cnt">${oweCount()}</span>`:''}</button>
-        ${isManager()?`<button class="chip ${sqFilter==='da_dong'?'active':''}" data-f="da_dong">Đã đóng</button><button class="chip ${sqFilter==='chua_dong'?'active':''}" data-f="chua_dong">Chưa đóng</button>`:''}
+      <div class="searchbar"><i class="hgi-stroke hgi-search-01"></i><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
+      <div class="pills" id="filters" style="margin-top:11px">
+        ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="pillf ${sqFilter===f?'on':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
+        <button class="pillf ${sqFilter==='can_hoc_bu'?'on':''}" data-f="can_hoc_bu">Cần học bù${oweCount()?`<span class="cnt">${oweCount()}</span>`:''}</button>
+        ${isManager()?`<button class="pillf ${sqFilter==='da_dong'?'on':''}" data-f="da_dong">Đã đóng</button><button class="pillf ${sqFilter==='chua_dong'?'on':''}" data-f="chua_dong">Chưa đóng</button>`:''}
       </div>
     </div>
     <div class="list" id="list"></div>`;
   $('#q').addEventListener('input',e=>{sqQuery=e.target.value; renderStudents();});
-  $('#filters').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b)return; sqFilter=b.dataset.f; document.querySelectorAll('#filters .chip').forEach(c=>c.classList.toggle('active',c===b)); renderStudents();});
+  $('#filters').addEventListener('click',e=>{const b=e.target.closest('.pillf'); if(!b)return; sqFilter=b.dataset.f; document.querySelectorAll('#filters .pillf').forEach(c=>c.classList.toggle('on',c===b)); renderStudents();});
   renderStudents();
 }
 function renderStudents(){
@@ -365,26 +460,23 @@ function renderStudents(){
   const rows=students.filter(s=>{ if(sqFilter==='can_hoc_bu'){ if(!studentOwes(s))return false; } else if(sqFilter==='da_dong'){ if(studentPayStatus(s)!=='paid')return false; } else if(sqFilter==='chua_dong'){ if(studentPayStatus(s)!=='due')return false; } else if(sqFilter!=='all'&&s.trang_thai!==sqFilter){return false;} if(sqQuery){const q=norm(sqQuery); if(!norm(s.ho_ten).includes(q)&&!norm(s.ma_hoc_sinh).includes(q))return false;} return true; });
   if(!students.length){ L.innerHTML='<div class="state"><div class="big">Chưa có học sinh nào</div>'+(canWrite()?'Bấm “Thêm học sinh” để tạo em đầu tiên.':'Chưa có dữ liệu.')+'</div>'; return; }
   if(!rows.length){ L.innerHTML='<div class="state"><div class="big">Không tìm thấy</div>Thử đổi bộ lọc hoặc từ khóa.</div>'; return; }
-  L.innerHTML='';
-  rows.forEach(s=>{
+  L.innerHTML='<div class="group">'+rows.map(s=>{
     const lops=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.ten_lop);
     const ps=isManager()?studentPayStatus(s):null;
-    const el=document.createElement('div'); el.className='scard';
-    el.innerHTML=`<div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
-      <div class="who"><div class="nm">${s.ho_ten}</div><div class="sub">
-        <span class="idtag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="9" r="3"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0"/></svg>${s.ma_hoc_sinh}</span>
-        ${lops.length? lops.map(l=>`<span class="lopchip">${l}</span>`).join('') : '<span class="phone" style="color:#9AA4B2">Chưa xếp lớp</span>'}
-        ${ps?`<span class="phone" style="color:${ps==='paid'?'#0E9463':'var(--danger)'};font-weight:700">${ps==='paid'?'✓ Đã đóng':'Chưa đóng'}</span>`:''}
-        ${owesN(s)?`<span class="phone" style="color:var(--danger);font-weight:600">Nợ ${owesN(s)} buổi</span>`:''}</div></div>
-      <span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>`;
-    el.onclick=()=>openStudentDetail(s);
-    L.appendChild(el);
-  });
+    const parts=[s.ma_hoc_sinh];
+    if(lops.length) lops.forEach(l=>parts.push(l)); else parts.push('Chưa xếp lớp');
+    if(ps) parts.push(`<span class="${ps==='paid'?'paid':'unpaid'}">${ps==='paid'?'✓ Đã đóng':'Chưa đóng'}</span>`);
+    if(owesN(s)) parts.push(`<span class="unpaid">Nợ ${owesN(s)} buổi</span>`);
+    const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+    return `<div class="row tap haslead" data-id="${s.id}">
+      <div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div>
+      <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div>
+      <span class="stt ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>
+      <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
+    </div>`;
+  }).join('')+'</div>';
+  L.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>openStudentDetail(students.find(s=>s.id===el.dataset.id)); });
 }
-function accSection(key,title,body,open,badge){
-  return `<div class="acc ${open?'open':''}" data-acc="${key}"><button class="acc-h">${title}${badge?`<span class="acc-badge">${badge}</span>`:''}<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button><div class="acc-b">${body}</div></div>`;
-}
-function bindAccordion(){ $('#sheetBody').querySelectorAll('.acc-h').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open')); }
 function studentPayLines(s){
   const lines=[];
   (s.dang_ky_lop||[]).forEach(d=>{
@@ -414,114 +506,130 @@ function openStudentDetail(s){
   const ph=canSeeParent()? ((s.phu_huynh&&s.phu_huynh[0])||null) : null;
   const enr=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc);
   const enrRows = enr.length
-    ? enr.map(d=>`<div class="rost enrrow" data-id="${d.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${d.lop_hoc.ten_lop}</div></div><span class="pill ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
-    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Chưa xếp lớp nào.</div>';
-  const classBody = `<div class="roster">${enrRows}</div>${canWrite()?'<button class="opt" id="addLop" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Thêm / chuyển lớp</button>':''}`;
+    ? enr.map(d=>`<div class="row tap enrrow" data-id="${d.id}"><div class="main"><div class="t">${d.lop_hoc.ten_lop}</div></div><span class="stt ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
+    : '<div class="row"><span class="meta">Chưa xếp lớp nào.</span></div>';
+  const addLopRow = canWrite()?'<div class="row tap add" id="addLop"><div class="addico">+</div><div class="main"><div class="t">Thêm / chuyển lớp</div></div></div>':'';
   const mk=makeups.filter(m=>m.hoc_sinh_id===s.id);
   const chua=mk.filter(m=>m.trang_thai==='chua_bu').length;
   const mkRows = mk.length
-    ? mk.map(m=>{const done=m.trang_thai==='da_bu'; return `<div class="rost hbrow" data-id="${m.id}"><div style="flex:1"><div style="font-weight:600;font-size:14px">${m.lop_hoc?m.lop_hoc.ten_lop:'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Vắng ${fmtDate(m.ngay_vang)}${done?' · bù '+fmtDate(m.ngay_bu):''}</div></div><span class="pill ${done?'dang_hoc':'bao_luu'}">${done?'Đã bù':'Chưa bù'}</span></div>`;}).join('')
-    : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Không có buổi cần học bù.</div>';
-  const makeupBody = `<div class="roster">${mkRows}</div>${canWrite()?'<button class="opt" id="addHb" style="margin-top:10px"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Ghi buổi vắng</button>':''}`;
-  let hpBody='', hpBadge='';
+    ? mk.map(m=>{const done=m.trang_thai==='da_bu'; return `<div class="row tap hbrow" data-id="${m.id}"><div class="main"><div class="t">${m.lop_hoc?m.lop_hoc.ten_lop:'—'}</div><div class="meta">Vắng ${fmtDate(m.ngay_vang)}${done?' · bù '+fmtDate(m.ngay_bu):''}</div></div><span class="stt ${done?'dang_hoc':'bao_luu'}">${done?'Đã bù':'Chưa bù'}</span></div>`;}).join('')
+    : '<div class="row"><span class="meta">Không có buổi cần học bù.</span></div>';
+  const addHbRow = canWrite()?'<div class="row tap add" id="addHb"><div class="addico">+</div><div class="main"><div class="t">Ghi buổi vắng</div></div></div>':'';
+  let hpRows='', hpBadge='';
   if(isManager()){
     const lines=studentPayLines(s); let overdue=0;
-    hpBody = lines.length ? lines.map(l=>{
+    hpRows = lines.length ? lines.map(l=>{
       const over = l.maxKyDen && new Date(l.maxKyDen) < new Date();
       const paid = l.maxKyDen && !over && !l.pending;
-      let st, cls='color:var(--muted)', right;
+      let meta, right;
       if(l.pending){
-        st='Chờ chuyển khoản'; cls='color:var(--warn);font-weight:600';
-        right = `<button class="miniqr" data-enroll="${l.enrollId}">Phiếu chờ</button>`;
+        meta=`<span style="color:var(--warn);font-weight:600">Chờ chuyển khoản</span>`;
+        right = `<button class="btn soft mini miniqr" data-enroll="${l.enrollId}">Phiếu chờ</button>`;
       } else if(paid){
-        st='Đóng tới '+l.maxKyDen.split('-').reverse().join('/');
-        right = `<div class="payright"><span class="paidtag"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Đã đóng</span><button class="miniico" data-enroll="${l.enrollId}" title="Thu thêm">＋</button></div>`;
+        meta=`Đóng tới ${l.maxKyDen.split('-').reverse().join('/')}`;
+        right = `<div class="payright"><span class="paid">✓ Đã đóng</span><button class="miniico" data-enroll="${l.enrollId}" title="Thu thêm">＋</button></div>`;
       } else {
-        if(over){ st='Quá hạn · tới '+l.maxKyDen.split('-').reverse().join('/'); overdue++; } else { st='Chưa đóng'; overdue++; }
-        cls='color:var(--danger);font-weight:600';
-        right = `<button class="miniqr" data-enroll="${l.enrollId}">Thu học phí</button>`;
+        if(over){ meta=`<span class="unpaid">Quá hạn · tới ${l.maxKyDen.split('-').reverse().join('/')}</span>`; overdue++; } else { meta=`<span class="unpaid">Chưa đóng</span>`; overdue++; }
+        right = `<button class="btn primary mini miniqr" data-enroll="${l.enrollId}">Thu học phí</button>`;
       }
-      return `<div class="payline"><div class="pn"><div class="t">${l.lopTen}</div><div class="d" style="${cls}">${st}</div></div>${right}</div>`;
-    }).join('') : '<div style="color:#9AA4B2;font-size:14px;padding:4px 0">Chưa xếp lớp nên chưa có học phí.</div>';
+      return `<div class="row"><div class="main"><div class="t">${l.lopTen}</div><div class="meta">${meta}</div></div>${right}</div>`;
+    }).join('') : '<div class="row"><span class="meta">Chưa xếp lớp nên chưa có học phí.</span></div>';
     if(overdue) hpBadge=overdue+' cần thu';
   }
-  const infoBody = `
-    <div class="row"><span class="k">Mã học sinh</span><span class="v"><span class="idtag">${s.ma_hoc_sinh}</span></span></div>
-    <div class="row"><span class="k">Ngày sinh</span><span class="v">${fmtDate(s.ngay_sinh)}</span></div>
-    <div class="row"><span class="k">Giới tính</span><span class="v">${s.gioi_tinh||'—'}</span></div>
-    <div class="row"><span class="k">Trường</span><span class="v">${s.truong_hoc||'—'}</span></div>
-    <div class="row"><span class="k">Ngày bắt đầu</span><span class="v">${fmtDate(s.ngay_bat_dau)}</span></div>
-    ${s.ngay_hen_test?`<div class="row"><span class="k">Ngày hẹn test</span><span class="v">${fmtDate(s.ngay_hen_test)}</span></div>`:''}
-    ${isManager()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="v">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
-    ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="v" style="font-weight:500">${s.ghi_chu}</span></div>`:''}
-    ${canSeeParent()?(ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="v">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="v">${ph.so_dien_thoai||'—'}</span></div>`:'<div class="row"><span class="k" style="font-weight:500;color:#9AA4B2">Chưa có thông tin phụ huynh</span><span class="v"></span></div>'):''}`;
+  const infoRows = `
+    <div class="row"><span class="k">Mã học sinh</span><span class="val">${s.ma_hoc_sinh}</span></div>
+    <div class="row"><span class="k">Ngày sinh</span><span class="val">${fmtDate(s.ngay_sinh)}</span></div>
+    <div class="row"><span class="k">Giới tính</span><span class="val">${s.gioi_tinh||'—'}</span></div>
+    <div class="row"><span class="k">Trường</span><span class="val">${s.truong_hoc||'—'}</span></div>
+    <div class="row"><span class="k">Ngày bắt đầu</span><span class="val">${fmtDate(s.ngay_bat_dau)}</span></div>
+    ${s.ngay_hen_test?`<div class="row"><span class="k">Ngày hẹn test</span><span class="val">${fmtDate(s.ngay_hen_test)}</span></div>`:''}
+    ${isManager()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="val">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
+    ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="val">${s.ghi_chu}</span></div>`:''}
+    ${canSeeParent()?(ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="val">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="val">${ph.so_dien_thoai||'—'}</span></div>`:'<div class="row"><span class="meta">Chưa có thông tin phụ huynh</span></div>'):''}`;
   const canDel=canWrite()&&['cho_test','hoc_thu','da_nghi'].includes(s.trang_thai);
-  $('#sheetBody').innerHTML=`
-    <div class="det-head">
-      <div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div>
-      <div style="flex:1;min-width:0"><div class="nm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.ho_ten}</div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div>
-      <div class="det-actions">
-        ${isManager()?`<button class="icobtn" id="hsQR" title="Tạo phiếu QR"><i class="hgi-stroke hgi-qr-code"></i></button>`:''}
-        ${canWrite()?`<button class="icobtn" id="hsEdit" title="Sửa"><i class="hgi-stroke hgi-pencil-edit-02"></i></button>`:''}
-      </div>
+  $('#detailBody').innerHTML=`
+    <div class="hero">
+      <div class="avatar lg" style="background:${avaC(s.ma_hoc_sinh)};margin:0 auto">${ini1(s.ho_ten)}</div>
+      <div class="dname">${s.ho_ten}</div>
+      <div style="margin-top:11px"><span class="spill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div>
     </div>
-    ${isManager()?accSection('hp','Học phí',hpBody,true,hpBadge):''}
-    ${accSection('lop','Lớp đang học',classBody,true,'')}
-    ${accSection('hb','Buổi cần học bù',makeupBody,true,chua?chua+' chưa bù':'')}
-    ${accSection('info','Thông tin & phụ huynh',infoBody,false,'')}
-    ${canDel?'<button class="ghost del" id="delS" style="margin-top:14px">Xóa học sinh</button>':''}
-    <button class="ghost" onclick="closeSheets()">Đóng</button>`;
-  bindAccordion();
+    ${(isManager()||canWrite())?`<div class="acttiles" style="margin-top:16px">
+      ${isManager()?`<button class="acttile" id="hsQR"><i class="hgi-stroke hgi-qr-code"></i><span>QR học phí</span></button>`:''}
+      ${canWrite()?`<button class="acttile" id="hsEdit"><i class="hgi-stroke hgi-pencil-edit-02"></i><span>Sửa</span></button>`:''}
+    </div>`:''}
+    ${isManager()?`<div class="section"><div class="lbl">Học phí${hpBadge?` <span class="badge">· ${hpBadge}</span>`:''}</div><div class="group">${hpRows}</div></div>`:''}
+    <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${enrRows}${addLopRow}</div></div>
+    <div class="section"><div class="lbl">Buổi cần học bù${chua?` <span class="badge">· ${chua} chưa bù</span>`:''}</div><div class="group">${mkRows}${addHbRow}</div></div>
+    <div class="section"><div class="lbl">Thông tin & phụ huynh</div><div class="group">${infoRows}</div></div>
+    ${canDel?'<button class="btn danger block" id="delS" style="margin-top:var(--sp-6)">Xóa học sinh</button>':''}
+  `;
   if(isManager()){ const q=$('#hsQR'); if(q) q.onclick=()=>openStudentPhieuPicker(s); }
-  if(canWrite()){ const e=$('#hsEdit'); if(e) e.onclick=()=>{closeSheets(); setTimeout(()=>openStudentForm(s),260);}; }
+  if(canWrite()){ const e=$('#hsEdit'); if(e) e.onclick=()=>openStudentForm(s); }
   if(canWrite()){ const al=$('#addLop'); if(al) al.onclick=()=>openStudentEnroll(s); }
   if(canWrite()){ const ah=$('#addHb'); if(ah) ah.onclick=()=>openMakeupForm(s); }
   if(canDel){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
-  $('#sheetBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
-  $('#sheetBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
-  $('#sheetBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
-  show('#sheet');
+  $('#detailBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
+  $('#detailBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
+  $('#detailBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
+  showDetailPage();
 }
 function nextMa(){ let m=0; students.forEach(s=>{const n=parseInt((s.ma_hoc_sinh||'').replace(/\D/g,''))||0; if(n>m)m=n;}); return 'HS'+String(m+1).padStart(3,'0'); }
 function openStudentForm(s){
   editingId=s?s.id:null;
   const ph=s&&s.phu_huynh&&s.phu_huynh[0]?s.phu_huynh[0]:null;
   formStatus=s?s.trang_thai:'dang_hoc';
-  $('#sheetBody').innerHTML=`
-    <h2>${s?'Sửa học sinh':'Thêm học sinh'}</h2><p class="lead">Mã học sinh dùng làm Employee No trên máy Hikvision.</p>
-    <div class="field"><label>Họ và tên <span class="req">*</span></label><input id="f_ten" type="text" value="${s?s.ho_ten:''}" placeholder="Nguyễn Văn An"></div>
-    <div class="field"><label>Mã học sinh <span class="req">*</span></label><input id="f_ma" type="text" value="${s?s.ma_hoc_sinh:nextMa()}" ${s?'disabled':''}><div class="hint">${s?'Không đổi mã sau khi tạo (giữ khớp máy).':'Gợi ý sẵn mã kế tiếp.'}</div></div>
-    <div class="callout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="11" r="2.4"/><path d="M8 17a4 4 0 0 1 8 0"/></svg><div class="ct">Đăng ký mặt trên máy với <b>Employee No = <span class="code" id="echo">${s?s.ma_hoc_sinh:nextMa()}</span></b>.</div></div>
-    <div class="two"><div class="field"><label>Ngày sinh</label><input id="f_ns" type="date" value="${s?(s.ngay_sinh||''):''}"></div><div class="field"><label>Giới tính</label><select id="f_gt">${['Nam','Nữ','Khác'].map(g=>`<option ${s&&s.gioi_tinh===g?'selected':''}>${g}</option>`).join('')}</select></div></div>
-    <div class="field"><label>Trường học</label><input id="f_truong" type="text" value="${s?(s.truong_hoc||''):''}" placeholder="THCS Cổ Loa"></div>
-    <div class="two"><div class="field"><label>Ngày bắt đầu</label><input id="f_batdau" type="date" value="${s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10)}"></div>
-      ${isManager()?`<div class="field"><label>Giảm giá học phí (%)</label><input id="f_giam" type="number" min="0" max="100" value="${s?(s.giam_gia_phan_tram||0):0}"><div class="hint">Chỉ quản lý chỉnh.</div></div>`:''}</div>
-    <div class="field"><label>Trạng thái</label><div class="seg wrap" id="f_tt">${Object.entries(ST).map(([v,l])=>`<button class="${formStatus===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
-    <div class="field"><label>Ngày hẹn test (nếu chờ test)</label><input id="f_hentest" type="date" value="${s?(s.ngay_hen_test||''):''}"></div>
-    ${!s?`<div class="field"><label>Xếp vào lớp (tùy chọn)</label><select id="f_lop"><option value="">— Chưa xếp lớp —</option>${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select><div class="hint">Có thể xếp lớp sau ở tab Lớp học.</div></div>`:''}
-    <div class="seclabel">Phụ huynh</div>
-    <div class="field"><label>Họ tên phụ huynh</label><input id="f_phten" type="text" value="${ph?(ph.ho_ten||''):''}" placeholder="Nguyễn Thị Bình"></div>
-    <div class="two"><div class="field"><label>Quan hệ</label><select id="f_phqh">${Object.entries(QH).map(([v,l])=>`<option value="${v}" ${ph&&ph.quan_he===v?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>SĐT / Zalo</label><input id="f_phsdt" type="tel" value="${ph?(ph.so_dien_thoai||''):''}" placeholder="09xx xxx xxx"></div></div>
-    <div class="field"><label>Ghi chú</label><textarea id="f_ghichu" rows="2" placeholder="Tùy chọn…">${s?(s.ghi_chu||''):''}</textarea></div>
-    <button class="save" id="saveS"><span>${s?'Lưu thay đổi':'Lưu học sinh'}</span></button>
-    <button class="ghost" onclick="closeSheets()">Hủy</button>`;
+  formGioiTinh=s?(s.gioi_tinh||'Nam'):'Nam';
+  formQuanHe=ph?(ph.quan_he||'me'):'me';
+  const batdauVal=s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10);
+  $('#pageBody').innerHTML=`
+    <p style="color:var(--muted);font-size:13px;margin:10px 4px 0">Mã học sinh dùng làm Employee No trên máy Hikvision.</p>
+    <div class="section" style="margin-top:10px"><div class="lbl">Thông tin cơ bản</div>
+      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+        <div class="field"><label>Họ và tên <span class="req">*</span></label><input id="f_ten" type="text" value="${s?s.ho_ten:''}" placeholder="Nguyễn Văn An"></div>
+        <div class="field"><label>Mã học sinh <span class="req">*</span></label><input id="f_ma" type="text" value="${s?s.ma_hoc_sinh:nextMa()}" ${s?'disabled':''}><div class="hint">${s?'Không đổi mã sau khi tạo (giữ khớp máy).':'Gợi ý sẵn mã kế tiếp.'}</div></div>
+        <div class="callout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="11" r="2.4"/><path d="M8 17a4 4 0 0 1 8 0"/></svg><div class="ct">Đăng ký mặt trên máy với <b>Employee No = <span class="code" id="echo">${s?s.ma_hoc_sinh:nextMa()}</span></b>.</div></div>
+        <div class="field"><label>Ngày sinh</label><div class="datefield"><input id="f_ns" type="date" class="${s&&s.ngay_sinh?'':'empty'}" value="${s?(s.ngay_sinh||''):''}" onchange="this.className=this.value?'':'empty'"><span class="dfph">Chọn ngày sinh</span></div></div>
+        <div class="field"><label>Giới tính</label><div class="chipset" id="f_gt">${['Nam','Nữ','Khác'].map(g=>`<button class="choice ${formGioiTinh===g?'on':''}" data-v="${g}">${g}</button>`).join('')}</div></div>
+        <div class="field"><label>Trường học</label><input id="f_truong" type="text" value="${s?(s.truong_hoc||''):''}" placeholder="THCS Cổ Loa"></div>
+      </div>
+    </div>
+    <div class="section"><div class="lbl">Trạng thái & lớp</div>
+      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+        <div class="field"><label>Ngày bắt đầu</label><div class="datefield"><input id="f_batdau" type="date" class="${batdauVal?'':'empty'}" value="${batdauVal}" onchange="this.className=this.value?'':'empty'"><span class="dfph">Chọn ngày bắt đầu</span></div></div>
+        ${isManager()?`<div class="field"><label>Giảm giá học phí (%)</label><input id="f_giam" type="number" min="0" max="100" value="${s?(s.giam_gia_phan_tram||0):0}"><div class="hint">Chỉ quản lý chỉnh.</div></div>`:''}
+        <div class="field"><label>Trạng thái</label><div class="chipset" id="f_tt">${Object.entries(ST).map(([v,l])=>`<button class="choice ${formStatus===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+        <div class="field"><label>Ngày hẹn test (nếu chờ test)</label><div class="datefield"><input id="f_hentest" type="date" class="${s&&s.ngay_hen_test?'':'empty'}" value="${s?(s.ngay_hen_test||''):''}" onchange="this.className=this.value?'':'empty'"><span class="dfph">Chọn ngày hẹn test</span></div></div>
+        ${!s?`<div class="field"><label>Xếp vào lớp (tùy chọn)</label><select id="f_lop"><option value="">— Chưa xếp lớp —</option>${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select><div class="hint">Có thể xếp lớp sau ở tab Lớp học.</div></div>`:''}
+        <div class="field"><label>Ghi chú</label><textarea id="f_ghichu" rows="2" placeholder="Tùy chọn…">${s?(s.ghi_chu||''):''}</textarea></div>
+      </div>
+    </div>
+    <div class="section"><div class="lbl">Phụ huynh</div>
+      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+        <div class="field"><label>Họ tên phụ huynh</label><input id="f_phten" type="text" value="${ph?(ph.ho_ten||''):''}" placeholder="Nguyễn Thị Bình"></div>
+        <div class="field"><label>Quan hệ</label><div class="chipset" id="f_phqh">${Object.entries(QH).map(([v,l])=>`<button class="choice ${formQuanHe===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+        <div class="field"><label>SĐT / Zalo</label><input id="f_phsdt" type="tel" value="${ph?(ph.so_dien_thoai||''):''}" placeholder="09xx xxx xxx"></div>
+      </div>
+    </div>
+    <button class="btn primary block safe-b" id="saveS" style="margin-top:var(--sp-5)"><span>${s?'Lưu thay đổi':'Lưu học sinh'}</span></button>`;
   $('#f_ma')&&$('#f_ma').addEventListener('input',e=>$('#echo').textContent=e.target.value.trim().toUpperCase()||'—');
+  $('#f_gt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_gt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formGioiTinh=b.dataset.v;});
   $('#f_tt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_tt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formStatus=b.dataset.v;});
+  $('#f_phqh').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_phqh button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formQuanHe=b.dataset.v;});
   $('#saveS').onclick=saveStudent;
-  show('#sheet');
+  showPage(s?'Sửa học sinh':'Học sinh mới');
 }
 async function saveStudent(){
   const ten=$('#f_ten').value.trim(), ma=$('#f_ma').value.trim().toUpperCase();
   if(!ten) return toast('Chưa nhập họ tên',false);
   if(!ma) return toast('Chưa nhập mã học sinh',false);
   const btn=$('#saveS'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
-  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:$('#f_gt').value, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null, ngay_hen_test:($('#f_hentest')&&$('#f_hentest').value)||null};
+  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:formGioiTinh, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null, ngay_hen_test:($('#f_hentest')&&$('#f_hentest').value)||null};
   if(isManager()&&$('#f_giam')) payload.giam_gia_phan_tram=+$('#f_giam').value||0;
   let hsId=editingId, err=null;
   if(editingId){ const r=await db.from('hoc_sinh').update(payload).eq('id',editingId); err=r.error; }
   else { const r=await db.from('hoc_sinh').insert(payload).select('id').single(); err=r.error; if(!err)hsId=r.data.id; }
   if(err){ btn.disabled=false; btn.innerHTML=old; return toast(err.code==='23505'?'Mã '+ma+' đã tồn tại':err.message,false); }
-  const phTen=$('#f_phten').value.trim(), phSdt=$('#f_phsdt').value.trim(), phQh=$('#f_phqh').value;
+  const phTen=$('#f_phten').value.trim(), phSdt=$('#f_phsdt').value.trim(), phQh=formQuanHe;
   if(phTen||phSdt){
     const ex=editingId? (students.find(x=>x.id===editingId)?.phu_huynh?.[0]) : null;
     if(ex) await db.from('phu_huynh').update({ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null}).eq('id',ex.id);
@@ -529,7 +637,9 @@ async function saveStudent(){
   }
   const lopSel = (!editingId && $('#f_lop')) ? $('#f_lop').value : '';
   if(lopSel){ await db.from('dang_ky_lop').insert({hoc_sinh_id:hsId, lop_hoc_id:lopSel, trang_thai:'dang_hoc'}); await loadClasses(); }
-  await loadStudents(); closeSheets(); if(view==='hoc_sinh')renderStudents(); toast(editingId?'Đã lưu thay đổi':'Đã thêm '+ten);
+  await loadStudents(); closePage(); if(view==='hoc_sinh')renderStudents();
+  if(editingId && curStudent && curStudent.id===editingId){ curStudent=students.find(x=>x.id===editingId)||curStudent; openStudentDetail(curStudent); }
+  toast(editingId?'Đã lưu thay đổi':'Đã thêm '+ten);
 }
 
 /* ===== LỚP HỌC ===== */
@@ -564,11 +674,11 @@ function renderClasses(){
 }
 async function openClassDetail(c){
   $('#sheetBody').innerHTML=`<div class="dh"><div class="nm">${c.ten_lop}</div><div class="meta"><span class="lvl">${c.level||'—'}</span><span class="clbl ${c.trang_thai}">${CST[c.trang_thai]||c.trang_thai}</span></div></div>
-    <div class="row"><span class="k">Giáo viên</span><span class="v">${c.giao_vien?.ho_ten||'Chưa gán'}</span></div>
-    <div class="row"><span class="k">Phòng</span><span class="v">${c.phong||'—'}</span></div>
-    <div class="row"><span class="k">Lịch học</span><span class="v">${(c.cac_ngay_trong_tuan||'—')}</span></div>
-    <div class="row"><span class="k">Giờ</span><span class="v">${c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'—'} – ${c.gio_ket_thuc?c.gio_ket_thuc.slice(0,5):'—'}</span></div>
-    <div class="row"><span class="k">Học phí / tháng</span><span class="v fee">${vnd(c.hoc_phi_thang)}đ</span></div>
+    <div class="kv"><span class="k">Giáo viên</span><span class="v">${c.giao_vien?.ho_ten||'Chưa gán'}</span></div>
+    <div class="kv"><span class="k">Phòng</span><span class="v">${c.phong||'—'}</span></div>
+    <div class="kv"><span class="k">Lịch học</span><span class="v">${(c.cac_ngay_trong_tuan||'—')}</span></div>
+    <div class="kv"><span class="k">Giờ</span><span class="v">${c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'—'} – ${c.gio_ket_thuc?c.gio_ket_thuc.slice(0,5):'—'}</span></div>
+    <div class="kv"><span class="k">Học phí / tháng</span><span class="v fee">${vnd(c.hoc_phi_thang)}đ</span></div>
     ${weekStrip(c.cac_ngay_trong_tuan)}
     <div class="seclabel">Học sinh trong lớp <span class="badge" id="rcount">…</span></div>
     <div class="roster" id="roster"><div class="state" style="padding:20px"><div class="spin"></div></div></div>
@@ -744,7 +854,7 @@ function buildDashboard(){
   $('#screen').innerHTML=`
     <div class="dash">
       <div class="titlerow" style="margin:2px 0 14px"><h1>Tổng quan</h1></div>
-      <div class="hero" data-go="thu_chi"><div class="lbl">Dòng tiền tháng ${month}</div><div class="big" style="${dConlai<0?'color:#ff9b8e':''}">${vnd(dConlai)}<span>đ</span></div><div class="note">${dThu||dChi?`Thu ${vnd(dThu)}đ · Chi ${vnd(dChi)}đ`:'Chưa có giao dịch — ghi ở tab Thu chi. Học phí sẽ tự vào khi bật SePay.'}</div></div>
+      <div class="cfhero" data-go="thu_chi"><div class="lbl">Dòng tiền tháng ${month}</div><div class="big${dConlai<0?' neg':''}">${vnd(dConlai)}<span style="font-size:20px;color:var(--faint)"> đ</span></div><div class="note">${dThu||dChi?`Thu ${vnd(dThu)}đ · Chi ${vnd(dChi)}đ`:'Chưa có giao dịch — ghi ở tab Thu chi. Học phí sẽ tự vào khi bật SePay.'}</div></div>
       <div class="tiles">
         <div class="tile" data-go="hs:dang_hoc"><div class="n">${dangHoc}</div><div class="l">Học sinh đang học</div></div>
         <div class="tile" data-go="lop"><div class="n">${lopActive}</div><div class="l">Lớp đang hoạt động</div></div>
@@ -865,17 +975,12 @@ function openMoveClass(reg, s){
 }
 
 function confirmDeleteStudent(s){
-  $('#actBody').innerHTML=`<h3>Xóa học sinh?</h3><p class="who2">${s.ho_ten} · ${s.ma_hoc_sinh}</p>
-    <div style="font-size:13.5px;color:var(--muted);line-height:1.5;padding:2px 2px 8px">Xóa vĩnh viễn em này cùng dữ liệu lớp, điểm danh, học bù. <b style="color:var(--danger)">Không hoàn tác được.</b></div>
-    <button class="opt" id="delYes"><span class="ic" style="background:var(--danger-soft);color:var(--danger)">✕</span><span style="color:var(--danger);font-weight:700">Xóa vĩnh viễn</span></button>`;
-  $('#delYes').onclick=()=>doDeleteStudent(s);
-  $('#actSheet').classList.add('show'); $('#scrim').classList.add('show');
+  showConfirmDialog('Xóa '+s.ho_ten+'?', 'Xóa vĩnh viễn em này cùng dữ liệu lớp, điểm danh, học bù. Không thể hoàn tác.', ()=>doDeleteStudent(s));
 }
 async function doDeleteStudent(s){
   const {error}=await db.from('hoc_sinh').delete().eq('id',s.id);
-  closeAct();
   if(error){ toast(error.code==='23503'? 'Không xóa được: em này có lịch sử thanh toán. Giữ trạng thái Đã nghỉ để bảo toàn số liệu.' : error.message, false); return; }
-  closeSheets(); curStudent=null; await loadAll(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); toast('Đã xóa học sinh');
+  closeDetailPage(); curStudent=null; await loadAll(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); toast('Đã xóa học sinh');
 }
 
 /* ===== HỌC PHÍ (chỉ quản lý) — tạo phiếu + QR VietQR thật ===== */
@@ -978,12 +1083,11 @@ function openCreatePhieu(e){
   hpCtx=e; hpMonths=1;
   $('#sheetBody').innerHTML=`
     <h2>Tạo phiếu học phí</h2><p class="lead">Chọn số tháng phụ huynh đóng đợt này.</p>
-    <div class="summ" style="display:flex;align-items:center;gap:12px;background:#F7F8FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px">
+    <div class="summ" style="display:flex;align-items:center;gap:var(--sp-3);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-input);padding:var(--sp-3) var(--sp-4);margin-top:var(--sp-3)">
       <div class="avatar" style="width:40px;height:40px;background:${avaC(e.ma)}">${ini1(e.hoTen)}</div>
-      <div><div style="font-weight:700;font-size:15px">${e.hoTen}</div><div style="font-size:12.5px;color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
+      <div><div style="font-weight:700;font-size:var(--text-body)">${e.hoTen}</div><div style="font-size:var(--text-sub);color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
     </div>
-    <div style="margin-top:16px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Số tháng đóng</div>
-    <div class="seg" id="hpseg"><button class="on" data-m="1">1 tháng</button><button data-m="2">2 tháng</button><button data-m="3">3 tháng</button></div>
+    <div class="field" style="margin-top:var(--sp-4)"><label>Số tháng đóng</label><div class="chipset" id="hpseg"><button class="choice on" data-m="1">1 tháng</button><button class="choice" data-m="2">2 tháng</button><button class="choice" data-m="3">3 tháng</button></div></div>
     <div id="hpcalc"></div>
     <button class="save" id="hpmk">Tạo phiếu &amp; sinh QR</button>
     <button class="ghost" onclick="closeSheets()">Hủy</button>`;
@@ -996,11 +1100,11 @@ function drawHpCalc(){
   const e=hpCtx, m=hpMonths, sub=e.fee*m, disc=Math.round(sub*e.giam/100), tot=sub-disc;
   const kyTu=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date();
   const kyDen=addDays(addMonths(kyTu,m),-1);
-  $('#hpcalc').innerHTML=`<div style="margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
-    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Đóng tới hết</span><span style="font-weight:600">${toISO(kyDen).split('-').reverse().join('/')}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:14px;background:#F7F8FB;border-top:1px solid var(--line)"><span style="font-weight:700">Phụ huynh chuyển</span><span style="font-weight:700;font-size:20px;color:var(--primary)">${vnd(tot)}đ</span></div>
+  $('#hpcalc').innerHTML=`<div style="margin-top:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-input);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body)"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body);border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body);border-top:1px solid var(--line)"><span style="color:var(--muted)">Đóng tới hết</span><span style="font-weight:600">${toISO(kyDen).split('-').reverse().join('/')}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:var(--sp-4);background:var(--soft);border-top:1px solid var(--line)"><span style="font-weight:700">Phụ huynh chuyển</span><span style="font-weight:700;font-size:20px;color:var(--primary)">${vnd(tot)}đ</span></div>
   </div>`;
 }
 async function doCreatePhieu(){
@@ -1023,10 +1127,10 @@ async function doCreatePhieu(){
 function openPayLineActions(e){
   const p=e.pending;
   $('#actBody').innerHTML=`<h3>${e.hoTen}</h3><p class="who2">${e.lopTen}${e.maxKyDen?' · đã đóng tới '+e.maxKyDen.split('-').reverse().join('/'):''}</p>
-    ${p?`<button class="opt" id="pa_view"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">QR</span>Xem lại QR phiếu chờ</button>
-        <button class="opt" id="pa_cancel"><span class="ic" style="background:var(--danger-soft);color:var(--danger)">✕</span>Hủy phiếu chờ</button>`:''}
-    <button class="opt" id="pa_qr"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">＋</span>Tạo mã QR chuyển khoản</button>
-    <button class="opt" id="pa_cash"><span class="ic" style="background:var(--ok-soft);color:var(--ok)">₫</span>Ghi đã đóng — tiền mặt / CK tay</button>`;
+    ${p?`<div class="optrow" id="pa_view"><i class="hgi-stroke hgi-qr-code"></i>Xem lại QR phiếu chờ</div>
+        <div class="optrow" id="pa_cancel"><i class="hgi-stroke hgi-cancel-01"></i>Hủy phiếu chờ</div>`:''}
+    <div class="optrow" id="pa_qr"><i class="hgi-stroke hgi-qr-code"></i>Tạo mã QR chuyển khoản</div>
+    <div class="optrow" id="pa_cash"><i class="hgi-stroke hgi-wallet-01"></i>Ghi đã đóng — tiền mặt / CK tay</div>`;
   if(p){ $('#pa_view').onclick=()=>{closeAct(); showQR(p);}; $('#pa_cancel').onclick=()=>{closeAct(); cancelPhieu(p);}; }
   $('#pa_qr').onclick=()=>{closeAct(); openCreatePhieu(e);};
   $('#pa_cash').onclick=()=>{closeAct(); openMarkPaidForm(e);};
@@ -1040,10 +1144,10 @@ function markPeriod(){
 function drawMarkCalc(){
   const e=hpCtx, m=hpMonths, sub=e.fee*m, disc=Math.round(sub*e.giam/100), tot=sub-disc;
   const {kyTu,kyDen}=markPeriod();
-  $('#mpcalc').innerHTML=`<div style="margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
-    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
-    <div style="display:flex;justify-content:space-between;padding:11px 14px;font-size:14px;border-top:1px solid var(--line)"><span style="color:var(--muted)">Kỳ đóng</span><span style="font-weight:600">${toISO(kyTu).split('-').reverse().join('/')} – ${toISO(kyDen).split('-').reverse().join('/')}</span></div>
+  $('#mpcalc').innerHTML=`<div style="margin-top:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-input);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body)"><span style="color:var(--muted)">${vnd(e.fee)}đ × ${m} tháng</span><span style="font-weight:600;font-family:'Inter',sans-serif">${vnd(sub)}đ</span></div>
+    ${e.giam?`<div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body);border-top:1px solid var(--line)"><span style="color:var(--muted)">Giảm ${e.giam}%</span><span style="font-weight:600;font-family:'Inter',sans-serif;color:var(--ok)">−${vnd(disc)}đ</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:var(--sp-3) var(--sp-4);font-size:var(--text-body);border-top:1px solid var(--line)"><span style="color:var(--muted)">Kỳ đóng</span><span style="font-weight:600">${toISO(kyTu).split('-').reverse().join('/')} – ${toISO(kyDen).split('-').reverse().join('/')}</span></div>
   </div>`;
   const inp=$('#mpamount'); if(inp) inp.value=tot;
 }
@@ -1052,14 +1156,12 @@ function openMarkPaidForm(e){
   const d=e.maxKyDen?addDays(new Date(e.maxKyDen),1):new Date(); hpStart=d.toISOString().slice(0,7);
   $('#sheetBody').innerHTML=`
     <h2>Ghi đã đóng</h2><p class="lead">Ghi nhận khoản đã thu (tiền mặt / CK tay / đóng từ trước).</p>
-    <div class="summ" style="display:flex;align-items:center;gap:12px;background:#F7F8FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px">
+    <div class="summ" style="display:flex;align-items:center;gap:var(--sp-3);background:var(--soft);border:1px solid var(--line);border-radius:var(--r-input);padding:var(--sp-3) var(--sp-4);margin-top:var(--sp-3)">
       <div class="avatar" style="width:40px;height:40px;background:${avaC(e.ma)}">${ini1(e.hoTen)}</div>
-      <div><div style="font-weight:700;font-size:15px">${e.hoTen}</div><div style="font-size:12.5px;color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
+      <div><div style="font-weight:700;font-size:var(--text-body)">${e.hoTen}</div><div style="font-size:var(--text-sub);color:var(--muted)">${e.lopTen} · ${vnd(e.fee)}đ/tháng${e.giam?` · giảm ${e.giam}%`:''}</div></div>
     </div>
-    <div style="margin-top:16px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Hình thức</div>
-    <div class="seg" id="mpmethod"><button class="on" data-v="Tiền mặt">Tiền mặt</button><button data-v="CK tay">CK tay</button></div>
-    <div style="margin-top:14px;font-size:13px;font-weight:600;color:#3a4660;margin-bottom:8px">Số tháng đóng</div>
-    <div class="seg" id="mpseg"><button class="on" data-m="1">1 tháng</button><button data-m="2">2 tháng</button><button data-m="3">3 tháng</button></div>
+    <div class="field" style="margin-top:var(--sp-4)"><label>Hình thức</label><div class="chipset" id="mpmethod"><button class="choice on" data-v="Tiền mặt">Tiền mặt</button><button class="choice" data-v="CK tay">CK tay</button></div></div>
+    <div class="field" style="margin-top:var(--sp-4)"><label>Số tháng đóng</label><div class="chipset" id="mpseg"><button class="choice on" data-m="1">1 tháng</button><button class="choice" data-m="2">2 tháng</button><button class="choice" data-m="3">3 tháng</button></div></div>
     <div class="field" style="margin-top:14px"><label>Tính từ tháng</label><input id="mpstart" type="month" value="${hpStart}"><div class="hint">Đóng từ trước khi có app thì chọn đúng tháng bắt đầu.</div></div>
     <div id="mpcalc"></div>
     <div class="field" style="margin-top:14px"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div>
@@ -1224,6 +1326,18 @@ function openAssign(u){
 
 /* ===== plumbing ===== */
 function show(sel){ $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
+function showPage(title){ $('#pageTitle').textContent=title; $('#page').classList.add('show'); }
+function closePage(){ $('#page').classList.remove('show'); }
+$('#pageCancel').onclick=closePage;
+function showDetailPage(){ $('#detailPage').classList.add('show'); }
+function closeDetailPage(){ $('#detailPage').classList.remove('show'); }
+$('#detailBack').onclick=closeDetailPage;
+function showConfirmDialog(title,msg,onConfirm){
+  $('#dlgTitle').textContent=title; $('#dlgMsg').textContent=msg;
+  $('#dialogScrim').classList.remove('hide');
+  $('#dlgConfirm').onclick=()=>{ $('#dialogScrim').classList.add('hide'); onConfirm(); };
+}
+$('#dlgCancel').onclick=()=>$('#dialogScrim').classList.add('hide');
 function closeSheets(){ $('#scrim').classList.remove('show'); $('#sheet').classList.remove('show'); $('#actSheet').classList.remove('show'); }
 function closeAct(){ $('#actSheet').classList.remove('show'); }
 $('#actGrip').onclick=closeAct; $('#actClose').onclick=closeAct;
