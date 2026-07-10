@@ -29,7 +29,7 @@
 
   /* ===== TẠM GIỮ — token dư, xoá sau khi mọi module refactor xong (mục 1 checklist)
      Đang dùng ở: --off/--off-soft → .pill.da_nghi/.pill.nghi, .stt.da_dong/.spill.da_dong (Lớp học)
-                  --shadow → .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast (Dashboard đã hết dùng — refactor 07/2026)
+                  --shadow → .card, .qrbox, .toast (Dashboard + Thu chi đã hết dùng — refactor 07/2026)
                   --sheet-shadow → .sheet, .act ===== */
   --off:#7A8696; --off-soft:#EDEFF3;
   --shadow:0 1px 3px rgba(20,22,28,.05);
@@ -264,16 +264,14 @@
   .tile[data-go],.cfhero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.cfhero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
   .dsec{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:22px 4px 10px}
   .infonote{margin-top:18px; background:var(--primary-soft); border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; font-size:12.5px; line-height:1.55; color:#2a3a63} .infonote b{color:var(--primary)}
-  .monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:6px; box-shadow:var(--shadow); margin-bottom:12px}
+  .monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border-radius:var(--r-card); padding:5px; margin-bottom:12px}
   .monthnav button{width:38px; height:38px; border:0; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); font-size:20px}
   .monthnav .mlabel{font-weight:700; font-size:15px}
-  .tcsum{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px}
-  .tcsum .c{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:11px 8px; text-align:center; box-shadow:var(--shadow)}
-  .tcsum .c .n{font-family:'Inter',sans-serif; font-weight:700; font-size:14px} .tcsum .c .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
-  .tcsum .c.thu .n{color:var(--ok)} .tcsum .c.chi .n{color:var(--danger)}
-  .tcrow{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:12px 14px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
-  .tcrow .cat{flex:1; min-width:0} .tcrow .cat .t{font-weight:600; font-size:14.5px} .tcrow .cat .d{font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .tcrow .amt{font-family:'Inter',sans-serif; font-weight:700; font-size:15px; flex:none} .tcrow .amt.thu{color:var(--ok)} .tcrow .amt.chi{color:var(--danger)}
+  .sumgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px}
+  .sumcard{background:var(--surface); border-radius:var(--r-card); padding:13px 6px; text-align:center}
+  .sumcard .n{font-weight:700; font-size:14px} .sumcard .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
+  .sumcard.thu .n{color:var(--ok)} .sumcard.chi .n{color:var(--danger)}
+  .tcamt{font-weight:700; font-size:15px; flex:none} .tcamt.thu{color:var(--ok)} .tcamt.chi{color:var(--danger)}
   .subtabs{display:flex; gap:7px; padding:0 0 12px}
   .subtab{flex:1; position:relative; font:inherit; font-size:13px; font-weight:700; padding:9px 6px; border-radius:11px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer}
   .subtab.on{background:var(--ink); color:#fff; border-color:var(--ink)}
@@ -938,32 +936,32 @@ function renderThuChi(){
   const thu=inM.filter(t=>t.loai==='thu').reduce((a,t)=>a+Number(t.so_tien),0);
   const chi=inM.filter(t=>t.loai==='chi').reduce((a,t)=>a+Number(t.so_tien),0);
   const rows = inM.length
-    ? [...inM].sort((a,b)=> a.ngay<b.ngay?1:-1).map(t=>{const isThu=t.loai==='thu'; return `<div class="tcrow" data-id="${t.id}"><div class="cat"><div class="t">${t.danh_muc}</div><div class="d">${fmtDate(t.ngay)}${t.ghi_chu?' · '+t.ghi_chu:''}</div></div><div class="amt ${t.loai}">${isThu?'+':'−'}${vnd(t.so_tien)}đ</div></div>`;}).join('')
+    ? `<div class="group">${[...inM].sort((a,b)=> a.ngay<b.ngay?1:-1).map(t=>{const isThu=t.loai==='thu'; return `<div class="row tap" data-id="${t.id}"><div class="main"><div class="t">${t.danh_muc}</div><div class="meta">${fmtDate(t.ngay)}${t.ghi_chu?' · '+t.ghi_chu:''}</div></div><span class="tcamt ${t.loai}">${isThu?'+':'−'}${vnd(t.so_tien)}đ</span></div>`;}).join('')}</div>`
     : '<div class="state"><div class="big">Chưa có khoản nào tháng này</div>Bấm “Ghi khoản” để thêm thu hoặc chi.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
       <div class="titlerow" style="margin:2px 0 14px"><h1>Thu chi</h1></div>
       <div class="monthnav"><button id="tcPrev">‹</button><div class="mlabel">Tháng ${String(tcM+1).padStart(2,'0')}/${tcY}</div><button id="tcNext">›</button></div>
-      <div class="tcsum">
-        <div class="c thu"><div class="n">${vnd(thu)}</div><div class="l">Thu</div></div>
-        <div class="c chi"><div class="n">${vnd(chi)}</div><div class="l">Chi</div></div>
-        <div class="c"><div class="n" style="${thu-chi<0?'color:var(--danger)':''}">${vnd(thu-chi)}</div><div class="l">Còn lại</div></div>
+      <div class="sumgrid">
+        <div class="sumcard thu"><div class="n">${vnd(thu)}</div><div class="l">Thu</div></div>
+        <div class="sumcard chi"><div class="n">${vnd(chi)}</div><div class="l">Chi</div></div>
+        <div class="sumcard"><div class="n" style="${thu-chi<0?'color:var(--danger)':''}">${vnd(thu-chi)}</div><div class="l">Còn lại</div></div>
       </div>
       ${rows}
     </div>`;
   $('#tcPrev').onclick=()=>{ tcM--; if(tcM<0){tcM=11;tcY--;} renderThuChi(); };
   $('#tcNext').onclick=()=>{ tcM++; if(tcM>11){tcM=0;tcY++;} renderThuChi(); };
-  $('#screen').querySelectorAll('.tcrow').forEach(r=>r.onclick=()=>openTcForm(thuchi.find(t=>t.id===r.dataset.id)));
+  $('#screen').querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openTcForm(thuchi.find(t=>t.id===r.dataset.id)));
 }
 function fillTcCats(sel){ $('#tc_cat').innerHTML=CAT[tcLoai].map(c=>`<option ${sel===c?'selected':''}>${c}</option>`).join(''); }
 function openTcForm(t){
   tcEditId=t?t.id:null; tcLoai=t?t.loai:'chi';
   $('#sheetBody').innerHTML=`
     <h2>${t?'Sửa khoản':'Ghi khoản thu chi'}</h2><p class="lead">Sổ thu chi đơn giản theo tháng.</p>
-    <div class="field"><label>Loại</label><div class="seg" id="tc_loai"><button class="${tcLoai==='chi'?'on':''}" data-v="chi">Chi (tiền ra)</button><button class="${tcLoai==='thu'?'on':''}" data-v="thu">Thu (tiền vào)</button></div></div>
+    <div class="field"><label>Loại</label><div class="chipset" id="tc_loai"><button class="choice ${tcLoai==='chi'?'on':''}" data-v="chi">Chi (tiền ra)</button><button class="choice ${tcLoai==='thu'?'on':''}" data-v="thu">Thu (tiền vào)</button></div></div>
     <div class="field"><label>Danh mục <span class="req">*</span></label><select id="tc_cat"></select></div>
     <div class="field"><label>Số tiền <span class="req">*</span></label><div class="feewrap"><input id="tc_tien" type="number" inputmode="numeric" value="${t?t.so_tien:''}" placeholder="0"><span class="unit">đ</span></div></div>
-    <div class="field"><label>Ngày <span class="req">*</span></label><input id="tc_ngay" type="date" value="${t?t.ngay:new Date().toISOString().slice(0,10)}"></div>
+    <div class="field"><label>Ngày <span class="req">*</span></label><div class="datefield"><input id="tc_ngay" type="date" value="${t?t.ngay:new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày</span></div></div>
     <div class="field"><label>Ghi chú</label><textarea id="tc_note" rows="2" placeholder="VD: Cô Hương – 20 buổi × 150k">${t?(t.ghi_chu||''):''}</textarea></div>
     <button class="save" id="tc_save">${t?'Lưu thay đổi':'Lưu khoản'}</button>
     ${t?'<button class="ghost del" id="tc_del">Xóa khoản này</button>':'<button class="ghost" onclick="closeSheets()">Hủy</button>'}`;
