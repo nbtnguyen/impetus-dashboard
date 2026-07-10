@@ -55,7 +55,7 @@
   .field input,.field select,.field textarea{width:100%; font:inherit; font-size:15px; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 13px; outline:0; transition:.15s}
   .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft)}
   .field .hint{font-size:12px; color:var(--faint); margin-top:6px}
-  .two{display:flex; gap:11px} .two>*{flex:1}
+  .two{display:flex; gap:11px} .two>*{flex:1; min-width:0}
 
   .bigbtn{width:100%; margin-top:22px; background:var(--primary); color:#fff; border:0; border-radius:13px; padding:15px; font:inherit; font-size:15.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px}
   .bigbtn:active{background:var(--primary-press)} .bigbtn:disabled{opacity:.6}
@@ -146,7 +146,10 @@
   .navitem.active{color:var(--primary)}
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
-  .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--surface); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
+  .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
+  .sheetcard{background:var(--surface); border-radius:var(--r-group); padding:4px 16px 12px; margin-top:14px}
+  .summ{background:var(--surface); border-radius:var(--r-card); padding:12px 14px; margin-top:14px; display:flex; align-items:center; gap:12px}
+  .summ .av{width:40px; height:40px} .summ .nm{font-weight:700; font-size:15px} .summ .cd{font-size:12.5px; color:var(--muted); margin-top:1px}
   .act{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:85vh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 16px calc(20px + var(--safe-b))} .act.show{transform:translateX(-50%) translateY(0)}
   .achead{display:flex; align-items:flex-start; justify-content:space-between; padding:6px 2px 0}
   .achead .atitle{font-size:18px; font-weight:700; letter-spacing:-.01em}
@@ -238,8 +241,9 @@
   .page-body{flex:1; overflow-y:auto; padding:8px 14px calc(28px + var(--safe-b))}
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
-  .datefield{position:relative; width:100%; min-width:0}
-  .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box}
+  .field input[type="date"],.field input[type="time"]{overflow:hidden}
+  .datefield{position:relative; width:100%; min-width:0; overflow:hidden; border-radius:12px}
+  .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden}
   .datefield input[type="date"].empty{color:transparent}
   .datefield .dfph{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:15px; pointer-events:none; z-index:2}
   .datefield input[type="date"]:not(.empty) + .dfph{display:none}
@@ -485,13 +489,13 @@ function renderStudents(){
     const ps=isManager()?studentPayStatus(s):null;
     const parts=[s.ma_hoc_sinh];
     if(lops.length) lops.forEach(l=>parts.push(l)); else parts.push('Chưa xếp lớp');
+    if(s.trang_thai!=='dang_hoc') parts.push(`<span class="stt ${s.trang_thai}" style="font-size:inherit">${ST[s.trang_thai]||s.trang_thai}</span>`);
     if(ps==='due') parts.push(`<span class="unpaid">Chưa đóng</span>`);
     if(owesN(s)) parts.push(`<span class="unpaid">Nợ ${owesN(s)} buổi</span>`);
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="row tap haslead" data-id="${s.id}">
       <div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div>
       <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div>
-      ${s.trang_thai!=='dang_hoc'?`<span class="stt ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span>`:''}
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
   }).join('')+'</div>';
@@ -602,7 +606,6 @@ function openStudentForm(s){
   formQuanHe=ph?(ph.quan_he||'me'):'me';
   const batdauVal=s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10);
   $('#pageBody').innerHTML=`
-    <p style="color:var(--muted);font-size:13px;margin:10px 4px 0">Mã học sinh dùng làm Employee No trên máy Hikvision.</p>
     <div class="section" style="margin-top:10px"><div class="lbl">Thông tin cơ bản</div>
       <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
         <div class="field"><label>Họ và tên <span class="req">*</span></label><input id="f_ten" type="text" value="${s?s.ho_ten:''}" placeholder="Nguyễn Văn An"></div>
@@ -825,15 +828,15 @@ function openMakeupForm(fixed){
   if(!classes.length){ toast('Chưa có lớp nào — tạo lớp trước',false); return; }
   const opts=students.filter(s=>s.trang_thai!=='da_nghi');
   $('#sheetBody').innerHTML=`
-    <h2>Ghi buổi vắng</h2><p class="lead">Tạo phiếu học bù cho em nghỉ buổi.</p>
-    ${fixed
-      ? `<div class="summ" style="display:flex;align-items:center;gap:12px;background:#F7F8FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:6px"><div class="avatar" style="width:40px;height:40px;background:${avaC(fixed.ma_hoc_sinh)}">${ini1(fixed.ho_ten)}</div><div><div style="font-weight:700;font-size:15px">${fixed.ho_ten}</div><div style="font-size:12.5px;color:var(--muted)">${fixed.ma_hoc_sinh}</div></div></div><input type="hidden" id="hb_hs" value="${fixed.id}">`
-      : `<div class="field"><label>Học sinh <span class="req">*</span></label><select id="hb_hs">${opts.map(s=>`<option value="${s.id}">${s.ho_ten} — ${s.ma_hoc_sinh}</option>`).join('')}</select></div>`}
-    <div class="field"><label>Lớp <span class="req">*</span></label><select id="hb_lop">${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select></div>
-    <div class="field"><label>Ngày vắng <span class="req">*</span></label><input id="hb_ngay" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-    <div class="field"><label>Ghi chú</label><textarea id="hb_note" rows="2" placeholder="Lý do nghỉ (tùy chọn)…"></textarea></div>
-    <button class="save" id="hb_save">Tạo phiếu học bù</button>
-    <button class="ghost" onclick="closeSheets()">Hủy</button>`;
+    <div class="achead"><div><div class="atitle">Ghi buổi vắng</div><div class="asub">Tạo phiếu học bù cho em nghỉ buổi</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    ${fixed?`<div class="summ"><div class="avatar av" style="background:${avaC(fixed.ma_hoc_sinh)}">${ini1(fixed.ho_ten)}</div><div><div class="nm">${fixed.ho_ten}</div><div class="cd">${fixed.ma_hoc_sinh}</div></div></div><input type="hidden" id="hb_hs" value="${fixed.id}">`:''}
+    <div class="sheetcard">
+      ${!fixed?`<div class="field" style="margin-top:10px"><label>Học sinh <span class="req">*</span></label><select id="hb_hs">${opts.map(s=>`<option value="${s.id}">${s.ho_ten} — ${s.ma_hoc_sinh}</option>`).join('')}</select></div>`:''}
+      <div class="field" style="${fixed?'margin-top:10px':''}"><label>Lớp <span class="req">*</span></label><select id="hb_lop">${classes.map(c=>`<option value="${c.id}">${c.ten_lop}</option>`).join('')}</select></div>
+      <div class="field"><label>Ngày vắng <span class="req">*</span></label><div class="datefield"><input id="hb_ngay" type="date" value="${new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày vắng</span></div></div>
+      <div class="field"><label>Ghi chú</label><textarea id="hb_note" rows="2" placeholder="Lý do nghỉ (tùy chọn)…"></textarea></div>
+    </div>
+    <button class="btn primary block safe-b" id="hb_save" style="margin-top:18px">Tạo phiếu học bù</button>`;
   $('#hb_save').onclick=saveMakeup;
   show('#sheet');
 }
