@@ -678,7 +678,7 @@ function renderClasses(){
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="lopcard" data-id="${c.id}">
       <div style="display:flex;align-items:center;gap:11px">
-        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div>
+        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</div>
         <div class="main" style="flex:1;min-width:0"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>
         <span class="spill ${c.trang_thai}" style="flex:none">${CST[c.trang_thai]||c.trang_thai}</span>
       </div>
