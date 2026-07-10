@@ -29,7 +29,7 @@
 
   /* ===== TẠM GIỮ — token dư, xoá sau khi mọi module refactor xong (mục 1 checklist)
      Đang dùng ở: --off/--off-soft → .pill.da_nghi/.pill.nghi, .stt.da_dong/.spill.da_dong (Lớp học)
-                  --shadow → .tile, .warnrow, .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast
+                  --shadow → .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast (Dashboard đã hết dùng — refactor 07/2026)
                   --sheet-shadow → .sheet, .act ===== */
   --off:#7A8696; --off-soft:#EDEFF3;
   --shadow:0 1px 3px rgba(20,22,28,.05);
@@ -255,14 +255,14 @@
   .acttile:active{background:#F2F2F4}
   .acttile i{font-size:20px; color:var(--ink); line-height:1}
   .acttile span{font-size:12px; font-weight:600; color:var(--ink)}
+  /* Giữ 2 cột (khác 3 cột .tilegrid mục 14 design-system.html) — quyết định của Trung 07/2026, chỉ bỏ box-shadow/token hoá */
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px}
-  .tile{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 15px; box-shadow:var(--shadow)}
+  .tile{background:var(--surface); border-radius:var(--r-card); padding:14px 15px}
   .tile .n{font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1}
   .tile .l{font-size:12.5px; color:var(--muted); font-weight:600; margin-top:6px}
   .tile.warn .n{color:var(--danger)}
   .tile[data-go],.cfhero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.cfhero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
   .dsec{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:22px 4px 10px}
-  .warnrow{display:flex; align-items:center; gap:11px; padding:11px 13px; background:var(--surface); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .infonote{margin-top:18px; background:var(--primary-soft); border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; font-size:12.5px; line-height:1.55; color:#2a3a63} .infonote b{color:var(--primary)}
   .monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:6px; box-shadow:var(--shadow); margin-bottom:12px}
   .monthnav button{width:38px; height:38px; border:0; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); font-size:20px}
@@ -678,7 +678,7 @@ function renderClasses(){
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="lopcard" data-id="${c.id}">
       <div style="display:flex;align-items:center;gap:11px">
-        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</div>
+        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div>
         <div class="main" style="flex:1;min-width:0"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>
         <span class="spill ${c.trang_thai}" style="flex:none">${CST[c.trang_thai]||c.trang_thai}</span>
       </div>
@@ -888,10 +888,20 @@ function buildDashboard(){
   const hocThu=students.filter(s=>s.trang_thai==='hoc_thu');
   const prospects=[...choTest,...hocThu];
   const warnRows = owing.length
-    ? owing.slice(0,8).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}</div></div><span class="pill bao_luu">Nợ ${owesN(s)} buổi</span></div>`).join('')
+    ? '<div class="group">'+owing.slice(0,8).map(s=>{
+        const parts=[s.ma_hoc_sinh, `<span class="unpaid">Nợ ${owesN(s)} buổi</span>`];
+        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+        return `<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
+      }).join('')+'</div>'
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang nợ buổi.</div>';
   const prospectRows = prospects.length
-    ? prospects.slice(0,10).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}${s.ngay_hen_test?' · test '+fmtDate(s.ngay_hen_test):''}</div></div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]}</span></div>`).join('')
+    ? '<div class="group">'+prospects.slice(0,10).map(s=>{
+        const parts=[s.ma_hoc_sinh];
+        if(s.ngay_hen_test) parts.push('test '+fmtDate(s.ngay_hen_test));
+        parts.push(`<span class="stt ${s.trang_thai}" style="font-size:inherit">${ST[s.trang_thai]}</span>`);
+        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+        return `<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
+      }).join('')+'</div>'
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang chờ test / học thử.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
@@ -911,7 +921,7 @@ function buildDashboard(){
       ${warnRows}
       <div class="infonote"><b>Sắp có:</b> doanh thu, công nợ học phí và cảnh báo vắng nhiều sẽ tự hiện ở đây khi mình bật <b>điểm danh (máy Hikvision)</b> và <b>thu học phí (SePay)</b>.</div>
     </div>`;
-  $('#screen').querySelectorAll('.warnrow').forEach(r=>r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)));
+  $('#screen').querySelectorAll('.dash .row').forEach(r=>r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)));
   $('#screen').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{
     const g=el.dataset.go;
     if(g==='lop'){ lopQuery=''; switchView('lop'); }
