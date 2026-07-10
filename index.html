@@ -166,6 +166,7 @@
 
   /* Group + Row (mục 6 design-system) — component danh sách chuẩn */
   .group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
+  .dash .group+.group{margin-top:10px}
   .row{display:flex; align-items:center; gap:12px; padding:14px 16px; position:relative; background:var(--surface)}
   .row + .row::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
   .row.tap{cursor:pointer} .row.tap:active{background:#F2F2F4}
@@ -894,12 +895,12 @@ function buildDashboard(){
   const classesToday=classes.filter(c=>c.trang_thai!=='da_dong' && (c.cac_ngay_trong_tuan||'').split(',').includes(todayCode))
     .sort((a,b)=>(a.gio_bat_dau||'').localeCompare(b.gio_bat_dau||''));
   const attendanceRows = classesToday.length
-    ? '<div class="group">'+classesToday.map(c=>{
+    ? classesToday.map(c=>{
         const roster=students.filter(s=>(s.trang_thai==='dang_hoc'||s.trang_thai==='bao_luu') && (s.dang_ky_lop||[]).some(d=>d.trang_thai!=='da_nghi' && d.lop_hoc && d.lop_hoc.id===c.id));
         const expected=roster.length;
         const present=roster.filter(s=>presentIds.has(c.id+'|'+s.id)).length;
         const [sh,sm]=(c.gio_bat_dau||'0:0').split(':').map(Number);
-        const started=nowMin>=(sh*60+(sm||0));
+        const started=c.gio_bat_dau?(nowMin>=(sh*60+(sm||0))):false;
         const timeStr=c.gio_bat_dau?c.gio_bat_dau.slice(0,5)+(c.gio_ket_thuc?'–'+c.gio_ket_thuc.slice(0,5):''):'';
         let statusText, statusColor='var(--faint)', missingHtml='';
         if(!started){ statusText='Chưa tới giờ'; }
@@ -914,8 +915,8 @@ function buildDashboard(){
         if(started && expected) parts.push(present+'/'+expected);
         parts.push(`<span style="color:${statusColor};font-weight:600">${statusText}</span>`);
         const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}`;
-      }).join('')+'</div>'
+        return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
+      }).join('')
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Hôm nay không có lớp nào.</div>';
   const warnRows = owing.length
     ? '<div class="group">'+owing.slice(0,8).map(s=>{
