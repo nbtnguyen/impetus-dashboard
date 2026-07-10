@@ -377,7 +377,7 @@ const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
 let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
-let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null;
+let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[];
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
 const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
@@ -425,7 +425,7 @@ async function enterApp(){
 $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched()]); }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh()]); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
@@ -433,6 +433,7 @@ async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, g
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
 async function loadThuChi(){ const {data}=await db.from('thu_chi').select('*').order('ngay',{ascending:false}); thuchi=data||[]; }
+async function loadDiemDanh(){ const from=new Date(); from.setDate(from.getDate()-7); const fromISO=from.getFullYear()+'-'+String(from.getMonth()+1).padStart(2,'0')+'-'+String(from.getDate()).padStart(2,'0'); const {data}=await db.from('diem_danh').select('*').gte('ngay',fromISO).order('gio_quet',{ascending:false}); diemdanh=data||[]; }
 
 /* ===== Nav ===== */
 document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.dataset.v));
@@ -885,6 +886,37 @@ function buildDashboard(){
   const choTest=students.filter(s=>s.trang_thai==='cho_test');
   const hocThu=students.filter(s=>s.trang_thai==='hoc_thu');
   const prospects=[...choTest,...hocThu];
+  const DOW=['CN','T2','T3','T4','T5','T6','T7'];
+  const todayCode=DOW[nowD.getDay()];
+  const todayISO=dY+'-'+String(dMo+1).padStart(2,'0')+'-'+String(nowD.getDate()).padStart(2,'0');
+  const nowMin=nowD.getHours()*60+nowD.getMinutes();
+  const presentIds=new Set(diemdanh.filter(d=>d.ngay===todayISO && d.lop_hoc_id).map(d=>d.lop_hoc_id+'|'+d.hoc_sinh_id));
+  const classesToday=classes.filter(c=>c.trang_thai!=='da_dong' && (c.cac_ngay_trong_tuan||'').split(',').includes(todayCode))
+    .sort((a,b)=>(a.gio_bat_dau||'').localeCompare(b.gio_bat_dau||''));
+  const attendanceRows = classesToday.length
+    ? '<div class="group">'+classesToday.map(c=>{
+        const roster=students.filter(s=>(s.trang_thai==='dang_hoc'||s.trang_thai==='bao_luu') && (s.dang_ky_lop||[]).some(d=>d.trang_thai!=='da_nghi' && d.lop_hoc && d.lop_hoc.id===c.id));
+        const expected=roster.length;
+        const present=roster.filter(s=>presentIds.has(c.id+'|'+s.id)).length;
+        const [sh,sm]=(c.gio_bat_dau||'0:0').split(':').map(Number);
+        const started=nowMin>=(sh*60+(sm||0));
+        const timeStr=c.gio_bat_dau?c.gio_bat_dau.slice(0,5)+(c.gio_ket_thuc?'–'+c.gio_ket_thuc.slice(0,5):''):'';
+        let statusText, statusColor='var(--faint)', missingHtml='';
+        if(!started){ statusText='Chưa tới giờ'; }
+        else if(!expected){ statusText='Chưa có học sinh'; }
+        else if(present>=expected){ statusText='Đủ'; statusColor='var(--st-dang-hoc)'; }
+        else {
+          const missing=roster.filter(s=>!presentIds.has(c.id+'|'+s.id));
+          statusText=`Thiếu ${missing.length} em`; statusColor='var(--danger)';
+          missingHtml=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
+        }
+        const parts=[timeStr, c.giao_vien?.ho_ten||'Chưa gán GV'];
+        if(started && expected) parts.push(present+'/'+expected);
+        parts.push(`<span style="color:${statusColor};font-weight:600">${statusText}</span>`);
+        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+        return `<div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}`;
+      }).join('')+'</div>'
+    : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Hôm nay không có lớp nào.</div>';
   const warnRows = owing.length
     ? '<div class="group">'+owing.slice(0,8).map(s=>{
         const parts=[s.ma_hoc_sinh, `<span class="unpaid">Nợ ${owesN(s)} buổi</span>`];
@@ -913,13 +945,16 @@ function buildDashboard(){
         <div class="tile warn" data-go="hs:can_hoc_bu"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
         <div class="tile" data-go="hoc_phi"><div class="n" style="color:var(--danger)">${(typeof dueList==='function')?dueList().length:0}</div><div class="l">Đến hạn đóng</div></div>
       </div>
+      <div class="dsec">Lớp học hôm nay</div>
+      ${attendanceRows}
       <div class="dsec">Tuyển sinh — chờ test / học thử</div>
       ${prospectRows}
       <div class="dsec">Cần chú ý — nợ buổi học bù</div>
       ${warnRows}
-      <div class="infonote"><b>Sắp có:</b> doanh thu, công nợ học phí và cảnh báo vắng nhiều sẽ tự hiện ở đây khi mình bật <b>điểm danh (máy Hikvision)</b> và <b>thu học phí (SePay)</b>.</div>
+      <div class="infonote"><b>Sắp có:</b> doanh thu &amp; công nợ học phí sẽ tự hiện ở đây khi mình bật <b>thu học phí (SePay)</b>. Điểm danh Hikvision đã tích hợp — số liệu sẽ bắt đầu đổ về khi kết nối máy xong.</div>
     </div>`;
-  $('#screen').querySelectorAll('.dash .row').forEach(r=>r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)));
+  $('#screen').querySelectorAll('.dash .row').forEach(r=>{ if(r.dataset.id) r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)); });
+  $('#screen').querySelectorAll('.dash .classrow').forEach(r=>r.onclick=()=>openClassDetail(classes.find(c=>c.id===r.dataset.cid)));
   $('#screen').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{
     const g=el.dataset.go;
     if(g==='lop'){ lopQuery=''; switchView('lop'); }
