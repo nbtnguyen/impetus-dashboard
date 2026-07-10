@@ -902,18 +902,22 @@ function buildDashboard(){
         const [sh,sm]=(c.gio_bat_dau||'0:0').split(':').map(Number);
         const started=c.gio_bat_dau?(nowMin>=(sh*60+(sm||0))):false;
         const timeStr=c.gio_bat_dau?c.gio_bat_dau.slice(0,5)+(c.gio_ket_thuc?'–'+c.gio_ket_thuc.slice(0,5):''):'';
-        let statusText, statusColor='var(--faint)', missingHtml='';
+        let statusText, statusColor='var(--faint)', statusHtml, missingHtml='';
         if(!started){ statusText='Chưa tới giờ'; }
         else if(!expected){ statusText='Chưa có học sinh'; }
         else if(present>=expected){ statusText='Đủ'; statusColor='var(--st-dang-hoc)'; }
         else {
           const missing=roster.filter(s=>!presentIds.has(c.id+'|'+s.id));
           statusText=`Thiếu ${missing.length} em`; statusColor='var(--danger)';
-          missingHtml=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
+          const rows=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
+          missingHtml=`<div class="missBlock" id="miss-${c.id}">${rows}</div>`;
         }
+        statusHtml = missingHtml
+          ? `<span class="missToggle" data-target="miss-${c.id}" style="color:${statusColor};font-weight:600;display:inline-flex;align-items:center;gap:3px;cursor:pointer">${statusText}<i class="hgi-stroke hgi-arrow-down-01" style="font-size:13px;transition:transform .15s"></i></span>`
+          : `<span style="color:${statusColor};font-weight:600">${statusText}</span>`;
         const parts=[timeStr, c.giao_vien?.ho_ten||'Chưa gán GV'];
         if(started && expected) parts.push(present+'/'+expected);
-        parts.push(`<span style="color:${statusColor};font-weight:600">${statusText}</span>`);
+        parts.push(statusHtml);
         const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
         return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
       }).join('')
@@ -956,6 +960,16 @@ function buildDashboard(){
     </div>`;
   $('#screen').querySelectorAll('.dash .row').forEach(r=>{ if(r.dataset.id) r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)); });
   $('#screen').querySelectorAll('.dash .classrow').forEach(r=>r.onclick=()=>openClassDetail(classes.find(c=>c.id===r.dataset.cid)));
+  $('#screen').querySelectorAll('.dash .missToggle').forEach(t=>{
+    t.onclick=(e)=>{
+      e.stopPropagation();
+      const target=document.getElementById(t.dataset.target);
+      const icon=t.querySelector('i');
+      const willOpen=target.style.display==='none';
+      target.style.display=willOpen?'':'none';
+      icon.style.transform=willOpen?'':'rotate(-90deg)';
+    };
+  });
   $('#screen').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{
     const g=el.dataset.go;
     if(g==='lop'){ lopQuery=''; switchView('lop'); }
