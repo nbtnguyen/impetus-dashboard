@@ -910,16 +910,15 @@ function buildDashboard(){
           const missing=roster.filter(s=>!presentIds.has(c.id+'|'+s.id));
           statusText=`Thiếu ${missing.length} em`; statusColor='var(--danger)';
           const rows=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
-          missingHtml=`<div class="missBlock" id="miss-${c.id}">${rows}</div>`;
+          missingHtml=`<div class="missBlock" id="miss-${c.id}" style="display:none">${rows}</div>`;
         }
         statusHtml = missingHtml
-          ? `<span class="missToggle" data-target="miss-${c.id}" style="color:${statusColor};font-weight:600;display:inline-flex;align-items:center;gap:3px;cursor:pointer">${statusText}<i class="hgi-stroke hgi-arrow-down-01" style="font-size:13px;transition:transform .15s"></i></span>`
-          : `<span style="color:${statusColor};font-weight:600">${statusText}</span>`;
+          ? `<span class="missToggle" data-target="miss-${c.id}" style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer">${statusText}<i class="hgi-stroke hgi-arrow-down-01" style="font-size:13px;transition:transform .15s;transform:rotate(-90deg)"></i></span>`
+          : `<span style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none">${statusText}</span>`;
         const parts=[timeStr, c.giao_vien?.ho_ten||'Chưa gán GV'];
         if(started && expected) parts.push(present+'/'+expected);
-        parts.push(statusHtml);
         const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
+        return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(c.ten_lop)};font-size:11px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>${statusHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
       }).join('')
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Hôm nay không có lớp nào.</div>';
   const warnRows = owing.length
