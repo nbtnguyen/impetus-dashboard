@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
 <style>
   :root{
+  color-scheme: light;
   /* ===== GIỮ NGUYÊN — không đổi giá trị ===== */
   --bg:#F6F6F6; --surface:#FFFFFF; --ink:#191c1f; --muted:#505a63; --faint:#8d969e; --line:#E6E6EA;
   --primary:#494fdf; --primary-press:#3a40c4; --primary-soft:#EAEAFB;
@@ -29,7 +30,7 @@
 
   /* ===== TẠM GIỮ — token dư, xoá sau khi mọi module refactor xong (mục 1 checklist)
      Đang dùng ở: --off/--off-soft → .pill.da_nghi/.pill.nghi, .stt.da_dong/.spill.da_dong (Lớp học)
-                  --shadow → .card, .qrbox, .toast (Dashboard + Thu chi đã hết dùng — refactor 07/2026)
+                  --shadow → .tile, .warnrow, .card, .monthnav, .tcsum .c, .tcrow, .qrbox, .toast
                   --sheet-shadow → .sheet, .act ===== */
   --off:#7A8696; --off-soft:#EDEFF3;
   --shadow:0 1px 3px rgba(20,22,28,.05);
@@ -166,7 +167,6 @@
 
   /* Group + Row (mục 6 design-system) — component danh sách chuẩn */
   .group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
-  .dash .group+.group{margin-top:10px}
   .row{display:flex; align-items:center; gap:12px; padding:14px 16px; position:relative; background:var(--surface)}
   .row + .row::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
   .row.tap{cursor:pointer} .row.tap:active{background:#F2F2F4}
@@ -232,7 +232,7 @@
   .page-footer:empty{display:none}
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
-  .field input[type="date"],.field input[type="time"]{overflow:hidden}
+  .field input[type="date"],.field input[type="time"]{overflow:hidden; -webkit-appearance:none; appearance:none; min-height:46px; line-height:1.3; text-align:left}
   .datefield{position:relative; width:100%; min-width:0; overflow:hidden; border-radius:12px}
   .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden}
   .datefield input[type="date"].empty{color:transparent}
@@ -256,23 +256,25 @@
   .acttile:active{background:#F2F2F4}
   .acttile i{font-size:20px; color:var(--ink); line-height:1}
   .acttile span{font-size:12px; font-weight:600; color:var(--ink)}
-  /* Giữ 2 cột (khác 3 cột .tilegrid mục 14 design-system.html) — quyết định của Trung 07/2026, chỉ bỏ box-shadow/token hoá */
   .tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px}
-  .tile{background:var(--surface); border-radius:var(--r-card); padding:14px 15px}
+  .tile{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 15px; box-shadow:var(--shadow)}
   .tile .n{font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1}
   .tile .l{font-size:12.5px; color:var(--muted); font-weight:600; margin-top:6px}
   .tile.warn .n{color:var(--danger)}
   .tile[data-go],.cfhero[data-go]{cursor:pointer; transition:transform .12s} .tile[data-go]:active,.cfhero[data-go]:active{transform:scale(.985)} .tile-off{opacity:.5}
   .dsec{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:22px 4px 10px}
+  .warnrow{display:flex; align-items:center; gap:11px; padding:11px 13px; background:var(--surface); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
   .infonote{margin-top:18px; background:var(--primary-soft); border:1px solid #D7E2FB; border-radius:13px; padding:13px 14px; font-size:12.5px; line-height:1.55; color:#2a3a63} .infonote b{color:var(--primary)}
-  .monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border-radius:var(--r-card); padding:5px; margin-bottom:12px}
+  .monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:6px; box-shadow:var(--shadow); margin-bottom:12px}
   .monthnav button{width:38px; height:38px; border:0; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); font-size:20px}
   .monthnav .mlabel{font-weight:700; font-size:15px}
-  .sumgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px}
-  .sumcard{background:var(--surface); border-radius:var(--r-card); padding:13px 6px; text-align:center}
-  .sumcard .n{font-weight:700; font-size:14px} .sumcard .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
-  .sumcard.thu .n{color:var(--ok)} .sumcard.chi .n{color:var(--danger)}
-  .tcamt{font-weight:700; font-size:15px; flex:none} .tcamt.thu{color:var(--ok)} .tcamt.chi{color:var(--danger)}
+  .tcsum{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px}
+  .tcsum .c{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:11px 8px; text-align:center; box-shadow:var(--shadow)}
+  .tcsum .c .n{font-family:'Inter',sans-serif; font-weight:700; font-size:14px} .tcsum .c .l{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px}
+  .tcsum .c.thu .n{color:var(--ok)} .tcsum .c.chi .n{color:var(--danger)}
+  .tcrow{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:12px 14px; box-shadow:var(--shadow); cursor:pointer; margin-bottom:8px}
+  .tcrow .cat{flex:1; min-width:0} .tcrow .cat .t{font-weight:600; font-size:14.5px} .tcrow .cat .d{font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .tcrow .amt{font-family:'Inter',sans-serif; font-weight:700; font-size:15px; flex:none} .tcrow .amt.thu{color:var(--ok)} .tcrow .amt.chi{color:var(--danger)}
   .subtabs{display:flex; gap:7px; padding:0 0 12px}
   .subtab{flex:1; position:relative; font:inherit; font-size:13px; font-weight:700; padding:9px 6px; border-radius:11px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer}
   .subtab.on{background:var(--ink); color:#fff; border-color:var(--ink)}
@@ -378,7 +380,7 @@ const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
 let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
-let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[];
+let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null;
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
 const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
@@ -426,7 +428,7 @@ async function enterApp(){
 $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh()]); }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched()]); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
@@ -434,7 +436,6 @@ async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, g
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
 async function loadThuChi(){ const {data}=await db.from('thu_chi').select('*').order('ngay',{ascending:false}); thuchi=data||[]; }
-async function loadDiemDanh(){ const from=new Date(); from.setDate(from.getDate()-7); const fromISO=from.getFullYear()+'-'+String(from.getMonth()+1).padStart(2,'0')+'-'+String(from.getDate()).padStart(2,'0'); const {data}=await db.from('diem_danh').select('*').gte('ngay',fromISO).order('gio_quet',{ascending:false}); diemdanh=data||[]; }
 
 /* ===== Nav ===== */
 document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.dataset.v));
@@ -678,7 +679,7 @@ function renderClasses(){
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="lopcard" data-id="${c.id}">
       <div style="display:flex;align-items:center;gap:11px">
-        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div>
+        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</div>
         <div class="main" style="flex:1;min-width:0"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>
         <span class="spill ${c.trang_thai}" style="flex:none">${CST[c.trang_thai]||c.trang_thai}</span>
       </div>
@@ -887,55 +888,11 @@ function buildDashboard(){
   const choTest=students.filter(s=>s.trang_thai==='cho_test');
   const hocThu=students.filter(s=>s.trang_thai==='hoc_thu');
   const prospects=[...choTest,...hocThu];
-  const DOW=['CN','T2','T3','T4','T5','T6','T7'];
-  const todayCode=DOW[nowD.getDay()];
-  const todayISO=dY+'-'+String(dMo+1).padStart(2,'0')+'-'+String(nowD.getDate()).padStart(2,'0');
-  const nowMin=nowD.getHours()*60+nowD.getMinutes();
-  const presentIds=new Set(diemdanh.filter(d=>d.ngay===todayISO && d.lop_hoc_id).map(d=>d.lop_hoc_id+'|'+d.hoc_sinh_id));
-  const classesToday=classes.filter(c=>c.trang_thai!=='da_dong' && (c.cac_ngay_trong_tuan||'').split(',').includes(todayCode))
-    .sort((a,b)=>(a.gio_bat_dau||'').localeCompare(b.gio_bat_dau||''));
-  const attendanceRows = classesToday.length
-    ? classesToday.map(c=>{
-        const roster=students.filter(s=>(s.trang_thai==='dang_hoc'||s.trang_thai==='bao_luu') && (s.dang_ky_lop||[]).some(d=>d.trang_thai!=='da_nghi' && d.lop_hoc && d.lop_hoc.id===c.id));
-        const expected=roster.length;
-        const present=roster.filter(s=>presentIds.has(c.id+'|'+s.id)).length;
-        const [sh,sm]=(c.gio_bat_dau||'0:0').split(':').map(Number);
-        const started=c.gio_bat_dau?(nowMin>=(sh*60+(sm||0))):false;
-        const timeStr=c.gio_bat_dau?c.gio_bat_dau.slice(0,5)+(c.gio_ket_thuc?'–'+c.gio_ket_thuc.slice(0,5):''):'';
-        let statusText, statusColor='var(--faint)', statusHtml, missingHtml='';
-        if(!started){ statusText='Chưa tới giờ'; }
-        else if(!expected){ statusText='Chưa có học sinh'; }
-        else if(present>=expected){ statusText='Đủ'; statusColor='var(--st-dang-hoc)'; }
-        else {
-          const missing=roster.filter(s=>!presentIds.has(c.id+'|'+s.id));
-          statusText=`Thiếu ${missing.length} em`; statusColor='var(--danger)';
-          const rows=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
-          missingHtml=`<div class="missBlock" id="miss-${c.id}" style="display:none">${rows}</div>`;
-        }
-        statusHtml = missingHtml
-          ? `<span class="missToggle" data-target="miss-${c.id}" style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer">${statusText}<i class="hgi-stroke hgi-arrow-down-01" style="font-size:13px;transition:transform .15s;transform:rotate(-90deg)"></i></span>`
-          : `<span style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none">${statusText}</span>`;
-        const parts=[timeStr, c.giao_vien?.ho_ten||'Chưa gán GV'];
-        if(started && expected) parts.push(present+'/'+expected);
-        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar" style="background:${avaC(c.ten_lop)};font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>${statusHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
-      }).join('')
-    : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Hôm nay không có lớp nào.</div>';
   const warnRows = owing.length
-    ? '<div class="group">'+owing.slice(0,8).map(s=>{
-        const parts=[s.ma_hoc_sinh, `<span class="unpaid">Nợ ${owesN(s)} buổi</span>`];
-        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
-      }).join('')+'</div>'
+    ? owing.slice(0,8).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}</div></div><span class="pill bao_luu">Nợ ${owesN(s)} buổi</span></div>`).join('')
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang nợ buổi.</div>';
   const prospectRows = prospects.length
-    ? '<div class="group">'+prospects.slice(0,10).map(s=>{
-        const parts=[s.ma_hoc_sinh];
-        if(s.ngay_hen_test) parts.push('test '+fmtDate(s.ngay_hen_test));
-        parts.push(`<span class="stt ${s.trang_thai}" style="font-size:inherit">${ST[s.trang_thai]}</span>`);
-        const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
-      }).join('')+'</div>'
+    ? prospects.slice(0,10).map(s=>`<div class="warnrow" data-id="${s.id}"><div class="avatar" style="width:38px;height:38px;border-radius:11px;background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div><div style="flex:1"><div style="font-weight:600;font-size:14.5px">${s.ho_ten}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${s.ma_hoc_sinh}${s.ngay_hen_test?' · test '+fmtDate(s.ngay_hen_test):''}</div></div><span class="pill ${s.trang_thai}">${ST[s.trang_thai]}</span></div>`).join('')
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang chờ test / học thử.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
@@ -949,26 +906,13 @@ function buildDashboard(){
         <div class="tile warn" data-go="hs:can_hoc_bu"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
         <div class="tile" data-go="hoc_phi"><div class="n" style="color:var(--danger)">${(typeof dueList==='function')?dueList().length:0}</div><div class="l">Đến hạn đóng</div></div>
       </div>
-      <div class="dsec">Lớp học hôm nay</div>
-      ${attendanceRows}
       <div class="dsec">Tuyển sinh — chờ test / học thử</div>
       ${prospectRows}
       <div class="dsec">Cần chú ý — nợ buổi học bù</div>
       ${warnRows}
-      <div class="infonote"><b>Sắp có:</b> doanh thu &amp; công nợ học phí sẽ tự hiện ở đây khi mình bật <b>thu học phí (SePay)</b>. Điểm danh Hikvision đã tích hợp — số liệu sẽ bắt đầu đổ về khi kết nối máy xong.</div>
+      <div class="infonote"><b>Sắp có:</b> doanh thu, công nợ học phí và cảnh báo vắng nhiều sẽ tự hiện ở đây khi mình bật <b>điểm danh (máy Hikvision)</b> và <b>thu học phí (SePay)</b>.</div>
     </div>`;
-  $('#screen').querySelectorAll('.dash .row').forEach(r=>{ if(r.dataset.id) r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)); });
-  $('#screen').querySelectorAll('.dash .classrow').forEach(r=>r.onclick=()=>openClassDetail(classes.find(c=>c.id===r.dataset.cid)));
-  $('#screen').querySelectorAll('.dash .missToggle').forEach(t=>{
-    t.onclick=(e)=>{
-      e.stopPropagation();
-      const target=document.getElementById(t.dataset.target);
-      const icon=t.querySelector('i');
-      const willOpen=target.style.display==='none';
-      target.style.display=willOpen?'':'none';
-      icon.style.transform=willOpen?'':'rotate(-90deg)';
-    };
-  });
+  $('#screen').querySelectorAll('.warnrow').forEach(r=>r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)));
   $('#screen').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{
     const g=el.dataset.go;
     if(g==='lop'){ lopQuery=''; switchView('lop'); }
@@ -985,32 +929,32 @@ function renderThuChi(){
   const thu=inM.filter(t=>t.loai==='thu').reduce((a,t)=>a+Number(t.so_tien),0);
   const chi=inM.filter(t=>t.loai==='chi').reduce((a,t)=>a+Number(t.so_tien),0);
   const rows = inM.length
-    ? `<div class="group">${[...inM].sort((a,b)=> a.ngay<b.ngay?1:-1).map(t=>{const isThu=t.loai==='thu'; return `<div class="row tap" data-id="${t.id}"><div class="main"><div class="t">${t.danh_muc}</div><div class="meta">${fmtDate(t.ngay)}${t.ghi_chu?' · '+t.ghi_chu:''}</div></div><span class="tcamt ${t.loai}">${isThu?'+':'−'}${vnd(t.so_tien)}đ</span></div>`;}).join('')}</div>`
+    ? [...inM].sort((a,b)=> a.ngay<b.ngay?1:-1).map(t=>{const isThu=t.loai==='thu'; return `<div class="tcrow" data-id="${t.id}"><div class="cat"><div class="t">${t.danh_muc}</div><div class="d">${fmtDate(t.ngay)}${t.ghi_chu?' · '+t.ghi_chu:''}</div></div><div class="amt ${t.loai}">${isThu?'+':'−'}${vnd(t.so_tien)}đ</div></div>`;}).join('')
     : '<div class="state"><div class="big">Chưa có khoản nào tháng này</div>Bấm “Ghi khoản” để thêm thu hoặc chi.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
       <div class="titlerow" style="margin:2px 0 14px"><h1>Thu chi</h1></div>
       <div class="monthnav"><button id="tcPrev">‹</button><div class="mlabel">Tháng ${String(tcM+1).padStart(2,'0')}/${tcY}</div><button id="tcNext">›</button></div>
-      <div class="sumgrid">
-        <div class="sumcard thu"><div class="n">${vnd(thu)}</div><div class="l">Thu</div></div>
-        <div class="sumcard chi"><div class="n">${vnd(chi)}</div><div class="l">Chi</div></div>
-        <div class="sumcard"><div class="n" style="${thu-chi<0?'color:var(--danger)':''}">${vnd(thu-chi)}</div><div class="l">Còn lại</div></div>
+      <div class="tcsum">
+        <div class="c thu"><div class="n">${vnd(thu)}</div><div class="l">Thu</div></div>
+        <div class="c chi"><div class="n">${vnd(chi)}</div><div class="l">Chi</div></div>
+        <div class="c"><div class="n" style="${thu-chi<0?'color:var(--danger)':''}">${vnd(thu-chi)}</div><div class="l">Còn lại</div></div>
       </div>
       ${rows}
     </div>`;
   $('#tcPrev').onclick=()=>{ tcM--; if(tcM<0){tcM=11;tcY--;} renderThuChi(); };
   $('#tcNext').onclick=()=>{ tcM++; if(tcM>11){tcM=0;tcY++;} renderThuChi(); };
-  $('#screen').querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openTcForm(thuchi.find(t=>t.id===r.dataset.id)));
+  $('#screen').querySelectorAll('.tcrow').forEach(r=>r.onclick=()=>openTcForm(thuchi.find(t=>t.id===r.dataset.id)));
 }
 function fillTcCats(sel){ $('#tc_cat').innerHTML=CAT[tcLoai].map(c=>`<option ${sel===c?'selected':''}>${c}</option>`).join(''); }
 function openTcForm(t){
   tcEditId=t?t.id:null; tcLoai=t?t.loai:'chi';
   $('#sheetBody').innerHTML=`
     <h2>${t?'Sửa khoản':'Ghi khoản thu chi'}</h2><p class="lead">Sổ thu chi đơn giản theo tháng.</p>
-    <div class="field"><label>Loại</label><div class="chipset" id="tc_loai"><button class="choice ${tcLoai==='chi'?'on':''}" data-v="chi">Chi (tiền ra)</button><button class="choice ${tcLoai==='thu'?'on':''}" data-v="thu">Thu (tiền vào)</button></div></div>
+    <div class="field"><label>Loại</label><div class="seg" id="tc_loai"><button class="${tcLoai==='chi'?'on':''}" data-v="chi">Chi (tiền ra)</button><button class="${tcLoai==='thu'?'on':''}" data-v="thu">Thu (tiền vào)</button></div></div>
     <div class="field"><label>Danh mục <span class="req">*</span></label><select id="tc_cat"></select></div>
     <div class="field"><label>Số tiền <span class="req">*</span></label><div class="feewrap"><input id="tc_tien" type="number" inputmode="numeric" value="${t?t.so_tien:''}" placeholder="0"><span class="unit">đ</span></div></div>
-    <div class="field"><label>Ngày <span class="req">*</span></label><div class="datefield"><input id="tc_ngay" type="date" value="${t?t.ngay:new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày</span></div></div>
+    <div class="field"><label>Ngày <span class="req">*</span></label><input id="tc_ngay" type="date" value="${t?t.ngay:new Date().toISOString().slice(0,10)}"></div>
     <div class="field"><label>Ghi chú</label><textarea id="tc_note" rows="2" placeholder="VD: Cô Hương – 20 buổi × 150k">${t?(t.ghi_chu||''):''}</textarea></div>
     <button class="save" id="tc_save">${t?'Lưu thay đổi':'Lưu khoản'}</button>
     ${t?'<button class="ghost del" id="tc_del">Xóa khoản này</button>':'<button class="ghost" onclick="closeSheets()">Hủy</button>'}`;
