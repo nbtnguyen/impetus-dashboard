@@ -143,7 +143,7 @@
   .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
   .sheetcard{background:var(--surface); border-radius:var(--r-group); padding:4px 16px 12px; margin-top:14px}
   .summ{background:var(--surface); border-radius:var(--r-card); padding:12px 14px; margin-top:14px; display:flex; align-items:center; gap:12px}
-  .summ .av{width:40px; height:40px} .summ .nm{font-weight:700; font-size:15px} .summ .cd{font-size:12.5px; color:var(--muted); margin-top:1px}
+  .summ .av{width:40px; height:40px; border-radius:50%; flex:none; display:grid; place-items:center; color:#fff; font-weight:700; font-size:15px} .summ .nm{font-weight:700; font-size:15px} .summ .cd{font-size:12.5px; color:var(--muted); margin-top:1px}
   .act{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:85vh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; z-index:70; transition:transform .28s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow); padding:8px 16px calc(20px + var(--safe-b))} .act.show{transform:translateX(-50%) translateY(0)}
   .achead{display:flex; align-items:flex-start; justify-content:space-between; padding:6px 2px 0}
   .achead .atitle{font-size:18px; font-weight:700; letter-spacing:-.01em}
@@ -233,8 +233,8 @@
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
   .field input[type="date"],.field input[type="time"]{overflow:hidden; min-width:0; max-width:100%; box-sizing:border-box}
-  .datefield{position:relative; width:100%; min-width:0; overflow:hidden; border-radius:12px}
-  .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden}
+  .datefield{position:relative; width:100%; min-width:0; height:47px; overflow:hidden; border-radius:12px}
+  .datefield input[type="date"]{position:absolute; inset:0; z-index:1; color:var(--ink); width:100%; height:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden}
   .datefield input[type="date"].empty{color:transparent}
   .datefield .dfph{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:15px; pointer-events:none; z-index:2}
   .datefield input[type="date"]:not(.empty) + .dfph{display:none}
@@ -1262,7 +1262,7 @@ function openMarkPaidForm(e){
       <div class="field"><label>Số tháng đóng</label><div class="chipset" id="mpseg"><button class="choice on" data-m="1">1 tháng</button><button class="choice" data-m="2">2 tháng</button><button class="choice" data-m="3">3 tháng</button></div></div>
       <div class="field"><label>Tính từ tháng</label><input id="mpstart" type="month" value="${hpStart}"><div class="hint">Đóng từ trước khi có app thì chọn đúng tháng bắt đầu.</div></div>
       <div id="mpcalc"></div>
-      <div class="field"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div>
+      <div class="two"><div class="field"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div><div class="field"><label>Số buổi đã học</label><input id="mpbuoi" type="number" inputmode="numeric" min="0" placeholder="Tùy chọn"></div></div>
     </div>
     <button class="btn primary block safe-b" id="mpmk" style="margin-top:16px">Xác nhận đã đóng</button>`;
   drawMarkCalc();
@@ -1278,9 +1278,11 @@ async function doMarkPaid(){
   const raw=($('#mpamount')&&$('#mpamount').value)||'';
   const tot=Math.round(Number(String(raw).replace(/[^\d]/g,''))||0);
   if(!tot) return toast('Nhập số tiền thu',false);
+  const buoiRaw=($('#mpbuoi')&&$('#mpbuoi').value)||'';
+  const soBuoi=buoiRaw===''?null:Math.max(0,Math.round(Number(buoiRaw))||0);
   const {kyTu,kyDen}=markPeriod();
   const btn=$('#mpmk'); btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
-  const {error}=await db.from('thanh_toan').insert({hoc_sinh_id:e.hsId, loai:'hoc_phi', dang_ky_lop_id:e.enrollId, so_thang:m, ky_tu:toISO(kyTu), ky_den:toISO(kyDen), so_tien:tot, noi_dung_ck:null, trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString(), ghi_chu:hpMethod});
+  const {error}=await db.from('thanh_toan').insert({hoc_sinh_id:e.hsId, loai:'hoc_phi', dang_ky_lop_id:e.enrollId, so_thang:m, ky_tu:toISO(kyTu), ky_den:toISO(kyDen), so_tien:tot, so_buoi_da_hoc:soBuoi, noi_dung_ck:null, trang_thai:'da_thu', ngay_thanh_toan:new Date().toISOString(), ghi_chu:hpMethod});
   if(error){ btn.disabled=false; btn.textContent='Xác nhận đã đóng'; return toast(error.message,false); }
   await db.from('thu_chi').insert({loai:'thu', danh_muc:'Học phí', so_tien:tot, ngay:new Date().toISOString().slice(0,10), ghi_chu:e.hoTen+(e.lopTen?' · '+e.lopTen:'')+' · '+hpMethod});
   await Promise.all([loadPayments(), loadThuChi()]);
