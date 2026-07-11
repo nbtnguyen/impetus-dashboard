@@ -232,7 +232,7 @@
   .page-footer:empty{display:none}
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
-  .field input[type="date"],.field input[type="time"]{overflow:hidden}
+  .field input[type="date"],.field input[type="time"]{overflow:hidden; min-width:0; max-width:100%; box-sizing:border-box}
   .datefield{position:relative; width:100%; min-width:0; overflow:hidden; border-radius:12px}
   .datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box; overflow:hidden}
   .datefield input[type="date"].empty{color:transparent}
@@ -621,8 +621,8 @@ function openStudentForm(s){
         <div class="field"><label>Quan hệ</label><div class="chipset" id="f_phqh">${Object.entries(QH).map(([v,l])=>`<button class="choice ${formQuanHe===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
         <div class="field"><label>SĐT / Zalo</label><input id="f_phsdt" type="tel" value="${ph?(ph.so_dien_thoai||''):''}" placeholder="09xx xxx xxx"></div>
       </div>
-    </div>
-    <button class="btn primary block safe-b" id="saveS" style="margin-top:var(--sp-5)"><span>${s?'Lưu thay đổi':'Lưu học sinh'}</span></button>`;
+    </div>`;
+  $('#pageFooter').innerHTML=`<button class="btn primary block safe-b" id="saveS"><span>${s?'Lưu thay đổi':'Lưu học sinh'}</span></button>`;
   $('#f_ma')&&$('#f_ma').addEventListener('input',e=>$('#echo').textContent=e.target.value.trim().toUpperCase()||'—');
   $('#f_gt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_gt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formGioiTinh=b.dataset.v;});
   $('#f_tt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_tt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formStatus=b.dataset.v;});
@@ -777,7 +777,8 @@ function openClassForm(c){
     <div class="section"><div class="lbl">Lịch học</div>
       <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
         <div class="field"><label>Ngày học trong tuần <span class="req">*</span></label><div class="chipset" id="c_days">${DAYS.map(d=>`<button class="choice ${cformDays.includes(d)?'on':''}" data-d="${d}">${d}</button>`).join('')}</div></div>
-        <div class="two"><div class="field"><label>Giờ bắt đầu</label><input id="c_gbd" type="time" value="${c&&c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'17:30'}"></div><div class="field"><label>Giờ kết thúc</label><input id="c_gkt" type="time" value="${c&&c.gio_ket_thuc?c.gio_ket_thuc.slice(0,5):'19:00'}"></div></div>
+        <div class="field"><label>Giờ bắt đầu</label><input id="c_gbd" type="time" value="${c&&c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'17:30'}"></div>
+        <div class="field"><label>Giờ kết thúc</label><input id="c_gkt" type="time" value="${c&&c.gio_ket_thuc?c.gio_ket_thuc.slice(0,5):'19:00'}"></div>
       </div>
     </div>
     <div class="section"><div class="lbl">Khác</div>
