@@ -3,13 +3,12 @@
 //  URL sau khi deploy: https://impetus-dashboard.vercel.app/api/hikvision-webhook
 //  Dùng lại SUPABASE_SERVICE_ROLE đã có (không cần env var mới).
 //
-//  v1 — viết phòng thủ: đọc raw body bất kể JSON/XML/multipart, dò field
-//  bằng regex, LUÔN lưu raw_event. Sau khi có log thật (Bước 3), có thể
-//  cần chỉnh lại tên field trong extractField().
+//  v1.1 — thêm bộ lọc bỏ qua heartbeat/sự kiện hệ thống (đóng mở cửa,
+//  đăng nhập, mạng...), chỉ xử lý khi có dấu hiệu 1 lượt xác thực thật.
 // ============================================================
 
 const SUPABASE_URL = 'https://zpaicfpuogmewsulawxx.supabase.co';
-const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']; // khớp getUTCDay()
+const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
 function extractField(raw, names) {
   for (const name of names) {
@@ -51,6 +50,15 @@ module.exports = async (req, res) => {
 
   console.log('=== HIKVISION WEBHOOK HIT ===', new Date().toISOString());
   console.log('RAW BODY PREVIEW:', rawBody.slice(0, 1500));
+
+  // --- MỚI: bỏ qua heartbeat + mọi sự kiện không phải xác thực người thật ---
+  // (đóng/mở cửa, đăng nhập, trạng thái mạng...). Chỉ đi tiếp khi thật sự có
+  // dấu hiệu 1 lượt quét mặt/thẻ (employeeNoString = khớp được, hoặc FaceRect
+  // = có quét mặt dù chưa chắc khớp).
+  const isAttendanceAttempt = /employeeNoString|FaceRect/i.test(rawBody);
+  if (!isAttendanceAttempt) {
+    return res.status(200).json({ ok: true, skipped: true, message: 'Bỏ qua — không phải lượt chấm công' });
+  }
 
   const isNewKey = SR.startsWith('sb_');
   const headers = isNewKey
