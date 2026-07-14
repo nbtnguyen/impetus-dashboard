@@ -674,9 +674,32 @@ function renderClasses(){
   const rows=classes.filter(c=>{ if(!lopQuery)return true; const q=norm(lopQuery); return norm(c.ten_lop).includes(q)||norm(c.giao_vien?.ho_ten||'').includes(q); });
   if(!classes.length){ L.innerHTML='<div class="state"><div class="big">Chưa có lớp nào</div>'+(isManager()?'Bấm “Tạo lớp mới”.':'Chưa có dữ liệu.')+'</div>'; return; }
   if(!rows.length){ L.innerHTML='<div class="state"><div class="big">Không tìm thấy</div>Thử từ khóa khác.</div>'; return; }
-  L.innerHTML=rows.map(c=>{
+  const now=new Date();
+  const todayCode=DAYS[(now.getDay()+6)%7];
+  const todayISO=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const nowMin=now.getHours()*60+now.getMinutes();
+  function timing(c){
+    const days=(c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim());
+    if(c.trang_thai!=='dang_hoc' || !days.includes(todayCode) || !c.gio_bat_dau) return {rank:2, key:9999, started:false};
+    const [sh,sm]=c.gio_bat_dau.split(':').map(Number); const startMin=sh*60+(sm||0);
+    const [eh,em]=(c.gio_ket_thuc||c.gio_bat_dau).split(':').map(Number); const endMin=eh*60+(em||0);
+    if(nowMin>=startMin && nowMin<=endMin) return {rank:0, key:startMin, started:true};
+    if(nowMin<startMin) return {rank:1, key:startMin, started:false};
+    return {rank:2, key:9999, started:true};
+  }
+  const sorted=rows.map(c=>({c, t:timing(c)})).sort((a,b)=>a.t.rank-b.t.rank || a.t.key-b.t.key);
+  L.innerHTML=sorted.map(({c,t})=>{
     const parts=[c.giao_vien?.ho_ten||'Chưa gán GV', 'Phòng '+(c.phong||'—')]; if(c.gio_bat_dau) parts.push(c.gio_bat_dau.slice(0,5));
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+    const total=headcount(c);
+    let countHtml;
+    if(t.started && t.rank!==2){
+      const present=new Set(diemdanh.filter(d=>d.ngay===todayISO && d.lop_hoc_id===c.id).map(d=>d.hoc_sinh_id)).size;
+      const full=present>=total;
+      countHtml=`<i class="hgi-stroke hgi-user-multiple-02" style="font-size:15px;color:var(--faint)"></i><b style="color:${full?'var(--ok)':'var(--danger)'}">${present}/${total}</b> điểm danh`;
+    } else {
+      countHtml=`<i class="hgi-stroke hgi-user-multiple-02" style="font-size:15px;color:var(--faint)"></i><b style="color:var(--ink)">${total}</b> học sinh`;
+    }
     return `<div class="lopcard" data-id="${c.id}">
       <div style="display:flex;align-items:center;gap:11px">
         <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div>
@@ -685,7 +708,7 @@ function renderClasses(){
       </div>
       ${weekStrip(c.cac_ngay_trong_tuan)}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)">
-        <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600"><i class="hgi-stroke hgi-user-multiple-02" style="font-size:15px;color:var(--faint)"></i><b style="color:var(--ink)">${headcount(c)}</b> học sinh</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600">${countHtml}</span>
         <span style="font-weight:600;font-size:13.5px;font-family:'Inter',sans-serif">${vnd(c.hoc_phi_thang)}đ <span style="color:var(--faint);font-weight:500">/tháng</span></span>
       </div>
     </div>`;
@@ -748,18 +771,10 @@ async function openClassDetail(c){
   R.innerHTML=list.map(r=>{
     const trial=(r.hoc_sinh.trang_thai==='cho_test'||r.hoc_sinh.trang_thai==='hoc_thu');
     const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
-    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div></div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div><span class="stt ${disp}">${ST[disp]||disp}</span></div>`;
+    const sttHtml = disp!=='dang_hoc' ? `<span class="stt ${disp}">${ST[disp]||disp}</span>` : '';
+    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div></div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
   }).join('');
-  if(canWrite()) R.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>openRegStatus(list.find(r=>r.id===el.dataset.id), c); });
-}
-function openRegStatus(r, c){
-  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${r.hoc_sinh.ho_ten}</div><div class="asub">Trạng thái trong lớp ${c.ten_lop}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
-    ${Object.entries(ST).map(([v,l])=>`<div class="actopt" data-v="${v}"><span class="statusdot" style="background:${STC[v]}"></span>${l}</div>`).join('')}`;
-  $('#actBody').querySelectorAll('.actopt[data-v]').forEach(o=>o.onclick=async()=>{
-    await db.from('dang_ky_lop').update({trang_thai:o.dataset.v}).eq('id',r.id);
-    closeAct(); await Promise.all([loadClasses(), loadStudents()]); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã cập nhật');
-  });
-  showAct();
+  R.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>{ const r=list.find(x=>x.id===el.dataset.id); openStudentDetail(students.find(s=>s.id===r.hoc_sinh.id)||r.hoc_sinh); }; });
 }
 function openEnroll(c){
   db.from('dang_ky_lop').select('hoc_sinh_id').eq('lop_hoc_id',c.id).then(({data})=>{
