@@ -954,7 +954,7 @@ function buildDashboard(){
         else if(present>=expected){ statusText='Đủ'; statusColor='var(--st-dang-hoc)'; }
         else {
           const missing=roster.filter(s=>!presentIds.has(c.id+'|'+s.id));
-          statusText=`Thiếu ${missing.length} em`; statusColor='var(--danger)';
+          statusText=`Thiếu ${missing.length}/${expected}`; statusColor='var(--danger)';
           const rows=missing.map(s=>`<div class="row tap haslead" data-id="${s.id}"><div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div><div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`).join('');
           missingHtml=`<div class="missBlock" id="miss-${c.id}" style="display:none">${rows}</div>`;
         }
