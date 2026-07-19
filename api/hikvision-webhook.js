@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
     }
 
     // 1) Tra học sinh theo mã quét được
-    const hs = await (await fetch(rest('hoc_sinh?ma_hoc_sinh=eq.' + encodeURIComponent(maHS) + '&select=id'), { headers })).json();
+    const hs = await (await fetch(rest('hoc_sinh?ma_hoc_sinh=ilike.' + encodeURIComponent(maHS) + '&select=id'), { headers })).json();
     const hoc_sinh_id = (Array.isArray(hs) && hs.length) ? hs[0].id : null;
 
     // 2) Không khớp học sinh nào -> ghi vào luot_quet_chua_xac_dinh
