@@ -336,7 +336,8 @@
 <div class="app hide" id="main">
   <div class="topbar">
     <div class="brand"><div class="logo">I</div><div class="name">Impe<span>tus</span></div>
-      <div class="me"><div class="who"><b id="me_name">—</b><div class="r" id="me_role">—</div></div>
+      <div class="me"><div class="who" id="meWho" style="cursor:pointer"><b id="me_name">—</b><div class="r" id="me_role">—</div></div>
+        <button class="iconbtn hide" id="navGvAcc" title="Quản lý tài khoản GV"><i class="hgi-stroke hgi-mortarboard-01"></i></button>
         <button class="iconbtn" id="logout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
       </div>
     </div>
@@ -379,7 +380,7 @@ const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
 let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
-let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[];
+let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[];
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
 const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
@@ -387,7 +388,7 @@ const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
 const addMonths=(d,n)=>{const x=new Date(d); x.setMonth(x.getMonth()+n); return x;};
 const toISO=d=>d.toISOString().slice(0,10);
 const CAT={chi:['Thuê nhà','Điện nước','Lương','Mua sắm/Thiết bị','Marketing','Khác'], thu:['Học phí','Bán sách','Khác']};
-let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null;
+let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null, cformTA=[];
 
 const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
@@ -420,19 +421,31 @@ async function enterApp(){
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
   $('#me_name').textContent=me.name;
   $('#me_role').textContent={quan_ly:'Quản lý', nhan_vien:'Nhân viên', giao_vien:'Giáo viên'}[me.role]||me.role;
-  if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
+  if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); $('#navGvAcc').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':'hoc_sinh');
 }
 $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
+$('#meWho').onclick=openChangePassword;
+$('#navGvAcc').onclick=openGvAccounts;
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc()]); }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong()]); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
 async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
+async function loadPhanCong(){ const {data}=await db.from('phan_cong_lop').select('id, lop_hoc_id, giao_vien_id').order('ngay_tao'); phancong=data||[]; }
+function taNames(classId){ return phancong.filter(p=>p.lop_hoc_id===classId).map(p=>{const t=teachers.find(x=>x.id===p.giao_vien_id); return t?t.ho_ten:null;}).filter(Boolean).join(', '); }
+function gvTeachingMeta(t){
+  const main=classes.filter(c=>c.giao_vien_id===t.id).map(c=>c.ten_lop);
+  const ta=phancong.filter(p=>p.giao_vien_id===t.id).map(p=>{const c=classes.find(x=>x.id===p.lop_hoc_id); return c?c.ten_lop:null;}).filter(Boolean);
+  const parts=[];
+  if(main.length) parts.push('GV chính · '+main.join(', '));
+  if(ta.length) parts.push('TA · '+ta.join(', '));
+  return parts.length?parts.join(' · '):'Chưa dạy lớp nào';
+}
 async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
 async function loadThuChi(){ const {data}=await db.from('thu_chi').select('*').order('ngay',{ascending:false}); thuchi=data||[]; }
 async function loadDiemDanh(){ const from=new Date(); from.setDate(from.getDate()-7); const {data}=await db.from('diem_danh').select('*').gte('thoi_gian_quet',from.toISOString()).order('thoi_gian_quet',{ascending:false}); diemdanh=data||[]; }
@@ -743,6 +756,7 @@ async function openClassDetail(c){
     ${isToday?`<div class="section" style="margin-top:22px"><div class="lbl">Điểm danh hôm nay</div><div class="group" id="ddSection"><div class="row"><div class="main"><div class="skel line w40"></div></div></div></div></div>`:''}
     <div class="section" style="margin-top:22px"><div class="lbl">Thông tin lớp</div><div class="group">
       <div class="row"><span class="k">Giáo viên</span><span class="val">${c.giao_vien?.ho_ten||'Chưa gán'}</span></div>
+      <div class="row"><span class="k">Trợ giảng (TA)</span><span class="val">${taNames(c.id)||'—'}</span></div>
       <div class="row"><span class="k">Phòng</span><span class="val">${c.phong||'—'}</span></div>
       <div class="row"><span class="k">Lịch học</span><span class="val">${c.cac_ngay_trong_tuan||'—'}</span></div>
       <div class="row"><span class="k">Giờ</span><span class="val">${c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'—'} – ${c.gio_ket_thuc?c.gio_ket_thuc.slice(0,5):'—'}</span></div>
@@ -801,6 +815,7 @@ function openEnroll(c){
 function openClassForm(c){
   cEditingId=c?c.id:null; cformStatus=c?c.trang_thai:'dang_tuyen';
   cformDays=c&&c.cac_ngay_trong_tuan? c.cac_ngay_trong_tuan.split(',').map(x=>x.trim()):[];
+  cformTA=c? phancong.filter(p=>p.lop_hoc_id===c.id).map(p=>p.giao_vien_id):[];
   $('#pageBody').innerHTML=`
     <div class="section" style="margin-top:10px"><div class="lbl">Thông tin lớp</div>
       <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
@@ -814,6 +829,7 @@ function openClassForm(c){
           <span class="addlink" id="addGv">＋ Thêm giáo viên mới</span>
           <div id="gvNew" class="hide" style="margin-top:8px"><div class="two"><input id="gvName" type="text" placeholder="Tên giáo viên"><button class="btn soft" id="gvAdd" style="flex:none">Thêm</button></div></div>
         </div>
+        <div class="field"><label>Trợ giảng (TA)</label><div class="chipset" id="c_ta">${teachers.map(t=>`<button class="choice ${cformTA.includes(t.id)?'on':''}" data-id="${t.id}">${t.ho_ten}</button>`).join('')}</div><div class="hint">Chọn 1 hoặc nhiều TA phụ cho lớp — độc lập với Giáo viên chính.</div></div>
         <div class="field"><label>Học phí / tháng <span class="req">*</span></label><div class="feewrap"><input id="c_phi" type="number" inputmode="numeric" value="${c?(c.hoc_phi_thang||''):''}" placeholder="600000"><span class="unit">đ</span></div></div>
       </div>
     </div>
@@ -833,6 +849,7 @@ function openClassForm(c){
   $('#pageFooter').innerHTML=`<button class="btn primary block safe-b" id="saveC"><span>${c?'Lưu thay đổi':'Tạo lớp'}</span></button>`;
   $('#c_days').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; b.classList.toggle('on'); const d=b.dataset.d; cformDays.includes(d)?cformDays=cformDays.filter(x=>x!==d):cformDays.push(d);});
   $('#c_tt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#c_tt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cformStatus=b.dataset.v;});
+  $('#c_ta').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; b.classList.toggle('on'); const id=b.dataset.id; cformTA.includes(id)?cformTA=cformTA.filter(x=>x!==id):cformTA.push(id);});
   $('#addGv').onclick=()=>$('#gvNew').classList.toggle('hide');
   $('#gvAdd').onclick=addTeacher;
   $('#saveC').onclick=saveClass;
@@ -844,6 +861,7 @@ async function addTeacher(){
   if(error)return toast(error.message,false);
   teachers.push(data); teachers.sort((a,b)=>a.ho_ten.localeCompare(b.ho_ten));
   const sel=$('#c_gv'); const opt=document.createElement('option'); opt.value=data.id; opt.textContent=data.ho_ten; sel.appendChild(opt); sel.value=data.id;
+  const ta=$('#c_ta'); if(ta){ const b=document.createElement('button'); b.className='choice'; b.dataset.id=data.id; b.textContent=data.ho_ten; ta.appendChild(b); }
   $('#gvName').value=''; $('#gvNew').classList.add('hide'); toast('Đã thêm GV '+name);
 }
 async function saveClass(){
@@ -854,14 +872,131 @@ async function saveClass(){
   const btn=$('#saveC'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
   const order=d=>DAYS.indexOf(d);
   const payload={ten_lop:ten, level:$('#c_lvl').value, phong:$('#c_phong').value.trim()||null, giao_vien_id:$('#c_gv').value||null, hoc_phi_thang:phi, cac_ngay_trong_tuan:[...cformDays].sort((a,b)=>order(a)-order(b)).join(','), gio_bat_dau:$('#c_gbd').value||null, gio_ket_thuc:$('#c_gkt').value||null, trang_thai:cformStatus, telegram_group_id:$('#c_tele').value.trim()||null};
-  let err=null;
+  let err=null, classId=cEditingId;
   if(cEditingId){ const r=await db.from('lop_hoc').update(payload).eq('id',cEditingId); err=r.error; }
-  else { const r=await db.from('lop_hoc').insert(payload); err=r.error; }
+  else { const r=await db.from('lop_hoc').insert(payload).select('id').single(); err=r.error; if(!err) classId=r.data.id; }
+  if(!err && classId){
+    await db.from('phan_cong_lop').delete().eq('lop_hoc_id',classId);
+    if(cformTA.length){ const r2=await db.from('phan_cong_lop').insert(cformTA.map(gid=>({lop_hoc_id:classId, giao_vien_id:gid}))); if(r2.error) err=r2.error; }
+  }
   btn.disabled=false; btn.innerHTML=old;
   if(err)return toast(err.message,false);
-  await loadClasses(); closePage(); if(view==='lop')renderClasses();
-  if(cEditingId && curClass && curClass.id===cEditingId){ curClass=classes.find(x=>x.id===cEditingId)||curClass; openClassDetail(curClass); }
+  await Promise.all([loadClasses(), loadPhanCong()]); closePage(); if(view==='lop')renderClasses();
+  if(curClass && curClass.id===classId){ curClass=classes.find(x=>x.id===classId)||curClass; openClassDetail(curClass); }
   toast(cEditingId?'Đã lưu thay đổi':'Đã tạo lớp '+ten);
+}
+
+/* ===== ĐỔI MẬT KHẨU (tự phục vụ, mọi vai trò) ===== */
+function openChangePassword(){
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Đổi mật khẩu</div><div class="asub">${me.name}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard">
+      <div class="field" style="margin-top:10px"><label>Mật khẩu mới</label><input id="cp_new" type="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password"></div>
+      <div class="field"><label>Xác nhận mật khẩu</label><input id="cp_confirm" type="password" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password"></div>
+    </div>
+    <button class="btn primary block" id="cpSave" style="margin-top:14px">Đổi mật khẩu</button>`;
+  $('#cpSave').onclick=async()=>{
+    const p1=$('#cp_new').value, p2=$('#cp_confirm').value;
+    if(!p1||p1.length<6) return toast('Mật khẩu tối thiểu 6 ký tự',false);
+    if(p1!==p2) return toast('Mật khẩu xác nhận không khớp',false);
+    const btn=$('#cpSave'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+    const {error}=await db.auth.updateUser({password:p1});
+    btn.disabled=false; btn.innerHTML=old;
+    if(error) return toast(error.message,false);
+    closeAct(); toast('Đã đổi mật khẩu');
+  };
+  showAct();
+}
+
+/* ===== QUẢN LÝ TÀI KHOẢN GV (chỉ quản lý) ===== */
+function genTempPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let s=''; for(let i=0;i<10;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function navLabel(){ return {dashboard:'Tổng quan', hoc_sinh:'Học sinh', lop:'Lớp học', thu_chi:'Thu chi'}[view]||'Trang chủ'; }
+async function openGvAccounts(){
+  $('#detailBody').innerHTML=`<div class="pagetitle" style="margin:0 0 12px"><h1>Quản lý tài khoản GV</h1><button class="addbtn" id="gvAddBtn"><i class="hgi-stroke hgi-add-01"></i></button></div>
+    <div class="group" id="gvAccList">
+      <div class="row haslead"><div class="lead"><div class="skel avatar"></div></div><div class="main"><div class="skel line w60"></div><div class="skel line w40"></div></div></div>
+      <div class="row haslead"><div class="lead"><div class="skel avatar"></div></div><div class="main"><div class="skel line w60"></div><div class="skel line w30"></div></div></div>
+    </div>`;
+  $('#gvAddBtn').onclick=openGvQuickAdd;
+  showDetailPage(navLabel());
+  const {data,error}=await db.from('profiles').select('id, giao_vien_id').not('giao_vien_id','is',null);
+  if(error){ toast(error.message,false); gvProfiles=[]; } else gvProfiles=data||[];
+  renderGvAccList();
+}
+function renderGvAccList(){
+  const L=$('#gvAccList'); if(!L) return;
+  if(!teachers.length){ L.innerHTML='<div class="state"><div class="big">Chưa có giáo viên nào</div>Bấm “+” để thêm.</div>'; return; }
+  L.innerHTML=teachers.map(t=>{
+    const has=gvProfiles.some(p=>p.giao_vien_id===t.id);
+    return `<div class="row tap haslead" data-id="${t.id}">
+      <div class="lead"><div class="avatar" style="background:${avaC(t.id)}">${ini1(t.ho_ten)}</div></div>
+      <div class="main"><div class="t">${t.ho_ten}</div><div class="meta">${gvTeachingMeta(t)}</div></div>
+      <span class="stt ${has?'dang_hoc':'da_nghi'}" style="flex:none;margin-right:6px">${has?'Đã có TK':'Chưa có TK'}</span>
+      <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
+    </div>`;
+  }).join('');
+  L.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openGvRowActions(teachers.find(t=>t.id===r.dataset.id)));
+}
+function openGvQuickAdd(){
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Thêm giáo viên mới</div><div class="asub">Thêm vào danh bạ, chưa tạo tài khoản</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard"><div class="field" style="margin-top:10px"><label>Tên giáo viên</label><input id="gvQName" type="text" placeholder="Nguyễn Văn A"></div></div>
+    <button class="btn primary block" id="gvQSave" style="margin-top:14px">Thêm</button>`;
+  $('#gvQSave').onclick=async()=>{
+    const name=$('#gvQName').value.trim(); if(!name) return toast('Chưa nhập tên',false);
+    const {data,error}=await db.from('giao_vien').insert({ho_ten:name}).select('id, ho_ten').single();
+    if(error) return toast(error.message,false);
+    teachers.push(data); teachers.sort((a,b)=>a.ho_ten.localeCompare(b.ho_ten));
+    closeAct(); renderGvAccList(); toast('Đã thêm GV '+name);
+  };
+  showAct();
+}
+function openGvRowActions(t){
+  const has=gvProfiles.find(p=>p.giao_vien_id===t.id);
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${t.ho_ten}</div><div class="asub">${gvTeachingMeta(t)}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    ${has
+      ? `<div class="actopt" id="gvResetPw"><i class="hgi-stroke hgi-repeat-01"></i>Đặt lại mật khẩu tạm</div>`
+      : `<div class="actopt" id="gvCreateAcc"><i class="hgi-stroke hgi-add-01"></i>Tạo tài khoản đăng nhập</div>`}`;
+  if(has) $('#gvResetPw').onclick=()=>openGvPasswordForm(t, has.id, true);
+  else $('#gvCreateAcc').onclick=()=>openGvPasswordForm(t, null, false);
+  showAct();
+}
+function openGvPasswordForm(t, profileId, isReset){
+  closeAct();
+  $('#pageBody').innerHTML=`
+    <div class="section" style="margin-top:10px"><div class="lbl">Giáo viên</div>
+      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px"><div class="field"><div style="font-size:15px;font-weight:600;padding-top:2px">${t.ho_ten}</div></div></div>
+    </div>
+    ${isReset?'':`<div class="section"><div class="lbl">Tài khoản</div><div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px"><div class="field"><label>Email <span class="req">*</span></label><input id="gv_email" type="email" placeholder="email@gmail.com"></div></div></div>`}
+    <div class="section"><div class="lbl">Mật khẩu tạm</div>
+      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+        <div class="field"><label>Mật khẩu <span class="req">*</span></label><div class="two"><input id="gv_pass" type="text" value="${genTempPassword()}"><button class="btn soft" id="gvGenPw" style="flex:none">Sinh mã</button></div><div class="hint">Gửi mật khẩu này cho GV qua Zalo. GV nên tự vào "Đổi mật khẩu" ngay sau khi đăng nhập.</div></div>
+      </div>
+    </div>`;
+  $('#pageFooter').innerHTML=`<button class="btn primary block safe-b" id="gvPwSave"><span>${isReset?'Đặt lại mật khẩu':'Tạo tài khoản'}</span></button>`;
+  const g=$('#gvGenPw'); if(g) g.onclick=()=>{ $('#gv_pass').value=genTempPassword(); };
+  $('#gvPwSave').onclick=async()=>{
+    const pass=$('#gv_pass').value.trim();
+    if(!pass||pass.length<6) return toast('Mật khẩu tối thiểu 6 ký tự',false);
+    let email='';
+    if(!isReset){ email=$('#gv_email').value.trim(); if(!email) return toast('Chưa nhập email',false); }
+    const btn=$('#gvPwSave'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+    try{
+      const {data:{session}}=await db.auth.getSession();
+      const res=await fetch('/api/gv-tai-khoan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+        body:JSON.stringify(isReset?{action:'reset_password', profile_id:profileId, password:pass}:{action:'create', giao_vien_id:t.id, ho_ten:t.ho_ten, email, password:pass})});
+      const out=await res.json();
+      btn.disabled=false; btn.innerHTML=old;
+      if(!res.ok || !out.success) return toast(out.message||'Có lỗi xảy ra',false);
+      closePage();
+      if(!isReset){ const {data}=await db.from('profiles').select('id, giao_vien_id').not('giao_vien_id','is',null); gvProfiles=data||[]; }
+      renderGvAccList();
+      toast(isReset?'Đã đặt lại mật khẩu':'Đã tạo tài khoản cho '+t.ho_ten);
+    }catch(e){ btn.disabled=false; btn.innerHTML=old; toast('Lỗi kết nối: '+e.message,false); }
+  };
+  showPage(isReset?'Đặt lại mật khẩu':'Tạo tài khoản');
 }
 
 /* ===== HỌC BÙ (gắn trong hồ sơ học sinh) ===== */
