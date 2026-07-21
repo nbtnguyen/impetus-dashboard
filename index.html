@@ -965,17 +965,13 @@ function openGvRowActions(t){
 }
 function openGvPasswordForm(t, profileId, isReset){
   closeAct();
-  $('#pageBody').innerHTML=`
-    <div class="section" style="margin-top:10px"><div class="lbl">Giáo viên</div>
-      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px"><div class="field"><div style="font-size:15px;font-weight:600;padding-top:2px">${t.ho_ten}</div></div></div>
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">${isReset?'Đặt lại mật khẩu':'Tạo tài khoản'}</div><div class="asub">${t.ho_ten}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    ${isReset?'':`<div class="sheetcard"><div class="field" style="margin-top:10px"><label>Email <span class="req">*</span></label><input id="gv_email" type="email" placeholder="email@gmail.com"></div></div>`}
+    <div class="sheetcard">
+      <div class="field" style="margin-top:10px"><label>Mật khẩu tạm <span class="req">*</span></label><div class="two"><input id="gv_pass" type="text" value="${genTempPassword()}"><button class="btn soft" id="gvGenPw" style="flex:none">Sinh mã</button></div><div class="hint">Gửi mật khẩu này cho GV qua Zalo. GV nên tự vào "Đổi mật khẩu" ngay sau khi đăng nhập.</div></div>
     </div>
-    ${isReset?'':`<div class="section"><div class="lbl">Tài khoản</div><div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px"><div class="field"><label>Email <span class="req">*</span></label><input id="gv_email" type="email" placeholder="email@gmail.com"></div></div></div>`}
-    <div class="section"><div class="lbl">Mật khẩu tạm</div>
-      <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
-        <div class="field"><label>Mật khẩu <span class="req">*</span></label><div class="two"><input id="gv_pass" type="text" value="${genTempPassword()}"><button class="btn soft" id="gvGenPw" style="flex:none">Sinh mã</button></div><div class="hint">Gửi mật khẩu này cho GV qua Zalo. GV nên tự vào "Đổi mật khẩu" ngay sau khi đăng nhập.</div></div>
-      </div>
-    </div>`;
-  $('#pageFooter').innerHTML=`<button class="btn primary block safe-b" id="gvPwSave"><span>${isReset?'Đặt lại mật khẩu':'Tạo tài khoản'}</span></button>`;
+    <button class="btn primary block safe-b" id="gvPwSave" style="margin-top:16px">${isReset?'Đặt lại mật khẩu':'Tạo tài khoản'}</button>`;
   const g=$('#gvGenPw'); if(g) g.onclick=()=>{ $('#gv_pass').value=genTempPassword(); };
   $('#gvPwSave').onclick=async()=>{
     const pass=$('#gv_pass').value.trim();
@@ -990,13 +986,13 @@ function openGvPasswordForm(t, profileId, isReset){
       const out=await res.json();
       btn.disabled=false; btn.innerHTML=old;
       if(!res.ok || !out.success) return toast(out.message||'Có lỗi xảy ra',false);
-      closePage();
+      closeSheets();
       if(!isReset){ const {data}=await db.from('profiles').select('id, giao_vien_id').not('giao_vien_id','is',null); gvProfiles=data||[]; }
       renderGvAccList();
       toast(isReset?'Đã đặt lại mật khẩu':'Đã tạo tài khoản cho '+t.ho_ten);
     }catch(e){ btn.disabled=false; btn.innerHTML=old; toast('Lỗi kết nối: '+e.message,false); }
   };
-  showPage(isReset?'Đặt lại mật khẩu':'Tạo tài khoản');
+  show('#sheet');
 }
 
 /* ===== HỌC BÙ (gắn trong hồ sơ học sinh) ===== */
