@@ -753,7 +753,6 @@ async function openClassDetail(c){
       <span class="spill ${c.trang_thai}">${CST[c.trang_thai]||c.trang_thai}</span>
     </div>
     ${btns.length?`<div style="display:flex;gap:8px;margin-top:14px">${btns.join('')}</div>`:''}
-    ${isToday?`<div class="section" style="margin-top:22px"><div class="lbl">Điểm danh hôm nay</div><div class="group" id="ddSection"><div class="row"><div class="main"><div class="skel line w40"></div></div></div></div></div>`:''}
     <div class="section" style="margin-top:22px"><div class="lbl">Thông tin lớp</div><div class="group">
       <div class="row"><span class="k">Giáo viên</span><span class="val">${c.giao_vien?.ho_ten||'Chưa gán'}</span></div>
       <div class="row"><span class="k">Trợ giảng (TA)</span><span class="val">${taNames(c.id)||'—'}</span></div>
@@ -774,26 +773,31 @@ async function openClassDetail(c){
   const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id);
   const list=(reg||[]).filter(r=>r.hoc_sinh);
   const officials=list.filter(r=>r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu'));
-  $('#rcount').textContent='· '+officials.length+' chính thức';
+  let checkedIds=new Set();
   if(isToday){
     const buoiIds=buoiHocIdsForDate(todayStr(), c.id);
-    const checkedIds=new Set(diemdanh.filter(d=>d.trang_thai==='co_mat' && buoiIds.has(d.buoi_hoc_id)).map(d=>d.hoc_sinh_id).filter(Boolean));
-    const missing=officials.filter(r=>!checkedIds.has(r.hoc_sinh.id));
-    const S=$('#ddSection'); const present=officials.length-missing.length;
-    if(!officials.length){ S.innerHTML='<div class="row"><span class="meta">Chưa có học sinh chính thức trong lớp.</span></div>'; }
-    else if(!missing.length){ S.innerHTML=`<div class="row"><div class="main"><div class="t" style="color:var(--ok)">✓ Đã điểm danh đủ ${present}/${officials.length}</div></div></div>`; }
-    else{
-      S.innerHTML=`<div class="row tap" id="ddToggle"><div class="main"><div class="t">Điểm danh hôm nay <span style="color:var(--warn)">${present}/${officials.length}</span></div><div class="meta">Còn thiếu ${missing.length} bạn — bấm để xem</div></div><i class="hgi-stroke hgi-arrow-down-01" id="ddChevron" style="color:var(--faint);transition:transform .2s"></i></div>
-        <div id="ddList" style="display:none">${missing.map(r=>`<div class="row"><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div></div>`).join('')}</div>`;
-      $('#ddToggle').onclick=()=>{ const L=$('#ddList'); const open=L.style.display!=='none'; L.style.display=open?'none':'block'; $('#ddChevron').style.transform=open?'':'rotate(180deg)'; };
-    }
+    checkedIds=new Set(diemdanh.filter(d=>d.trang_thai==='co_mat' && buoiIds.has(d.buoi_hoc_id)).map(d=>d.hoc_sinh_id).filter(Boolean));
+  }
+  if(isToday && officials.length){
+    const present=officials.filter(r=>checkedIds.has(r.hoc_sinh.id)).length;
+    const full=present>=officials.length;
+    $('#rcount').innerHTML=`· <span style="color:${full?'var(--ok)':'var(--danger)'}">Đã đến ${present}/${officials.length}</span>`;
+  } else {
+    $('#rcount').textContent='· '+officials.length+' chính thức';
   }
   const R=$('#roster');
   if(!list.length){ R.innerHTML='<div class="row"><span class="meta">Chưa có học sinh nào trong lớp.</span></div>'; return; }
   R.innerHTML=list.map(r=>{
     const trial=(r.hoc_sinh.trang_thai==='cho_test'||r.hoc_sinh.trang_thai==='hoc_thu');
-    const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
-    const sttHtml = disp!=='dang_hoc' ? `<span class="stt ${disp}">${ST[disp]||disp}</span>` : '';
+    const isOfficial=r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu');
+    let sttHtml;
+    if(isToday && isOfficial){
+      const came=checkedIds.has(r.hoc_sinh.id);
+      sttHtml=`<span class="spill" style="color:${came?'var(--ok)':'var(--faint)'};background:${came?'var(--ok-soft)':'var(--soft)'}">${came?'Đã đến':'Chưa đến'}</span>`;
+    } else {
+      const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
+      sttHtml = disp!=='dang_hoc' ? `<span class="stt ${disp}">${ST[disp]||disp}</span>` : '';
+    }
     return `<div class="row tap haslead" data-id="${r.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div></div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
   }).join('');
   R.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>{ const r=list.find(x=>x.id===el.dataset.id); openStudentDetail(students.find(s=>s.id===r.hoc_sinh.id)||r.hoc_sinh); }; });
