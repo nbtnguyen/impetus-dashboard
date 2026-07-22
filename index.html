@@ -380,7 +380,7 @@ const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
 let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
-let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[];
+let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[], faceIds=new Set();
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
 const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
@@ -430,7 +430,8 @@ $('#meWho').onclick=openChangePassword;
 $('#navGvAcc').onclick=openGvAccounts;
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong()]); }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong(), loadFaceIds()]); }
+async function loadFaceIds(){ const {data}=await db.from('diem_danh').select('hoc_sinh_id').eq('nguon','may_quet'); faceIds=new Set((data||[]).map(d=>d.hoc_sinh_id).filter(Boolean)); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
@@ -507,7 +508,7 @@ function renderStudents(){
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="row tap haslead" data-id="${s.id}">
       <div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div>
-      <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div>
+      <div class="main"><div class="t">${s.ho_ten}</div>${faceIds.has(s.id)?'<div class="meta" style="color:var(--ok)">Đã có FaceID</div>':''}<div class="meta">${meta}</div></div>
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
   }).join('')+'</div>';
