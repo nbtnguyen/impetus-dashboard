@@ -318,6 +318,69 @@
   .dialogcard .dacts button+button{border-left:1px solid var(--line)}
   .dialogcard .dacts .dcancel{color:var(--ink)}
   .dialogcard .dacts .ddanger{color:var(--danger); font-weight:700}
+/* ============================================================
+   GV MODE — mới, chỉ dùng token có sẵn ở trên, không tự chế màu
+   ============================================================ */
+.stat3{display:flex; gap:8px}
+.stat3 .b{flex:1; background:var(--surface); border-radius:var(--r-card); padding:12px 6px; text-align:center}
+.stat3 .b b{display:block; font-size:19px; font-weight:800; color:var(--ink)}
+.stat3 .b span{font-size:10.5px; color:var(--faint); display:block; margin-top:3px; font-weight:600}
+.daylbl{padding:14px 16px 8px; font-size:14.5px; font-weight:800; color:var(--ink)}
+.daylbl .hl{color:var(--primary); font-weight:700}
+.tilegrid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.tile2{background:var(--surface); border-radius:var(--r-card); padding:16px 14px}
+.tile2 .n{font-size:27px; font-weight:800; letter-spacing:-.02em; color:var(--ink)}
+.tile2 .n.danger{color:var(--danger)} .tile2 .n.warn{color:var(--warn)}
+.tile2 .l{font-size:12.5px; color:var(--muted); font-weight:600; margin-top:4px}
+.hbuweekrow{display:flex; align-items:center; gap:12px; padding:13px 16px}
+.hbuweekrow .dot{width:36px; height:36px; border-radius:50%; background:var(--soft); flex:none}
+.hbuweekrow .t{font-size:14px; color:var(--ink); line-height:1.4}
+.hbuweekrow .t b{font-weight:700}
+.hocbu-row{display:flex; align-items:center; gap:11px; padding:12px 14px; background:var(--warn-soft); border-radius:var(--r-card)}
+.hocbu-row i{color:var(--warn); font-size:19px}
+.hocbu-row .t{font-size:13.5px; font-weight:600; color:var(--ink)}
+.dstrip{display:flex; gap:8px; overflow-x:auto; padding:0 2px 4px; margin:0 -2px 4px; scrollbar-width:none}
+.dstrip::-webkit-scrollbar{display:none}
+.dchip{flex:none; text-align:center; padding:8px 2px; width:52px; border-radius:var(--r-input); background:var(--surface); border:1.5px solid transparent; cursor:pointer}
+.dchip .dw{font-size:10.5px; color:var(--faint); font-weight:600}
+.dchip .dd{font-size:14px; font-weight:700; margin-top:1px; color:var(--ink)}
+.dchip.on{border-color:var(--primary); background:var(--primary-soft)}
+.dchip.on .dd,.dchip.on .dw{color:var(--primary)}
+.progline{display:flex; justify-content:space-between; margin:8px 2px 12px; font-size:12.5px; color:var(--muted); font-weight:600}
+.evcard{background:var(--surface); border-radius:var(--r-group); margin-bottom:10px; overflow:hidden}
+.evhead{display:flex; align-items:center; gap:10px; padding:13px 15px}
+.evhead .att{font-size:11px; font-weight:700; padding:4px 9px; border-radius:var(--r-pill); flex:none}
+.evhead .att.in{background:var(--ok-soft); color:var(--ok)}
+.evhead .att.out{background:var(--danger-soft); color:var(--danger)}
+.evhead .att.future{background:var(--soft); color:var(--faint)}
+.evbody{padding:0 15px 15px; border-top:1px solid var(--line); padding-top:13px}
+.evbody .flabel{font-size:11.5px; font-weight:700; color:var(--muted); margin:12px 0 7px; text-transform:uppercase; letter-spacing:.03em}
+.evbody .flabel:first-child{margin-top:0}
+.tarea{width:100%; min-width:0; max-width:100%; border:0; background:var(--soft); border-radius:var(--r-input); padding:11px 13px; font-family:inherit; font-size:13.5px; color:var(--ink); min-height:56px; resize:none; line-height:1.55}
+.sendbox{margin-top:13px; border:1.5px dashed var(--primary); border-radius:var(--r-input); padding:11px 12px; background:var(--primary-soft)}
+.sendbox .sh{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:var(--primary); letter-spacing:.03em; margin-bottom:8px}
+.sendbox .preview{background:var(--surface); border-radius:10px; padding:10px 11px; font-size:12.5px; line-height:1.6; color:var(--ink)}
+.sendbox .sendbtn2{width:100%; margin-top:9px; height:42px; border-radius:11px}
+.skillcard{background:var(--surface); border-radius:var(--r-group); padding:14px 15px; margin-bottom:10px}
+.skillcard .sh2{display:flex; align-items:center; gap:8px; margin-bottom:9px}
+.skillcard .nm{font-size:13px; font-weight:800; color:var(--ink); letter-spacing:.02em}
+.skillcard .en{font-size:10.5px; font-style:italic; color:var(--faint)}
+.spkblock{border:1.5px solid var(--primary); border-radius:var(--r-group); overflow:hidden; margin-bottom:10px}
+.spkblock .cap{background:var(--primary); padding:9px 15px; display:flex; align-items:center; gap:8px}
+.spkblock .cap .nm{font-size:13px; font-weight:800; color:#fff; letter-spacing:.03em}
+.spkblock .cap .ov{margin-left:auto; font-size:14px; font-weight:800; color:#fff}
+.spkblock .sub{padding:11px 15px; background:#fff}
+.spkblock .sub + .sub{border-top:1px solid var(--line)}
+.spkblock .sub .n2{font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.03em; margin-bottom:7px}
+.histrow{padding:13px 15px}
+.histrow + .histrow{border-top:1px solid var(--line)}
+.histrow .dt{font-size:12px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.03em}
+.histrow .body{font-size:13.5px; margin-top:5px; line-height:1.55}
+.histrow .tags{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap}
+.htag{font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-pill)}
+.htag.ok{background:var(--ok-soft); color:var(--ok)} .htag.warn{background:var(--warn-soft); color:var(--warn)} .htag.off{background:var(--soft); color:var(--faint)}
+.formnav .cancel.backarrow{display:inline-flex; align-items:center; gap:2px}
+.formnav .cancel.backarrow i{font-size:20px}
 </style>
 </head>
 <body>
@@ -346,8 +409,9 @@
   <button class="fab hide" id="fab"></button>
   <div class="bottomnav">
     <button class="navitem hide" id="navDash" data-v="dashboard"><i class="hgi-stroke hgi-dashboard-square-01"></i>Tổng quan</button>
-    <button class="navitem active" data-v="hoc_sinh"><i class="hgi-stroke hgi-user-multiple-02"></i>Học sinh</button>
-    <button class="navitem" data-v="lop"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp học</button>
+    <button class="navitem active" id="navHS" data-v="hoc_sinh"><i class="hgi-stroke hgi-user-multiple-02"></i>Học sinh</button>
+    <button class="navitem" id="navLopAll" data-v="lop"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp học</button>
+    <button class="navitem hide" id="navLopToi" data-v="lop_toi"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp của tôi</button>
     <button class="navitem hide" id="navTc" data-v="thu_chi"><i class="hgi-stroke hgi-wallet-01"></i>Thu chi</button>
   </div>
 </div>
@@ -379,7 +443,7 @@ const avaC=k=>AVA[(parseInt((k||'').replace(/\D/g,''))||(k||'').length)%AVA.leng
 const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
-let db, me={name:'',role:'nhan_vien'}, view='hoc_sinh';
+let db, me={id:null,name:'',role:'nhan_vien',gvId:null}, view='hoc_sinh';
 let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[], faceIds=new Set();
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
@@ -393,6 +457,8 @@ let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh
 const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
 const canSeeParent=()=>['nhan_vien','quan_ly'].includes(me.role);
+const isGV=()=>me.role==='giao_vien';
+function myClasses(){ if(!me.gvId) return []; return classes.filter(c=> c.giao_vien_id===me.gvId || phancong.some(p=>p.lop_hoc_id===c.id && p.giao_vien_id===me.gvId)); }
 
 if(!window.supabase){ showLgErr('Không tải được thư viện. Kiểm tra mạng rồi mở lại.'); }
 else { db=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); init(); }
@@ -416,14 +482,17 @@ async function login(){
 async function enterApp(){
   $('#login').classList.add('hide'); $('#main').classList.remove('hide');
   const {data:{user}}=await db.auth.getUser();
-  const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro').eq('id',user.id).maybeSingle();
+  me.id=user.id;
+  const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro, giao_vien_id').eq('id',user.id).maybeSingle();
   me.name=(prof&&prof.ho_ten)||user.email;
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
+  me.gvId=(prof&&prof.giao_vien_id)||null;
   $('#me_name').textContent=me.name;
   $('#me_role').textContent={quan_ly:'Quản lý', nhan_vien:'Nhân viên', giao_vien:'Giáo viên'}[me.role]||me.role;
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); $('#navGvAcc').classList.remove('hide'); }
+  if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); }
   await loadAll();
-  switchView(isManager()?'dashboard':'hoc_sinh');
+  switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
 $('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
 $('#meWho').onclick=openChangePassword;
@@ -447,7 +516,7 @@ function gvTeachingMeta(t){
   if(ta.length) parts.push('TA · '+ta.join(', '));
   return parts.length?parts.join(' · '):'Chưa dạy lớp nào';
 }
-async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
+async function loadMakeups(){ const {data}=await db.from('phieu_hoc_bu').select('*, hoc_sinh(id, ma_hoc_sinh, ho_ten), lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').order('ngay_tao',{ascending:false}); makeups=data||[]; }
 async function loadThuChi(){ const {data}=await db.from('thu_chi').select('*').order('ngay',{ascending:false}); thuchi=data||[]; }
 async function loadDiemDanh(){ const from=new Date(); from.setDate(from.getDate()-7); const {data}=await db.from('diem_danh').select('*').gte('thoi_gian_quet',from.toISOString()).order('thoi_gian_quet',{ascending:false}); diemdanh=data||[]; }
 async function loadBuoiHoc(){ const from=new Date(); from.setDate(from.getDate()-7); const {data}=await db.from('buoi_hoc').select('*').gte('bat_dau',from.toISOString()).order('bat_dau',{ascending:false}); buoihoc=data||[]; }
@@ -465,7 +534,7 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
+  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
 function updateFab(){
@@ -740,7 +809,208 @@ function renderClasses(){
   L.querySelectorAll('.lopcard').forEach(el=>{ el.onclick=()=>openClassDetail(classes.find(c=>c.id===el.dataset.id)); });
 }
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* ============================================================
+   GV MODE — Lớp của tôi (theo prototype đã duyệt)
+   ============================================================ */
+const DAYFULL={T2:'Thứ 2', T3:'Thứ 3', T4:'Thứ 4', T5:'Thứ 5', T6:'Thứ 6', T7:'Thứ 7', CN:'Chủ nhật'};
+const BTVN_LABEL={hoan_thanh:'Đã làm', chua_hoan_thanh:'Chưa làm', khong_kiem_tra:'Không kiểm tra'};
+const MUCMAP={tot:'Tốt', kha:'Khá', can_cai_thien:'Cần cải thiện'};
+function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function mondayOf(dateISO){ const d=new Date(dateISO+'T00:00:00'); const wd=(d.getDay()+6)%7; d.setDate(d.getDate()-wd); return d; }
+function weekDatesFrom(dateISO){ const mon=mondayOf(dateISO); const days=[]; for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); days.push(isoOf(d)); } return days; }
+function wdOf(iso){ const d=new Date(iso+'T00:00:00'); return DAYS[(d.getDay()+6)%7]; }
+function classSessionDatesInMonth(c, year, month){
+  if(c.trang_thai!=='dang_hoc') return [];
+  const wds=(c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim());
+  const res=[]; const last=new Date(year,month,0).getDate();
+  for(let d=1; d<=last; d++){
+    const dt=new Date(year,month-1,d);
+    const code=DAYS[(dt.getDay()+6)%7];
+    if(wds.includes(code)) res.push(year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0'));
+  }
+  return res;
+}
+async function loadGvHomeData(mine){
+  const today=todayStr();
+  const now=new Date(); const year=now.getFullYear(), month=now.getMonth()+1;
+  const monthStart=year+'-'+String(month).padStart(2,'0')+'-01';
+  const weekMon=mondayOf(today); const weekStart=isoOf(weekMon);
+  const weekEnd=isoOf(new Date(weekMon.getFullYear(),weekMon.getMonth(),weekMon.getDate()+6));
+  const rangeStart = weekStart<monthStart? weekStart : monthStart;
+  const classIds=mine.map(c=>c.id);
+  const rosterByClass={}; classIds.forEach(id=>rosterByClass[id]=[]);
+  if(classIds.length){
+    const {data:regs}=await db.from('dang_ky_lop').select('trang_thai, lop_hoc_id, hoc_sinh(id, ho_ten, ma_hoc_sinh, trang_thai)').in('lop_hoc_id', classIds);
+    (regs||[]).forEach(r=>{
+      if(!r.hoc_sinh || r.trang_thai==='da_nghi') return;
+      if(!(r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')) return;
+      rosterByClass[r.lop_hoc_id].push(r.hoc_sinh);
+    });
+  }
+  let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[];
+  if(classIds.length){
+    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}] = await Promise.all([
+      db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', rangeStart).lte('ngay', today),
+      db.from('ket_qua_thang').select('lop_hoc_id, hoc_sinh_id').in('lop_hoc_id', classIds).eq('thang', month).eq('nam', year),
+      db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').in('lop_hoc_id', classIds).gte('ngay_vang', weekStart).lte('ngay_vang', weekEnd),
+      db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd)
+    ]);
+    evalSet=new Set((dgb||[]).map(e=>`${e.lop_hoc_id}|${e.hoc_sinh_id}|${e.ngay}`));
+    kqtSet=new Set((kqt||[]).map(k=>`${k.lop_hoc_id}|${k.hoc_sinh_id}`));
+    hbRa=ra||[]; hbVao=vao||[];
+  }
+  return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao};
+}
+function gvScheduleRowHtml(c, date, evalSet, roster){
+  const showBadge = date<=todayStr() && roster.length>0 && !roster.every(s=>evalSet.has(`${c.id}|${s.id}|${date}`));
+  const gio=(c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'')+(c.gio_ket_thuc?' – '+c.gio_ket_thuc.slice(0,5):'');
+  return `<div class="row tap haslead" data-c="${c.id}">
+    <span class="avatar sm" style="background:${avaC(c.ten_lop)}">${(c.ten_lop||'?').slice(0,1).toUpperCase()}</span>
+    <div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${gio} · ${roster.length} em</div></div>
+    ${showBadge?'<span class="spill" style="color:var(--danger);background:var(--danger-soft);margin-right:2px">Chưa nhận xét</span>':''}
+    <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
+  </div>`;
+}
+function buildLichDayHtml(mine, data){
+  const days=weekDatesFrom(data.today);
+  let html='';
+  days.forEach(date=>{
+    const wd=wdOf(date);
+    const classesToday=mine.filter(c=>c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
+    if(!classesToday.length) return;
+    const isToday=date===data.today;
+    html += `<div class="daylbl">${DAYFULL[wd]}${isToday?' <span class="hl">· Hôm nay</span>':''}</div>`;
+    html += classesToday.map(c=>gvScheduleRowHtml(c,date,data.evalSet,data.rosterByClass[c.id]||[])).join('');
+  });
+  return `<div class="section" style="margin-top:6px"><div class="lbl">Lịch dạy</div><div class="group">${html||'<div class="state" style="padding:26px"><div class="big">Tuần này không có lịch dạy</div></div>'}</div></div>`;
+}
+function buildHocBuHtml(data){
+  const items=[];
+  data.hbRa.forEach(h=>{
+    const dLbl = h.ngay_vang===data.today? 'hôm nay' : DAYFULL[wdOf(h.ngay_vang)];
+    const dest = h.lop_hoc_bu? h.lop_hoc_bu.ten_lop : 'chưa xếp lớp bù';
+    items.push(`<div class="hbuweekrow"><span class="dot"></span><span class="t"><b>${h.hoc_sinh?.ho_ten||'—'}</b> · học bù sang ${dest} · ${dLbl}</span></div>`);
+  });
+  data.hbVao.forEach(h=>{
+    const home=h.lop_hoc?h.lop_hoc.ten_lop:'—';
+    const dLbl = h.ngay_bu===data.today? 'hôm nay' : DAYFULL[wdOf(h.ngay_bu)];
+    items.push(`<div class="hbuweekrow"><span class="dot"></span><span class="t"><b>${h.hoc_sinh?.ho_ten||'—'}</b> (lớp ${home}) · học bù vào lớp này · ${dLbl}</span></div>`);
+  });
+  if(!items.length) return '';
+  return `<div class="section"><div class="lbl">Học sinh học bù</div><div class="group">${items.join('')}</div></div>`;
+}
+function buildTongQuanHtml(mine, data){
+  let buoiDaDay=0, lopChuaNhanXetBuoi=0, lopChuaNhanXetThang=0;
+  mine.forEach(c=>{
+    const sessions=classSessionDatesInMonth(c, data.year, data.month).filter(d=>d<=data.today);
+    buoiDaDay += sessions.length;
+    const roster=data.rosterByClass[c.id]||[];
+    if(roster.length && sessions.some(d=>roster.some(s=>!data.evalSet.has(`${c.id}|${s.id}|${d}`)))) lopChuaNhanXetBuoi++;
+    if(roster.length && roster.some(s=>!data.kqtSet.has(`${c.id}|${s.id}`))) lopChuaNhanXetThang++;
+  });
+  return `<div class="section"><div class="lbl">Tổng quan</div><div class="tilegrid2">
+    <div class="tile2"><div class="n">${mine.length}</div><div class="l">Lớp đang dạy</div></div>
+    <div class="tile2"><div class="n">${buoiDaDay}</div><div class="l">Buổi đã dạy/tháng</div></div>
+    <div class="tile2"><div class="n ${lopChuaNhanXetBuoi>0?'danger':''}">${lopChuaNhanXetBuoi}</div><div class="l">Lớp chưa nhận xét buổi</div></div>
+    <div class="tile2"><div class="n ${lopChuaNhanXetThang>0?'warn':''}">${lopChuaNhanXetThang}</div><div class="l">Lớp chưa nhận xét tháng</div></div>
+  </div></div>`;
+}
+async function buildLopToi(){
+  const mine=myClasses();
+  $('#screen').innerHTML=`<div class="pagetitle" style="margin:0 0 4px"><h1>Lớp của tôi</h1></div><div id="list"><div class="state"><div class="skel line w40" style="margin:0 auto"></div></div></div>`;
+  if(!mine.length){ $('#list').innerHTML='<div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>'; return; }
+  const data=await loadGvHomeData(mine);
+  if(view!=='lop_toi') return;
+  $('#list').innerHTML = buildLichDayHtml(mine,data) + buildHocBuHtml(data) + buildTongQuanHtml(mine,data);
+  $('#list').querySelectorAll('[data-c]').forEach(el=>{ el.onclick=()=>openClassDetail(classes.find(c=>c.id===el.dataset.c)); });
+}
+
+/* ---- Chi tiết lớp (bản GV) ---- */
+async function gvClassStats(c, roster){
+  let ccPct=0, btPct=0;
+  if(roster.length){
+    const now=new Date(); const y=now.getFullYear(), m=now.getMonth()+1;
+    const monthStart=y+'-'+String(m).padStart(2,'0')+'-01';
+    const nextY=m===12?y+1:y, nextM=m===12?1:m+1;
+    const nextMonth=nextY+'-'+String(nextM).padStart(2,'0')+'-01';
+    const {data:sessions}=await db.from('buoi_hoc').select('id').eq('lop_hoc_id',c.id).gte('bat_dau',monthStart+'T00:00:00+07:00').lt('bat_dau',nextMonth+'T00:00:00+07:00');
+    const sessionIds=(sessions||[]).map(s=>s.id);
+    if(sessionIds.length){
+      const {data:dd}=await db.from('diem_danh').select('buoi_hoc_id, hoc_sinh_id, trang_thai').in('buoi_hoc_id',sessionIds);
+      const rates=sessionIds.map(sid=>{
+        const present=new Set((dd||[]).filter(d=>d.buoi_hoc_id===sid && d.trang_thai==='co_mat').map(d=>d.hoc_sinh_id)).size;
+        return present/roster.length;
+      });
+      ccPct=Math.round(rates.reduce((a,b)=>a+b,0)/rates.length*100);
+    }
+    const {data:dgb}=await db.from('danh_gia_buoi').select('du_lieu').eq('lop_hoc_id',c.id).gte('ngay',monthStart).lt('ngay',nextMonth);
+    const withBtvn=(dgb||[]).filter(d=>d.du_lieu && d.du_lieu.btvn);
+    if(withBtvn.length) btPct=Math.round(withBtvn.filter(d=>d.du_lieu.btvn==='hoan_thanh').length/withBtvn.length*100);
+  }
+  return {ccPct, btPct};
+}
+function openGvClassDetail(c){
+  curClass=c;
+  $('#detailBody').innerHTML='<div class="state"><div class="skel line w40" style="margin:0 auto"></div></div>';
+  showDetailPage('Lớp của tôi');
+  renderGvClassDetail(c);
+}
+async function renderGvClassDetail(c){
+  const today=todayStr();
+  const now=new Date(); const year=now.getFullYear(), month=now.getMonth()+1;
+  const [{data:reg}, {data:kqt}, {data:hbRaToday}, {data:hbVaoToday}] = await Promise.all([
+    db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id),
+    db.from('ket_qua_thang').select('hoc_sinh_id').eq('lop_hoc_id',c.id).eq('thang',month).eq('nam',year),
+    db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').eq('lop_hoc_id',c.id).eq('ngay_vang',today),
+    db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').eq('lop_hoc_bu_id',c.id).eq('ngay_bu',today)
+  ]);
+  if(curClass!==c) return;
+  const list=(reg||[]).filter(r=>r.hoc_sinh);
+  const roster=list.filter(r=>r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')).map(r=>r.hoc_sinh);
+  const stt=await gvClassStats(c, roster);
+  if(curClass!==c) return;
+  const doneThang=(kqt||[]).length;
+  const ta=taNames(c.id);
+  const hocbuItems=[
+    ...(hbRaToday||[]).map(h=>`<div class="hocbu-row" style="margin-bottom:6px"><i class="hgi-stroke hgi-repeat-01"></i><span class="t">${h.hoc_sinh?.ho_ten||''} — học bù sang ${h.lop_hoc_bu?h.lop_hoc_bu.ten_lop:'lớp khác'}</span></div>`),
+    ...(hbVaoToday||[]).map(h=>`<div class="hocbu-row" style="margin-bottom:6px"><i class="hgi-stroke hgi-repeat-01"></i><span class="t">${h.hoc_sinh?.ho_ten||''} (lớp ${h.lop_hoc?h.lop_hoc.ten_lop:'khác'}) — học bù vào lớp này</span></div>`)
+  ];
+  $('#detailBody').innerHTML=`
+    <div style="display:flex;align-items:center;gap:11px;margin:2px 0 4px">
+      <span class="avatar" style="background:${avaC(c.ten_lop)}">${(c.ten_lop||'?').charAt(0).toUpperCase()}</span>
+      <div><div style="font-size:18px;font-weight:700;letter-spacing:-.02em">${c.ten_lop}</div><div style="font-size:12.5px;color:var(--faint);margin-top:1px">${c.cac_ngay_trong_tuan||'—'} · ${c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'—'}${c.gio_ket_thuc?' – '+c.gio_ket_thuc.slice(0,5):''}</div></div>
+    </div>
+    <div class="section" style="margin-top:14px"><div class="lbl">Thống kê nhanh tháng này</div>
+      <div class="stat3">
+        <div class="b"><b>${stt.ccPct}%</b><span>Chuyên cần TB</span></div>
+        <div class="b"><b>${stt.btPct}%</b><span>BTVN đủ</span></div>
+        <div class="b"><b>${roster.length}</b><span>Sĩ số</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:18px">
+      <button class="btn primary block" id="btnEval">✎ Đánh giá buổi học</button>
+      <button class="btn soft block" id="btnReport" style="border:1.5px solid var(--primary);color:var(--primary)">📄 Báo cáo tháng ${month} · ${doneThang}/${roster.length} xong</button>
+    </div>
+    ${hocbuItems.length?`<div class="section"><div class="lbl">Học bù hôm nay</div>${hocbuItems.join('')}</div>`:''}
+    ${ta?`<div class="section"><div class="lbl">Trợ giảng</div><div class="group"><div class="row"><span class="k">TA</span><span class="val">${ta}</span></div></div></div>`:''}
+    <div class="section"><div class="lbl">Học sinh trong lớp</div><div class="group" id="gvRoster"></div></div>`;
+  $('#gvRoster').innerHTML = roster.map(s=>`
+    <div class="row tap haslead" data-s="${s.id}">
+      <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
+      <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div>
+      ${s.trang_thai==='bao_luu'?'<span class="spill bao_luu">Bảo lưu</span>':'<span class="spill dang_hoc">Đang học</span>'}
+      <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
+    </div>`).join('') || '<div class="row"><span class="meta">Chưa có học sinh nào trong lớp.</span></div>';
+  $('#gvRoster').querySelectorAll('[data-s]').forEach(el=>{ el.onclick=()=>openStudentDetail(students.find(s=>s.id===el.dataset.s)||roster.find(s=>s.id===el.dataset.s)); });
+  $('#btnEval').onclick=()=>openDanhGiaBuoi(c);
+  $('#btnReport').onclick=()=>openBaoCaoThang(c);
+}
+function openDanhGiaBuoi(c){ toast('Màn "Đánh giá buổi học" sẽ có ở Phần 2'); }
+function openBaoCaoThang(c){ toast('Màn "Báo cáo tháng" sẽ có ở Phần 3'); }
+
 async function openClassDetail(c){
+  if(isGV()) return openGvClassDetail(c);
   curClass=c;
   const btns=[];
   if(canWrite()) btns.push('<button class="btn primary" style="flex:1" id="enroll">+ Thêm học sinh</button>');
@@ -1007,14 +1277,15 @@ const oweCount=()=>new Set(makeups.filter(m=>m.trang_thai==='chua_bu').map(m=>m.
 async function afterMakeupChange(){ await loadMakeups(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); if(curStudent)openStudentDetail(curStudent); }
 function openMakeupActions(m){
   const done=m.trang_thai==='da_bu';
-  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${m.hoc_sinh?m.hoc_sinh.ho_ten:''}</div><div class="asub">${m.lop_hoc?m.lop_hoc.ten_lop:''} · vắng ${fmtDate(m.ngay_vang)}${m.ghi_chu?' · '+m.ghi_chu:''}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${m.hoc_sinh?m.hoc_sinh.ho_ten:''}</div><div class="asub">${m.lop_hoc?m.lop_hoc.ten_lop:''} · vắng ${fmtDate(m.ngay_vang)}${done&&m.lop_hoc_bu?' · bù sang '+m.lop_hoc_bu.ten_lop:''}${m.ghi_chu?' · '+m.ghi_chu:''}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
     ${done
       ? `<div class="actopt" id="undo"><i class="hgi-stroke hgi-repeat-01" style="color:var(--warn)"></i>Hoàn tác về “chưa bù”</div>`
-      : `<div class="sheetcard"><div class="field" style="margin-top:10px"><label>Ngày đi học bù</label><div class="datefield"><input id="hb_ngaybu" type="date" value="${new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày đi học bù</span></div></div></div>
+      : `<div class="sheetcard"><div class="field" style="margin-top:10px"><label>Ngày đi học bù</label><div class="datefield"><input id="hb_ngaybu" type="date" value="${new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày đi học bù</span></div></div>
+          <div class="field"><label>Lớp học bù</label><select id="hb_lopbu">${classes.map(c=>`<option value="${c.id}" ${c.id===m.lop_hoc_id?'selected':''}>${c.ten_lop}</option>`).join('')}</select></div></div>
          <button class="btn primary block" id="markbu" style="margin-top:14px">Đánh dấu đã bù</button>`}
     <div class="actopt" id="delhb" style="margin-top:10px"><i class="hgi-stroke hgi-cancel-01" style="color:var(--danger)"></i><span style="color:var(--danger)">Xóa phiếu</span></div>`;
-  if(done) $('#undo').onclick=()=>updMakeup(m.id,{trang_thai:'chua_bu', ngay_bu:null},'Đã hoàn tác');
-  else $('#markbu').onclick=()=>updMakeup(m.id,{trang_thai:'da_bu', ngay_bu:$('#hb_ngaybu').value||null},'Đã đánh dấu bù xong');
+  if(done) $('#undo').onclick=()=>updMakeup(m.id,{trang_thai:'chua_bu', ngay_bu:null, lop_hoc_bu_id:null},'Đã hoàn tác');
+  else $('#markbu').onclick=()=>updMakeup(m.id,{trang_thai:'da_bu', ngay_bu:$('#hb_ngaybu').value||null, lop_hoc_bu_id:$('#hb_lopbu').value||null},'Đã đánh dấu bù xong');
   $('#delhb').onclick=async()=>{ await db.from('phieu_hoc_bu').delete().eq('id',m.id); closeAct(); await afterMakeupChange(); toast('Đã xóa phiếu'); };
   showAct();
 }
