@@ -831,13 +831,13 @@ function classSessionDatesInMonth(c, year, month){
   }
   return res;
 }
-async function loadGvHomeData(mine){
+async function loadGvHomeData(mine, year, month){
   const today=todayStr();
-  const now=new Date(); const year=now.getFullYear(), month=now.getMonth()+1;
+  const now=new Date();
+  if(!year){ year=now.getFullYear(); month=now.getMonth()+1; }
   const monthStart=year+'-'+String(month).padStart(2,'0')+'-01';
   const weekMon=mondayOf(today); const weekStart=isoOf(weekMon);
   const weekEnd=isoOf(new Date(weekMon.getFullYear(),weekMon.getMonth(),weekMon.getDate()+6));
-  const rangeStart = weekStart<monthStart? weekStart : monthStart;
   const classIds=mine.map(c=>c.id);
   const rosterByClass={}; classIds.forEach(id=>rosterByClass[id]=[]);
   if(classIds.length){
@@ -851,7 +851,7 @@ async function loadGvHomeData(mine){
   let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[];
   if(classIds.length){
     const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}] = await Promise.all([
-      db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', rangeStart).lte('ngay', today),
+      db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today),
       db.from('ket_qua_thang').select('lop_hoc_id, hoc_sinh_id').in('lop_hoc_id', classIds).eq('thang', month).eq('nam', year),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').in('lop_hoc_id', classIds).gte('ngay_vang', weekStart).lte('ngay_vang', weekEnd),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd)
@@ -862,28 +862,61 @@ async function loadGvHomeData(mine){
   }
   return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao};
 }
-function gvScheduleRowHtml(c, date, evalSet, roster){
-  const showBadge = date<=todayStr() && roster.length>0 && !roster.every(s=>evalSet.has(`${c.id}|${s.id}|${date}`));
-  const gio=(c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'')+(c.gio_ket_thuc?' – '+c.gio_ket_thuc.slice(0,5):'');
-  return `<div class="row tap haslead" data-c="${c.id}">
-    <span class="avatar sm" style="background:${avaC(c.ten_lop)}">${(c.ten_lop||'?').slice(0,1).toUpperCase()}</span>
-    <div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${gio} · ${roster.length} em</div></div>
-    ${showBadge?'<span class="spill" style="color:var(--danger);background:var(--danger-soft);margin-right:2px">Chưa nhận xét</span>':''}
-    <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
-  </div>`;
+function shortDate(iso){ const [y,m,d]=iso.split('-'); return parseInt(d,10)+'/'+parseInt(m,10); }
+function attendanceForDate(c, date, roster){
+  if(date>todayStr() || !roster.length) return null;
+  const ids=buoiHocIdsForDate(date, c.id);
+  if(!ids.size) return null;
+  const present=new Set(diemdanh.filter(d=>d.trang_thai==='co_mat' && ids.has(d.buoi_hoc_id)).map(d=>d.hoc_sinh_id)).size;
+  return present+'/'+roster.length;
 }
-function buildLichDayHtml(mine, data){
-  const days=weekDatesFrom(data.today);
-  let html='';
-  days.forEach(date=>{
-    const wd=wdOf(date);
-    const classesToday=mine.filter(c=>c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
-    if(!classesToday.length) return;
-    const isToday=date===data.today;
-    html += `<div class="daylbl">${DAYFULL[wd]}${isToday?' <span class="hl">· Hôm nay</span>':''}</div>`;
-    html += classesToday.map(c=>gvScheduleRowHtml(c,date,data.evalSet,data.rosterByClass[c.id]||[])).join('');
-  });
-  return `<div class="section" style="margin-top:6px"><div class="lbl">Lịch dạy</div><div class="group">${html||'<div class="state" style="padding:26px"><div class="big">Tuần này không có lịch dạy</div></div>'}</div></div>`;
+function attendanceLabel(att){
+  if(!att) return null;
+  const [p,t]=att.split('/').map(Number);
+  const du=p>=t;
+  return {text:(du?'Đủ ':'Thiếu ')+att, color: du?'var(--ok)':'var(--danger)'};
+}
+function monthSessionDates(mine, year, month){
+  const set=new Set();
+  mine.forEach(c=>classSessionDatesInMonth(c,year,month).forEach(d=>set.add(d)));
+  return Array.from(set).sort();
+}
+function buildDateStripHtml(dates, selected){
+  return `<div class="dstrip" id="gvDstrip">${dates.map(d=>`<div class="dchip ${d===selected?'on':''}" data-date="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('')}</div>`;
+}
+function gvSessionButtonHtml(c, date, data){
+  const roster=data.rosterByClass[c.id]||[];
+  if(!roster.length) return `<button class="btn soft block" disabled style="height:36px;padding:0 16px;font-size:13px;opacity:.55;cursor:default">Chưa có học sinh</button>`;
+  if(date>data.today) return `<button class="btn soft block" disabled style="height:36px;padding:0 16px;font-size:13px;opacity:.55;cursor:default">Buổi sắp tới</button>`;
+  const done=roster.every(s=>data.evalSet.has(`${c.id}|${s.id}|${date}`));
+  let html=`<button class="btn ${done?'soft':'primary'} block" data-eval="${c.id}" data-date="${date}" style="height:36px;padding:0 16px;font-size:13px">${done?'Đã nhận xét buổi':'Nhận xét buổi'}</button>`;
+  const sessions=classSessionDatesInMonth(c,data.year,data.month);
+  if(sessions.length && sessions[sessions.length-1]===date){
+    html += `<button class="btn soft block" data-report="${c.id}" style="height:36px;padding:0 16px;font-size:13px;background:var(--primary-soft);color:var(--primary);margin-top:8px">Nhận xét tháng</button>`;
+  }
+  return html;
+}
+function gvSessionCardHtml(c, date, data){
+  const roster=data.rosterByClass[c.id]||[];
+  const gio=(c.gio_bat_dau?c.gio_bat_dau.slice(0,5):'—')+(c.gio_ket_thuc?' – '+c.gio_ket_thuc.slice(0,5):'');
+  const att=attendanceForDate(c,date,roster);
+  const attInfo=attendanceLabel(att);
+  const attHtml = attInfo? `<b style="color:${attInfo.color}">${attInfo.text}</b>` : `Sĩ số <b style="color:var(--ink)">${roster.length}</b>`;
+  const ta=taNames(c.id);
+  return `<div class="evcard">
+    <div style="display:flex;align-items:center;gap:11px;padding:14px 15px 11px;cursor:pointer" data-goto="${c.id}">
+      <div style="width:40px;height:40px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700">${c.ten_lop}</div>
+        <div style="font-size:12.5px;color:var(--faint);margin-top:1px">${gio} · Phòng ${c.phong||'—'}</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)">
+      <span>Điểm danh: ${attHtml}</span>
+      ${ta?`<span>TA: <b style="color:var(--ink)">${ta}</b></span>`:''}
+    </div>
+    <div style="padding:0 15px 14px">${gvSessionButtonHtml(c,date,data)}</div>
+  </div>`;
 }
 function buildHocBuHtml(data){
   const items=[];
@@ -909,21 +942,75 @@ function buildTongQuanHtml(mine, data){
     if(roster.length && sessions.some(d=>roster.some(s=>!data.evalSet.has(`${c.id}|${s.id}|${d}`)))) lopChuaNhanXetBuoi++;
     if(roster.length && roster.some(s=>!data.kqtSet.has(`${c.id}|${s.id}`))) lopChuaNhanXetThang++;
   });
-  return `<div class="section"><div class="lbl">Tổng quan</div><div class="tilegrid2">
+  return `<div class="section"><div class="lbl">Thống kê</div><div class="tilegrid2">
     <div class="tile2"><div class="n">${mine.length}</div><div class="l">Lớp đang dạy</div></div>
     <div class="tile2"><div class="n">${buoiDaDay}</div><div class="l">Buổi đã dạy/tháng</div></div>
     <div class="tile2"><div class="n ${lopChuaNhanXetBuoi>0?'danger':''}">${lopChuaNhanXetBuoi}</div><div class="l">Lớp chưa nhận xét buổi</div></div>
     <div class="tile2"><div class="n ${lopChuaNhanXetThang>0?'warn':''}">${lopChuaNhanXetThang}</div><div class="l">Lớp chưa nhận xét tháng</div></div>
   </div></div>`;
 }
+let gvHomeMine=null, gvHomeData=null, gvSelectedDate=null;
 async function buildLopToi(){
   const mine=myClasses();
-  $('#screen').innerHTML=`<div class="pagetitle" style="margin:0 0 4px"><h1>Lớp của tôi</h1></div><div id="list"><div class="state"><div class="skel line w40" style="margin:0 auto"></div></div></div>`;
+  gvHomeMine=mine;
+  $('#screen').innerHTML=`
+    <div class="controls" style="padding-top:14px">
+      <div class="pagetitle" style="margin:0 0 4px"><h1>Lớp của tôi</h1></div>
+    </div>
+    <div class="list" id="list"><div class="state"><div class="skel line w40" style="margin:0 auto"></div></div></div>`;
   if(!mine.length){ $('#list').innerHTML='<div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>'; return; }
-  const data=await loadGvHomeData(mine);
+  const now=new Date();
+  await loadAndRenderMonth(now.getFullYear(), now.getMonth()+1, true);
+}
+async function loadAndRenderMonth(year, month, isInitial){
+  const data=await loadGvHomeData(gvHomeMine, year, month);
   if(view!=='lop_toi') return;
-  $('#list').innerHTML = buildLichDayHtml(mine,data) + buildHocBuHtml(data) + buildTongQuanHtml(mine,data);
-  $('#list').querySelectorAll('[data-c]').forEach(el=>{ el.onclick=()=>openClassDetail(classes.find(c=>c.id===el.dataset.c)); });
+  gvHomeData=data;
+  const dates=monthSessionDates(gvHomeMine, year, month);
+  if(isInitial){
+    gvSelectedDate=data.today;
+    if(!dates.includes(gvSelectedDate)){
+      const past=dates.filter(d=>d<=data.today);
+      gvSelectedDate = past.length? past[past.length-1] : (dates[0]||data.today);
+    }
+  } else {
+    gvSelectedDate = dates.length? dates[dates.length-1] : (year+'-'+String(month).padStart(2,'0')+'-01');
+  }
+  renderLopToiList();
+}
+function gvChangeMonth(delta){
+  let y=gvHomeData.year, m=gvHomeData.month+delta;
+  if(m<1){ m=12; y--; } if(m>12){ m=1; y++; }
+  const now=new Date();
+  if(y>now.getFullYear() || (y===now.getFullYear() && m>now.getMonth()+1)) return;
+  loadAndRenderMonth(y,m,false);
+}
+function renderLopToiList(){
+  const mine=gvHomeMine, data=gvHomeData, sel=gvSelectedDate;
+  const dates=monthSessionDates(mine, data.year, data.month);
+  const wd=wdOf(sel);
+  const classesOnSel=mine.filter(c=>c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
+  const now=new Date();
+  const isLatestMonth = data.year===now.getFullYear() && data.month===now.getMonth()+1;
+  $('#list').innerHTML = `
+    <div class="section" style="margin-top:6px"><div class="lbl">Lịch dạy</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 2px 8px">
+        <button class="iconbtn" id="gvPrevMonth"><i class="hgi-stroke hgi-arrow-left-01"></i></button>
+        <span style="font-size:13px;font-weight:700;color:var(--ink)">Tháng ${data.month}/${data.year}</span>
+        <button class="iconbtn" id="gvNextMonth" ${isLatestMonth?'disabled style="opacity:.3;cursor:default"':''}><i class="hgi-stroke hgi-arrow-right-01"></i></button>
+      </div>
+      ${buildDateStripHtml(dates, sel)}
+      ${classesOnSel.length? classesOnSel.map(c=>gvSessionCardHtml(c,sel,data)).join('') : `<div class="state" style="padding:26px;background:var(--surface);border-radius:var(--r-group)"><div class="big">Không có lịch dạy ngày này</div></div>`}
+    </div>
+    ${buildHocBuHtml(data)}
+    ${buildTongQuanHtml(mine,data)}`;
+  $('#gvPrevMonth').onclick=()=>gvChangeMonth(-1);
+  $('#gvNextMonth').onclick=()=>gvChangeMonth(1);
+  $('#gvDstrip')?.querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>{ gvSelectedDate=el.dataset.date; renderLopToiList(); }; });
+  $('#list').querySelectorAll('[data-goto]').forEach(el=>{ el.onclick=()=>openClassDetail(classes.find(c=>c.id===el.dataset.goto)); });
+  $('#list').querySelectorAll('[data-eval]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.eval), el.dataset.date); });
+  $('#list').querySelectorAll('[data-report]').forEach(el=>{ el.onclick=()=>openBaoCaoThang(classes.find(c=>c.id===el.dataset.report)); });
+  const onChip=$('#gvDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
 }
 
 /* ---- Chi tiết lớp (bản GV) ---- */
@@ -989,8 +1076,8 @@ async function renderGvClassDetail(c){
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:9px;margin-top:18px">
-      <button class="btn primary block" id="btnEval">✎ Đánh giá buổi học</button>
-      <button class="btn soft block" id="btnReport" style="border:1.5px solid var(--primary);color:var(--primary)">📄 Báo cáo tháng ${month} · ${doneThang}/${roster.length} xong</button>
+      <button class="btn primary block" id="btnEval"><i class="hgi-stroke hgi-pencil-edit-02"></i> Đánh giá buổi học</button>
+      <button class="btn soft block" id="btnReport" style="background:var(--primary-soft);color:var(--primary)"><i class="hgi-stroke hgi-file-01"></i> Báo cáo tháng ${month} · ${doneThang}/${roster.length} xong</button>
     </div>
     ${hocbuItems.length?`<div class="section"><div class="lbl">Học bù hôm nay</div>${hocbuItems.join('')}</div>`:''}
     ${ta?`<div class="section"><div class="lbl">Trợ giảng</div><div class="group"><div class="row"><span class="k">TA</span><span class="val">${ta}</span></div></div></div>`:''}
@@ -1006,7 +1093,7 @@ async function renderGvClassDetail(c){
   $('#btnEval').onclick=()=>openDanhGiaBuoi(c);
   $('#btnReport').onclick=()=>openBaoCaoThang(c);
 }
-function openDanhGiaBuoi(c){ toast('Màn "Đánh giá buổi học" sẽ có ở Phần 2'); }
+function openDanhGiaBuoi(c, date){ toast('Màn "Đánh giá buổi học" sẽ có ở Phần 2'); }
 function openBaoCaoThang(c){ toast('Màn "Báo cáo tháng" sẽ có ở Phần 3'); }
 
 async function openClassDetail(c){
