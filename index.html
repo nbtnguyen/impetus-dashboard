@@ -353,13 +353,12 @@
 .evhead .att.in{background:var(--ok-soft); color:var(--ok)}
 .evhead .att.out{background:var(--danger-soft); color:var(--danger)}
 .evhead .att.future{background:var(--soft); color:var(--faint)}
-.evbody{padding:0 15px 15px; border-top:1px solid var(--line); padding-top:13px}
-.evbody .flabel{font-size:11.5px; font-weight:700; color:var(--muted); margin:12px 0 7px; text-transform:uppercase; letter-spacing:.03em}
-.evbody .flabel:first-child{margin-top:0}
+.evbody{padding:13px 15px 15px}
+.evdivider{margin:0 15px; border-top:1px solid var(--line)}
+.evhead .main .t{font-size:var(--text-name); font-weight:700}
 .tarea{width:100%; min-width:0; max-width:100%; border:0; background:var(--soft); border-radius:var(--r-input); padding:11px 13px; font-family:inherit; font-size:13.5px; color:var(--ink); min-height:56px; resize:none; line-height:1.55}
-.sendbox{margin-top:13px; border:1.5px dashed var(--primary); border-radius:var(--r-input); padding:11px 12px; background:var(--primary-soft)}
-.sendbox .sh{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:var(--primary); letter-spacing:.03em; margin-bottom:8px}
-.sendbox .preview{background:var(--surface); border-radius:10px; padding:10px 11px; font-size:12.5px; line-height:1.6; color:var(--ink)}
+.sendbox{margin-top:13px; border-radius:var(--r-input); padding:11px 12px; background:var(--primary-soft)}
+.sendbox .preview{background:var(--surface); border-radius:10px; padding:10px 11px; font-size:12.5px; line-height:1.6; color:var(--ink); width:100%; border:0; resize:none; font-family:inherit; min-height:88px; display:block; overflow:hidden}
 .sendbox .sendbtn2{width:100%; margin-top:9px; height:42px; border-radius:11px}
 .skillcard{background:var(--surface); border-radius:var(--r-group); padding:14px 15px; margin-bottom:10px}
 .skillcard .sh2{display:flex; align-items:center; gap:8px; margin-bottom:9px}
@@ -379,6 +378,8 @@
 .histrow .tags{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap}
 .htag{font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-pill)}
 .htag.ok{background:var(--ok-soft); color:var(--ok)} .htag.warn{background:var(--warn-soft); color:var(--warn)} .htag.off{background:var(--soft); color:var(--faint)}
+.choice.on.ok{background:var(--ok)}
+.choice.on.warn{background:var(--warn)}
 .formnav .cancel.backarrow{display:inline-flex; align-items:center; gap:2px}
 .formnav .cancel.backarrow i{font-size:20px}
 </style>
@@ -1093,7 +1094,196 @@ async function renderGvClassDetail(c){
   $('#btnEval').onclick=()=>openDanhGiaBuoi(c);
   $('#btnReport').onclick=()=>openBaoCaoThang(c);
 }
-function openDanhGiaBuoi(c, date){ toast('Màn "Đánh giá buổi học" sẽ có ở Phần 2'); }
+/* ============================================================
+   GV MODE — Đánh giá buổi học (Phần 2)
+   ============================================================ */
+const NX_BUOI={
+  tot:'Con tích cực tham gia hoạt động trên lớp, tiếp thu bài tốt.',
+  kha:'Con tham gia hoạt động trên lớp, tiếp thu bài ở mức khá.',
+  can_cai_thien:'Con cần tập trung hơn và tích cực tham gia các hoạt động trên lớp.'
+};
+let gvEvalCtx=null;
+async function loadEvalScreenData(c, year, month){
+  const monthStart=year+'-'+String(month).padStart(2,'0')+'-01';
+  const nextY=month===12?year+1:year, nextM=month===12?1:month+1;
+  const nextMonth=nextY+'-'+String(nextM).padStart(2,'0')+'-01';
+  const [{data:sessions}, {data:dgb}] = await Promise.all([
+    db.from('buoi_hoc').select('id, bat_dau').eq('lop_hoc_id',c.id).gte('bat_dau',monthStart+'T00:00:00+07:00').lt('bat_dau',nextMonth+'T00:00:00+07:00'),
+    db.from('danh_gia_buoi').select('*').eq('lop_hoc_id',c.id).gte('ngay',monthStart).lt('ngay',nextMonth)
+  ]);
+  const sessionDateById={};
+  (sessions||[]).forEach(s=>{ const vn=new Date(new Date(s.bat_dau).getTime()+7*3600*1000); sessionDateById[s.id]=vn.toISOString().slice(0,10); });
+  let dd=[];
+  const sessionIds=(sessions||[]).map(s=>s.id);
+  if(sessionIds.length){ const r=await db.from('diem_danh').select('buoi_hoc_id, hoc_sinh_id, trang_thai').in('buoi_hoc_id',sessionIds); dd=r.data||[]; }
+  const dgbMap={}; (dgb||[]).forEach(e=>{ dgbMap[`${e.hoc_sinh_id}|${e.ngay}`]=e; });
+  return {sessionDateById, dd, dgbMap};
+}
+function coMatOn(sid, dateISO, evalData){
+  const ids=Object.keys(evalData.sessionDateById).filter(id=>evalData.sessionDateById[id]===dateISO);
+  if(!ids.length) return null;
+  return evalData.dd.some(d=>d.hoc_sinh_id===sid && ids.includes(d.buoi_hoc_id) && d.trang_thai==='co_mat');
+}
+function tallyUpTo(sid, sessUpToDates, evalData){
+  const soBuoi=sessUpToDates.length;
+  const presentDates=new Set(evalData.dd.filter(d=>d.trang_thai==='co_mat' && d.hoc_sinh_id===sid).map(d=>evalData.sessionDateById[d.buoi_hoc_id]));
+  const chuyenCan=sessUpToDates.filter(d=>presentDates.has(d)).length;
+  const filled=sessUpToDates.map(d=>evalData.dgbMap[`${sid}|${d}`]).filter(Boolean);
+  const btvnDu=filled.filter(e=>e.du_lieu && e.du_lieu.btvn==='hoan_thanh').length;
+  const datMt=filled.filter(e=>e.du_lieu && e.du_lieu.dat_muc_tieu===true).length;
+  return {chuyenCan, btvnDu, datMt, soBuoi};
+}
+function composeMsg(c, s, cur, t, coMat, dateISO){
+  const parts=[];
+  if(coMat!==null) parts.push(coMat?'có mặt':'vắng mặt');
+  if(cur.btvn==='hoan_thanh') parts.push('hoàn thành bài tập về nhà');
+  else if(cur.btvn==='chua_hoan_thanh') parts.push('chưa hoàn thành bài tập về nhà');
+  else if(cur.btvn==='khong_kiem_tra') parts.push('buổi này cô không kiểm tra bài tập');
+  if(cur.dat_muc_tieu===true) parts.push('đạt mục tiêu buổi học');
+  else if(cur.dat_muc_tieu===false) parts.push('chưa đạt mục tiêu buổi học');
+  const bodyText=parts.filter(Boolean).join(', ');
+  const nxLine=cur.nhan_xet_text? cur.nhan_xet_text : (cur.nhan_xet? (NX_BUOI[cur.nhan_xet]||'') : '');
+  return `${c.ten_lop} — ${fmtDate(dateISO)}\nCon ${s.ho_ten} hôm nay${bodyText?' '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
+}
+function evalCur(sid, dateISO){
+  const key=`${sid}|${dateISO}`;
+  if(gvEvalCtx.draft[key]) return {...gvEvalCtx.draft[key]};
+  const saved=gvEvalCtx.evalData.dgbMap[key];
+  if(saved) return {btvn:saved.du_lieu?.btvn||null, dat_muc_tieu:(saved.du_lieu&&'dat_muc_tieu' in saved.du_lieu)?saved.du_lieu.dat_muc_tieu:null, nhan_xet:saved.du_lieu?.nhan_xet||null, nhan_xet_text:(saved.du_lieu&&saved.du_lieu.nhan_xet_text!=null)?saved.du_lieu.nhan_xet_text:null};
+  return {btvn:null, dat_muc_tieu:null, nhan_xet:null, nhan_xet_text:null};
+}
+async function openDanhGiaBuoi(c, date){
+  showPageBack('Đánh giá buổi học lớp '+c.ten_lop);
+  $('#pageBody').innerHTML='<div class="state"><div class="skel line w40" style="margin:0 auto"></div></div>';
+  const {data:reg}=await db.from('dang_ky_lop').select('trang_thai, hoc_sinh(id, ho_ten, ma_hoc_sinh, trang_thai)').eq('lop_hoc_id',c.id);
+  const roster=(reg||[]).filter(r=>r.hoc_sinh && r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')).map(r=>r.hoc_sinh);
+  let year, month;
+  if(date){ [year,month]=date.split('-').map(Number); } else { const now=new Date(); year=now.getFullYear(); month=now.getMonth()+1; }
+  const sessions=classSessionDatesInMonth(c,year,month);
+  let curDate=date;
+  if(!curDate){
+    const today=todayStr();
+    const pastOrToday=sessions.filter(d=>d<=today);
+    curDate = pastOrToday.length? pastOrToday[pastOrToday.length-1] : (sessions[0]||today);
+  }
+  const evalData=await loadEvalScreenData(c,year,month);
+  gvEvalCtx={c, roster, sessions, evalData, draft:{}};
+  pageOnClose=()=>{ if(view==='lop_toi') buildLopToi(); else if(curClass && curClass.id===c.id) renderGvClassDetail(curClass); };
+  renderEvalScreen(curDate);
+}
+function renderEvalScreen(curDate){
+  const {roster, sessions}=gvEvalCtx;
+  const dateChips=sessions.map(d=>`<div class="dchip ${d===curDate?'on':''}" data-d="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('');
+  const doneCount=roster.filter(s=>gvEvalCtx.evalData.dgbMap[`${s.id}|${curDate}`]).length;
+  const cards=roster.map(s=>evalCardHtml(s,curDate)).join('');
+  $('#pageBody').innerHTML=`
+    <div class="dstrip" id="evalDstrip">${dateChips}</div>
+    <div class="progline"><span>Đã nhận xét ${doneCount}/${roster.length} em</span><span>${fmtDate(curDate)}</span></div>
+    ${cards}`;
+  $('#evalDstrip').querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>renderEvalScreen(el.dataset.d); });
+  const onChip=$('#evalDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
+  wireEvalCards(curDate);
+}
+function evalCardHtml(s, dateISO){
+  const {c, evalData}=gvEvalCtx;
+  const key=`${s.id}|${dateISO}`;
+  const saved=evalData.dgbMap[key];
+  const cur=evalCur(s.id, dateISO);
+  const today=todayStr();
+  const futureDate=dateISO>today;
+  const coMat=futureDate? null : coMatOn(s.id, dateISO, evalData);
+  const attHtml = futureDate? '<span class="att future" style="margin-left:auto">Chưa tới giờ</span>' : (coMat===null? '<span class="att future" style="margin-left:auto">Chưa điểm danh</span>' : `<span class="att ${coMat?'in':'out'}" style="margin-left:auto">${coMat?'Có mặt':'Vắng'}</span>`);
+  const boxText = cur.nhan_xet_text!=null? cur.nhan_xet_text : '';
+  return `<div class="evcard" data-card="${key}">
+    <div class="evhead">
+      <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
+      <div class="main"><div class="t">${s.ho_ten}</div></div>
+      ${attHtml}
+      ${saved?'<i class="hgi-stroke hgi-checkmark-circle-02" style="color:var(--ok);font-size:17px;margin-left:8px" title="Đã lưu"></i>':''}
+    </div>
+    <div class="evdivider"></div>
+    <div class="evbody">
+      <div class="field" style="margin-top:0"><label>Bài tập về nhà</label>
+      <div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="btvn">
+        <span class="choice ${cur.btvn==='hoan_thanh'?'on ok':''}" data-v="hoan_thanh">Đã làm</span>
+        <span class="choice ${cur.btvn==='chua_hoan_thanh'?'on warn':''}" data-v="chua_hoan_thanh">Chưa làm</span>
+        <span class="choice ${cur.btvn==='khong_kiem_tra'?'on':''}" data-v="khong_kiem_tra">Không kiểm tra</span>
+      </div></div>
+      <div class="field"><label>Đạt mục tiêu buổi học</label>
+      <div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="dat_muc_tieu">
+        <span class="choice ${cur.dat_muc_tieu===true?'on ok':''}" data-v="true">Đạt</span>
+        <span class="choice ${cur.dat_muc_tieu===false?'on warn':''}" data-v="false">Chưa đạt</span>
+      </div></div>
+      <div class="field"><label>Nhận xét</label>
+      <div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="nhan_xet">
+        <span class="choice ${cur.nhan_xet==='tot'?'on ok':''}" data-v="tot">Tốt</span>
+        <span class="choice ${cur.nhan_xet==='kha'?'on':''}" data-v="kha">Khá</span>
+        <span class="choice ${cur.nhan_xet==='can_cai_thien'?'on warn':''}" data-v="can_cai_thien">Cần cải thiện</span>
+      </div></div>
+      <div class="field"><label>Gửi phụ huynh</label>
+      <div class="sendbox">
+        <textarea class="preview nxbuoi" data-hs="${s.id}" data-date="${dateISO}" placeholder="Bấm 1 mức Nhận xét ở trên để tự điền, hoặc gõ tay…">${boxText}</textarea>
+        <button class="btn primary sendbtn2" data-hs="${s.id}" data-date="${dateISO}">Lưu &amp; Copy để gửi Zalo</button>
+      </div></div>
+    </div>
+  </div>`;
+}
+function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; }
+function wireEvalCards(curDate){
+  $('#pageBody').querySelectorAll('.chipset').forEach(cs=>{
+    cs.querySelectorAll('.choice').forEach(ch=>{
+      ch.onclick=()=>{
+        const sid=cs.dataset.hs, dateISO=cs.dataset.date, field=cs.dataset.f;
+        let v=ch.dataset.v; if(field==='dat_muc_tieu') v=(v==='true');
+        const key=`${sid}|${dateISO}`;
+        const base=evalCur(sid,dateISO);
+        base[field]=(base[field]===v)? null : v;
+        base.nhan_xet_text=null;
+        const s=gvEvalCtx.roster.find(x=>x.id===sid);
+        const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
+        const coMat = dateISO>todayStr()? null : coMatOn(sid,dateISO,gvEvalCtx.evalData);
+        const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
+        base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, coMat, dateISO);
+        gvEvalCtx.draft[key]=base;
+        renderEvalScreen(curDate);
+      };
+    });
+  });
+  $('#pageBody').querySelectorAll('.nxbuoi').forEach(ta=>{
+    autoGrow(ta);
+    ta.oninput=()=>{
+      const sid=ta.dataset.hs, dateISO=ta.dataset.date;
+      const key=`${sid}|${dateISO}`;
+      const base=evalCur(sid,dateISO);
+      base.nhan_xet_text=ta.value;
+      gvEvalCtx.draft[key]=base;
+      autoGrow(ta);
+    };
+  });
+  $('#pageBody').querySelectorAll('.sendbtn2').forEach(btn=>{
+    btn.onclick=async()=>{
+      const sid=btn.dataset.hs, dateISO=btn.dataset.date;
+      const key=`${sid}|${dateISO}`;
+      const cur=evalCur(sid,dateISO);
+      if(!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text){
+        toast('Chọn đủ BTVN, Đạt mục tiêu và viết/chọn Nhận xét trước khi lưu', false); return;
+      }
+      const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text};
+      const {c}=gvEvalCtx;
+      btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
+      const saved=gvEvalCtx.evalData.dgbMap[key];
+      let error;
+      if(saved){ const r=await db.from('danh_gia_buoi').update({du_lieu, ngay_sua:new Date().toISOString()}).eq('id',saved.id); error=r.error; if(!error) saved.du_lieu=du_lieu; }
+      else { const r=await db.from('danh_gia_buoi').insert({lop_hoc_id:c.id, hoc_sinh_id:sid, ngay:dateISO, du_lieu, nguoi_tao:me.id}).select('*').single(); error=r.error; if(!error) gvEvalCtx.evalData.dgbMap[key]=r.data; }
+      btn.disabled=false;
+      if(error){ toast(error.message,false); btn.textContent='Lưu & Copy để gửi Zalo'; return; }
+      try{ await navigator.clipboard.writeText(cur.nhan_xet_text); toast('Đã lưu & copy — dán vào Zalo'); }
+      catch(e){ toast('Đã lưu. Trình duyệt chặn copy tự động, anh/chị copy tay giúp em.', false); }
+      delete gvEvalCtx.draft[key];
+      renderEvalScreen(curDate);
+    };
+  });
+}
 function openBaoCaoThang(c){ toast('Màn "Báo cáo tháng" sẽ có ở Phần 3'); }
 
 async function openClassDetail(c){
@@ -1974,8 +2164,19 @@ function unlockBodyScroll(){
 }
 function show(sel){ lockBodyScroll(); $('#scrim').classList.add('show'); $(sel).classList.add('show'); }
 function showAct(){ lockBodyScroll(); $('#actSheet').classList.add('show'); $('#scrim').classList.add('show'); }
+let pageOnClose=null;
 function showPage(title){ $('#pageTitle').textContent=title; $('#page').classList.add('show'); }
-function closePage(){ $('#page').classList.remove('show'); $('#pageFooter').innerHTML=''; }
+function showPageBack(title, backLabel){
+  $('#pageTitle').textContent=title;
+  $('#pageCancel').innerHTML = backLabel? `<i class="hgi-stroke hgi-arrow-left-01"></i>${backLabel}` : `<i class="hgi-stroke hgi-arrow-left-01"></i>`;
+  $('#pageCancel').classList.add('backarrow');
+  $('#page').classList.add('show');
+}
+function closePage(){
+  $('#page').classList.remove('show'); $('#pageFooter').innerHTML='';
+  $('#pageCancel').innerHTML='Hủy'; $('#pageCancel').classList.remove('backarrow');
+  if(pageOnClose){ const fn=pageOnClose; pageOnClose=null; fn(); }
+}
 $('#pageCancel').onclick=closePage;
 function showDetailPage(label){ if(label) $('#detailBackLabel').textContent=label; $('#detailPage').classList.add('show'); }
 function closeDetailPage(){ $('#detailPage').classList.remove('show'); }
