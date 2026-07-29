@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Impetus</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#494fdf">
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Impetus">
+<meta name="mobile-web-app-capable" content="yes">
+
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/500.css">
@@ -151,6 +162,9 @@
   .achead .asub{font-size:13px; color:var(--muted); margin-top:3px}
   .aclose{width:30px; height:30px; border-radius:50%; background:var(--soft); color:var(--muted); display:grid; place-items:center; flex:none; border:0; cursor:pointer; margin-top:1px}
   .aclose i{font-size:15px}
+  .instwrap{display:flex; flex-direction:column; gap:var(--sp-3); margin-top:var(--sp-4); padding-bottom:var(--sp-2)}
+  .inststep{display:flex; align-items:flex-start; gap:var(--sp-3); font-size:var(--text-body); color:var(--ink); line-height:1.4}
+  .instnum{flex:none; width:24px; height:24px; border-radius:50%; background:var(--primary-soft); color:var(--primary); font-size:13px; font-weight:700; display:grid; place-items:center; margin-top:1px}
   .actopt{background:var(--surface); border-radius:var(--r-card); padding:14px; display:flex; align-items:center; gap:12px; margin-top:10px; cursor:pointer; font:inherit; font-size:15px; font-weight:600; color:var(--ink); width:100%; text-align:left; border:0}
   .actopt:first-of-type{margin-top:16px}
   .actopt:active{background:#FAFAFB}
@@ -402,6 +416,7 @@
     <div class="brand"><div class="logo">I</div><div class="name">Impe<span>tus</span></div>
       <div class="me"><div class="who" id="meWho" style="cursor:pointer"><b id="me_name">—</b><div class="r" id="me_role">—</div></div>
         <button class="iconbtn hide" id="navGvAcc" title="Quản lý tài khoản GV"><i class="hgi-stroke hgi-mortarboard-01"></i></button>
+        <button class="iconbtn hide" id="installBtn" title="Cài vào màn hình chính"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
         <button class="iconbtn" id="logout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
       </div>
     </div>
@@ -467,6 +482,41 @@ function showLgErr(m){ $('#lg_err').textContent=m; $('#lg_err').classList.add('s
 
 async function init(){ const {data:{session}}=await db.auth.getSession(); if(session) enterApp(); }
 
+/* ===== Cài đặt PWA (thêm vào màn hình chính) ===== */
+let deferredInstallPrompt = null;
+function isStandalonePWA(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+function isIOSDevice(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream; }
+function updateInstallBtnVisibility(){
+  const btn = $('#installBtn'); if(!btn) return;
+  if(isStandalonePWA()){ btn.classList.add('hide'); return; }
+  if(isIOSDevice() || deferredInstallPrompt){ btn.classList.remove('hide'); }
+  else { btn.classList.add('hide'); }
+}
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; updateInstallBtnVisibility(); });
+window.addEventListener('appinstalled', ()=>{ deferredInstallPrompt=null; $('#installBtn')?.classList.add('hide'); });
+$('#installBtn').onclick = async function(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    updateInstallBtnVisibility();
+    return;
+  }
+  const ios = isIOSDevice();
+  $('#actBody').innerHTML = `<div class="achead"><div><div class="atitle">Cài Impetus vào màn hình chính</div><div class="asub">${ios?'Trên Safari (iPhone/iPad)':'Trên trình duyệt này'}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="instwrap">
+      ${ios ? `
+        <div class="inststep"><span class="instnum">1</span><span>Bấm nút <b>Chia sẻ</b> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:-2px"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/></svg> ở thanh dưới Safari</span></div>
+        <div class="inststep"><span class="instnum">2</span><span>Cuộn xuống, chọn <b>"Thêm vào MH chính"</b></span></div>
+        <div class="inststep"><span class="instnum">3</span><span>Bấm <b>"Thêm"</b> ở góc trên</span></div>
+      ` : `
+        <div class="inststep"><span class="instnum">1</span><span>Mở menu trình duyệt (⋮ hoặc ⋯ ở góc trên)</span></div>
+        <div class="inststep"><span class="instnum">2</span><span>Chọn <b>"Cài đặt ứng dụng"</b> hoặc <b>"Thêm vào màn hình chính"</b></span></div>
+      `}
+    </div>`;
+  showAct();
+};
+
 /* ===== Auth ===== */
 $('#lg_btn').onclick=login;
 $('#lg_pass').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
@@ -482,6 +532,7 @@ async function login(){
 }
 async function enterApp(){
   $('#login').classList.add('hide'); $('#main').classList.remove('hide');
+  updateInstallBtnVisibility();
   const {data:{user}}=await db.auth.getUser();
   me.id=user.id;
   const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro, giao_vien_id').eq('id',user.id).maybeSingle();
