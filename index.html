@@ -400,13 +400,6 @@
 .skillcard .sh2{display:flex; align-items:center; gap:8px; margin-bottom:9px}
 .skillcard .nm{font-size:13px; font-weight:800; color:var(--ink); letter-spacing:.02em}
 .skillcard .en{font-size:10.5px; font-style:italic; color:var(--faint)}
-.spkblock{border:1.5px solid var(--primary); border-radius:var(--r-group); overflow:hidden; margin-bottom:10px}
-.spkblock .cap{background:var(--primary); padding:9px 15px; display:flex; align-items:center; gap:8px}
-.spkblock .cap .nm{font-size:13px; font-weight:800; color:#fff; letter-spacing:.03em}
-.spkblock .cap .ov{margin-left:auto; font-size:14px; font-weight:800; color:#fff}
-.spkblock .sub{padding:11px 15px; background:#fff}
-.spkblock .sub + .sub{border-top:1px solid var(--line)}
-.spkblock .sub .n2{font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.03em; margin-bottom:7px}
 .histrow{padding:13px 15px}
 .histrow + .histrow{border-top:1px solid var(--line)}
 .histrow .dt{font-size:12px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.03em}
@@ -873,7 +866,6 @@ function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.get
    ============================================================ */
 const DAYFULL={T2:'Thứ 2', T3:'Thứ 3', T4:'Thứ 4', T5:'Thứ 5', T6:'Thứ 6', T7:'Thứ 7', CN:'Chủ nhật'};
 const BTVN_LABEL={hoan_thanh:'Đã làm', chua_hoan_thanh:'Chưa làm', khong_kiem_tra:'Không kiểm tra'};
-const MUCMAP={tot:'Tốt', kha:'Khá', can_cai_thien:'Cần cải thiện'};
 function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function mondayOf(dateISO){ const d=new Date(dateISO+'T00:00:00'); const wd=(d.getDay()+6)%7; d.setDate(d.getDate()-wd); return d; }
 function weekDatesFrom(dateISO){ const mon=mondayOf(dateISO); const days=[]; for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); days.push(isoOf(d)); } return days; }
@@ -1245,7 +1237,7 @@ function renderGvKqtHistory(kqt){
   el.innerHTML = `<div class="lbl">Kết quả tháng</div><div class="group">${kqt.map(k=>`
     <div class="histrow">
       <div class="dt">Tháng ${k.thang}/${k.nam}${k.lop_hoc?' · '+k.lop_hoc.ten_lop:''}</div>
-      <div class="body">Từ vựng ${MUCMAP[k.tu_vung_muc]||'—'} · Ngữ pháp ${MUCMAP[k.ngu_phap_muc]||'—'} · Viết ${MUCMAP[k.viet_muc]||'—'} · Nghe ${MUCMAP[k.nghe_muc]||'—'} · Nói ${overallSpeaking(k.noi)}/20</div>
+      <div class="body">Từ vựng ${k.tu_vung_muc!=null?k.tu_vung_muc+'/10':'—'} · Ngữ pháp ${k.ngu_phap_muc!=null?k.ngu_phap_muc+'/10':'—'} · Viết ${k.viet_muc!=null?k.viet_muc+'/10':'—'} · Nghe ${k.nghe_muc!=null?k.nghe_muc+'/10':'—'} · Nói ${overallSpeaking(k.noi)}/20</div>
       ${k.nhan_xet_chung?`<div class="body" style="margin-top:4px;color:var(--muted)">${k.nhan_xet_chung}</div>`:''}
     </div>`).join('')}</div>`;
 }
@@ -1407,7 +1399,7 @@ function renderBaoCaoList(){
     <div class="progline"><span>Đã hoàn thành ${done}/${roster.length} em</span><span>${sessions.length} buổi trong tháng</span></div>
     <div class="group" id="bcList">${roster.length? roster.map(s=>{
       const k=kqtMap[s.id];
-      const meta = k? `Nói ${overallSpeaking(k.noi)}/20 · Từ vựng ${MUCMAP[k.tu_vung_muc]||'—'}` : 'Chưa nhập';
+      const meta = k? `Nói ${overallSpeaking(k.noi)}/20 · Từ vựng ${k.tu_vung_muc!=null?k.tu_vung_muc+'/10':'—'}` : 'Chưa nhập';
       return `<div class="row tap haslead" data-s="${s.id}">
         <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
         <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${meta}</div></div>
@@ -1448,8 +1440,8 @@ async function openKetQuaForm(s){
   renderKetQuaForm();
   $('#saveKqt').onclick=async()=>{
     const {draft, existing, s, c}=gvKqtCtx;
-    if(!draft.tu_vung_muc||!draft.ngu_phap_muc||!draft.viet_muc||!draft.nghe_muc){
-      toast('Chọn đủ mức cho cả 4 kỹ năng trước khi lưu', false); return;
+    if(draft.tu_vung_muc==null||draft.ngu_phap_muc==null||draft.viet_muc==null||draft.nghe_muc==null){
+      toast('Nhập đủ điểm cho cả 4 kỹ năng trước khi lưu', false); return;
     }
     const btn=$('#saveKqt'); btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
     const payload={
@@ -1473,16 +1465,16 @@ function renderKetQuaForm(){
   const skillBlock=(key,nxKey,ten,en)=>`
     <div class="skillcard">
       <div class="sh2"><span class="nm">${ten}</span><span class="en">${en}</span></div>
-      <div class="chipset" data-skill="${key}">
-        <span class="choice ${draft[key]==='tot'?'on ok':''}" data-v="tot">Tốt</span>
-        <span class="choice ${draft[key]==='kha'?'on':''}" data-v="kha">Khá</span>
-        <span class="choice ${draft[key]==='can_cai_thien'?'on warn':''}" data-v="can_cai_thien">Cần cải thiện</span>
+      <div class="field" style="margin-top:0"><label>Điểm (/10)</label>
+        <input type="number" min="0" max="10" step="1" inputmode="numeric" class="scoreInput" data-score="${key}" placeholder="0–10" value="${draft[key]!=null?draft[key]:''}">
       </div>
-      <textarea class="tarea nxskill" style="margin-top:9px" data-nx="${nxKey}" placeholder="Nhận xét ${ten.toLowerCase()}…">${draft[nxKey]||''}</textarea>
+      <div class="field"><label>Nhận xét</label>
+        <textarea class="tarea nxskill" data-nx="${nxKey}" placeholder="Nhận xét ${ten.toLowerCase()}…">${draft[nxKey]||''}</textarea>
+      </div>
     </div>`;
   const speakSub=(key,label)=>`
-    <div class="sub">
-      <div class="n2">${label}</div>
+    <div style="margin-top:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.03em;margin-bottom:8px">${label}</div>
       <div class="chipset" data-spk="${key}">
         <span class="choice ${draft.noi[key]==='excellent'?'on ok':''}" data-v="excellent">Excellent</span>
         <span class="choice ${draft.noi[key]==='good'?'on':''}" data-v="good">Good</span>
@@ -1503,21 +1495,24 @@ function renderKetQuaForm(){
       ${skillBlock('ngu_phap_muc','ngu_phap_nx','Ngữ pháp','Grammar')}
       ${skillBlock('viet_muc','viet_nx','Viết','Writing')}
       ${skillBlock('nghe_muc','nghe_nx','Nghe','Listening')}
-    </div>
-    <div class="section"><div class="lbl">Nói</div>
-      <div class="spkblock">
-        <div class="cap"><span class="nm">SPEAKING</span><span class="ov">${overallSpeaking(draft.noi)}/20</span></div>
+      <div class="skillcard">
+        <div class="sh2"><span class="nm">Nói</span><span class="en">Speaking</span><span style="margin-left:auto;font-weight:800;color:var(--primary);font-size:14px">${overallSpeaking(draft.noi)}/20</span></div>
         ${speakSub('pronunciation','PRONUNCIATION')}
         ${speakSub('vocabulary','VOCABULARY')}
         ${speakSub('grammar_structure','GRAMMAR & STRUCTURE')}
         ${speakSub('comprehension_response','COMPREHENSION & RESPONSE')}
-        <div class="sub"><div class="n2">Nhận xét bài nói</div>
+        <div class="field" style="margin-top:20px"><label>Nhận xét</label>
           <textarea class="tarea" id="nxNoi" placeholder="Nhận xét riêng phần nói…">${draft.noi.nhan_xet||''}</textarea>
         </div>
       </div>
     </div>`;
-  $('#pageBody').querySelectorAll('[data-skill]').forEach(cs=>{
-    cs.querySelectorAll('.choice').forEach(ch=>ch.onclick=()=>{ gvKqtCtx.draft[cs.dataset.skill]=ch.dataset.v; renderKetQuaForm(); });
+  $('#pageBody').querySelectorAll('.scoreInput').forEach(inp=>{
+    inp.oninput=()=>{
+      if(inp.value===''){ gvKqtCtx.draft[inp.dataset.score]=null; return; }
+      let v=Math.round(Number(inp.value));
+      if(isNaN(v)) v=null; else v=Math.max(0, Math.min(10, v));
+      gvKqtCtx.draft[inp.dataset.score]=v;
+    };
   });
   $('#pageBody').querySelectorAll('[data-spk]').forEach(cs=>{
     cs.querySelectorAll('.choice').forEach(ch=>ch.onclick=()=>{ gvKqtCtx.draft.noi[cs.dataset.spk]=ch.dataset.v; renderKetQuaForm(); });
