@@ -433,7 +433,8 @@
     <button class="navitem hide" id="navDash" data-v="dashboard"><i class="hgi-stroke hgi-dashboard-square-01"></i>Tổng quan</button>
     <button class="navitem active" id="navHS" data-v="hoc_sinh"><i class="hgi-stroke hgi-user-multiple-02"></i>Học sinh</button>
     <button class="navitem" id="navLopAll" data-v="lop"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp học</button>
-    <button class="navitem hide" id="navLopToi" data-v="lop_toi"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp của tôi</button>
+    <button class="navitem hide" id="navLopToi" data-v="lop_toi"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp dạy</button>
+    <button class="navitem hide" id="navTaiKhoan" data-v="tai_khoan"><i class="hgi-stroke hgi-user-circle"></i>Tài khoản</button>
     <button class="navitem hide" id="navTc" data-v="thu_chi"><i class="hgi-stroke hgi-wallet-01"></i>Thu chi</button>
   </div>
 </div>
@@ -541,7 +542,7 @@ async function enterApp(){
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
   me.gvId=(prof&&prof.giao_vien_id)||null;
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
-  if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); }
+  if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); $('#navTaiKhoan').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
@@ -583,7 +584,7 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
+  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
 function updateFab(){
@@ -1060,7 +1061,6 @@ function renderLopToiList(){
         ${classesOnSel.length? classesOnSel.map(c=>gvSessionCardHtml(c,sel,data)).join('') : `<div class="state" style="padding:26px;background:var(--surface);border-radius:var(--r-group)"><div class="big">Không có lịch dạy ngày này</div></div>`}
       </div>
       ${buildHocBuHtml(data)}
-      ${buildTongQuanHtml(mine,data)}
     </div>`;
   $('#gvPrevMonth').onclick=()=>gvChangeMonth(-1);
   $('#gvNextMonth').onclick=()=>gvChangeMonth(1);
@@ -1682,16 +1682,18 @@ async function saveClass(){
 
 /* ===== ĐỔI MẬT KHẨU (tự phục vụ, mọi vai trò) ===== */
 /* ===== PROFILE (mở từ avatar ở Tổng quan — gom các chức năng trước nằm ở topbar) ===== */
-function openProfile(){
+function profileHeroHtml(){
   const roleLabel={quan_ly:'Quản lý', nhan_vien:'Nhân viên', giao_vien:'Giáo viên'}[me.role]||me.role;
-  const showInstall=canOfferInstall();
-  $('#detailBody').innerHTML=`
-    <div class="hero">
+  return `<div class="hero">
       <div class="avatar lg" style="background:${avaC(me.id)};margin:0 auto">${ini1(me.name)}</div>
       <div class="dname">${displayName(me.name)}</div>
       <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:3px">${me.email||''}</div>
       <div style="margin-top:11px;text-align:center"><span class="spill" style="color:var(--primary);background:var(--primary-soft)">${roleLabel}</span></div>
-    </div>
+    </div>`;
+}
+function profileSettingsHtml(){
+  const showInstall=canOfferInstall();
+  return `
     <div class="section">
       <div class="lbl">Tài khoản</div>
       <div class="group">
@@ -1706,11 +1708,34 @@ function openProfile(){
     <div class="section">
       <div class="group"><div class="row tap haslead danger" id="prowLogout"><div class="lead"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></div></div><div class="main"><div class="t" style="color:var(--danger)">Đăng xuất</div></div></div></div>
     </div>`;
+}
+function profileContentHtml(){ return profileHeroHtml() + profileSettingsHtml(); }
+function wireProfileRows(){
   $('#prowChangePw').onclick=openChangePassword;
   if(isManager()) $('#prowGvAcc').onclick=openGvAccounts;
-  if(showInstall) $('#prowInstall').onclick=openInstallInfo;
+  if($('#prowInstall')) $('#prowInstall').onclick=openInstallInfo;
   $('#prowLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
+}
+function openProfile(){
+  $('#detailBody').innerHTML=profileContentHtml();
+  wireProfileRows();
   showDetailPage('Tổng quan');
+}
+async function buildTaiKhoan(){
+  $('#screen').innerHTML=`
+    <div class="controls" style="padding-top:14px">
+      <div class="pagetitle" style="margin:0 0 4px"><h1>Tài khoản</h1></div>
+    </div>
+    <div class="list" id="list">${profileHeroHtml()}<div id="gvTkThongKe"></div>${profileSettingsHtml()}</div>`;
+  wireProfileRows();
+  const mine=myClasses();
+  if(mine.length){
+    const now=new Date();
+    const data=await loadGvHomeData(mine, now.getFullYear(), now.getMonth()+1);
+    if(view==='tai_khoan'){ const el=$('#gvTkThongKe'); if(el) el.outerHTML=buildTongQuanHtml(mine,data); }
+  } else {
+    const el=$('#gvTkThongKe'); if(el) el.remove();
+  }
 }
 
 function openChangePassword(){
