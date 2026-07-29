@@ -84,6 +84,16 @@
   .titlerow{display:flex; align-items:baseline; gap:9px; margin-top:14px}
   .titlerow h1{font-size:26px; font-weight:700; letter-spacing:-.03em; margin:0}
   .titlerow .count{font-size:13px; font-weight:600; color:var(--muted); background:var(--surface); border:1px solid var(--line); padding:2px 9px; border-radius:999px}
+
+  /* Header riêng của Tổng quan (thay chỗ topbar cũ) — chỉ dùng ở Dashboard */
+  .dashhead{display:flex; align-items:center; justify-content:space-between; margin:14px 0 20px}
+  .dashhead .brandtitle{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0} .dashhead .brandtitle span{color:var(--primary)}
+  .dashhead .meblock{display:flex; align-items:center; gap:9px; cursor:pointer}
+  .dashhead .meblock:active{opacity:.7}
+  .dashhead .meblock .who{text-align:right; line-height:1.25}
+  .dashhead .meblock .who .n{font-weight:700; font-size:13.5px; color:var(--ink)}
+  .dashhead .meblock .who .s{font-size:11.5px; color:var(--faint); font-weight:600}
+  .dashhead .meblock .av{width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:15px; flex:none}
   .pagetitle{display:flex; align-items:center; justify-content:space-between}
   .pagetitle h1{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0}
   .pagetitle h1 .n{color:var(--faint); font-weight:600}
@@ -144,12 +154,22 @@
   .skel.line{height:13px; margin-top:6px} .skel.line.w60{width:60%} .skel.line.w40{width:40%} .skel.line.w30{width:30%}
   .spinner-sm{width:16px; height:16px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite}
 
-  .fab{position:fixed; left:50%; transform:translateX(-50%); bottom:76px; z-index:40; width:min(412px,calc(100% - 28px)); background:var(--primary); color:#fff; border:0; border-radius:15px; padding:14px; font:inherit; font-size:15.5px; font-weight:700; cursor:pointer; box-shadow:0 8px 24px rgba(39,71,217,.4); display:flex; align-items:center; justify-content:center; gap:8px}
+  .fab{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + var(--safe-b)); z-index:40; width:min(412px,calc(100% - 28px)); background:var(--primary); color:#fff; border:0; border-radius:15px; padding:14px; font:inherit; font-size:15.5px; font-weight:700; cursor:pointer; box-shadow:0 8px 24px rgba(39,71,217,.4); display:flex; align-items:center; justify-content:center; gap:8px}
   .fab:active{background:var(--primary-press); transform:translateX(-50%) scale(.99)}
 
-  .bottomnav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:440px; background:var(--surface); border-top:1px solid var(--line); display:flex; height:62px; z-index:45}
-  .navitem{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--faint); font-size:11px; font-weight:600; cursor:pointer; border:0; background:transparent} .navitem i{font-size:23px; line-height:1} .icobtn i{font-size:19px; line-height:1} .backbtn i{font-size:20px; line-height:1} .fab i{font-size:20px; line-height:1}
+  /* ===== Bottom nav — iOS 26 style (floating capsule / "Liquid Glass") =====
+     Ngoại lệ có chủ đích so với nguyên tắc "phẳng, không đổ bóng" (mục 1.3 DESIGN-SYSTEM.md):
+     phần tử NỔI (floating) trên content thì cần shadow để đọc được độ cao, giống .sheet/.act đã có --sheet-shadow.
+     Số đo theo Apple HIG iOS 26: cách mép 21pt (≈20px ở đây), bo capsule = ½ chiều cao (62px → 31px). */
+  .bottomnav{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(20px + var(--safe-b)); width:calc(100% - 40px); max-width:400px; height:62px; display:flex; z-index:45;
+    background:rgba(255,255,255,.72); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,.6); border-radius:31px;
+    box-shadow:0 10px 30px rgba(16,32,55,.16), 0 2px 6px rgba(16,32,55,.08), inset 0 1px 0 rgba(255,255,255,.9)}
+  .navitem{position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--faint); font-size:11px; font-weight:600; cursor:pointer; border:0; background:transparent; z-index:2} .navitem i{font-size:23px; line-height:1} .icobtn i{font-size:19px; line-height:1} .backbtn i{font-size:20px; line-height:1} .fab i{font-size:20px; line-height:1}
   .navitem.active{color:var(--primary)}
+  /* Viên "kính" phía sau tab đang chọn — XÁM trung tính (system gray), không nhuộm màu primary. Chỉ icon+chữ đổi màu. */
+  .navitem.active::before{content:''; position:absolute; inset:6px 8px; background:rgba(120,120,128,.14); border-radius:var(--r-pill); z-index:-1}
+
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
   .sheet{position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%; max-width:440px; max-height:92vh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; z-index:60; transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:var(--sheet-shadow)} .sheet.show{transform:translateX(-50%) translateY(0)}
@@ -192,6 +212,8 @@
   .row .main .d,.row .main .meta{font-size:var(--text-sub); font-weight:500; color:var(--faint); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .row .rchev{color:var(--faint); flex:none}
   .row .addico{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; font-size:19px; flex:none}
+  .row .ricon{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; flex:none} .row .ricon i{font-size:18px} .row .ricon svg{width:17px; height:17px}
+  .row.danger .ricon{background:var(--danger-soft); color:var(--danger)}
   .row.add .t{font-weight:600; font-size:15px}
   .row .k{font-size:var(--text-body); color:var(--muted)}
   .row .val{margin-left:auto; font-size:var(--text-body); font-weight:600; color:var(--ink); text-align:right}
@@ -412,15 +434,6 @@
 
 <!-- APP -->
 <div class="app hide" id="main">
-  <div class="topbar">
-    <div class="brand"><div class="logo">I</div><div class="name">Impe<span>tus</span></div>
-      <div class="me"><div class="who" id="meWho" style="cursor:pointer"><b id="me_name">—</b><div class="r" id="me_role">—</div></div>
-        <button class="iconbtn hide" id="navGvAcc" title="Quản lý tài khoản GV"><i class="hgi-stroke hgi-mortarboard-01"></i></button>
-        <button class="iconbtn hide" id="installBtn" title="Cài vào màn hình chính"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></button>
-        <button class="iconbtn" id="logout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
-      </div>
-    </div>
-  </div>
   <div id="screen"></div>
   <button class="fab hide" id="fab"></button>
   <div class="bottomnav">
@@ -455,11 +468,12 @@ const $=s=>document.querySelector(s);
 const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const initials=n=>{const p=(n||'?').trim().split(/\s+/); return ((p[0][0]||'')+(p[p.length-1][0]||'')).toUpperCase();};
 const ini1=n=>{const p=(n||'?').trim().split(/\s+/); return (p[p.length-1][0]||'?').toUpperCase();};
+const displayName=n=>{ if(!n) return n; const i=n.indexOf('@'); return i>-1?n.slice(0,i):n; };
 const avaC=k=>AVA[(parseInt((k||'').replace(/\D/g,''))||(k||'').length)%AVA.length];
 const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
-let db, me={id:null,name:'',role:'nhan_vien',gvId:null}, view='hoc_sinh';
+let db, me={id:null,name:'',role:'nhan_vien',gvId:null,email:null}, view='hoc_sinh';
 let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[], faceIds=new Set();
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
@@ -486,20 +500,14 @@ async function init(){ const {data:{session}}=await db.auth.getSession(); if(ses
 let deferredInstallPrompt = null;
 function isStandalonePWA(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
 function isIOSDevice(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream; }
-function updateInstallBtnVisibility(){
-  const btn = $('#installBtn'); if(!btn) return;
-  if(isStandalonePWA()){ btn.classList.add('hide'); return; }
-  if(isIOSDevice() || deferredInstallPrompt){ btn.classList.remove('hide'); }
-  else { btn.classList.add('hide'); }
-}
-window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; updateInstallBtnVisibility(); });
-window.addEventListener('appinstalled', ()=>{ deferredInstallPrompt=null; $('#installBtn')?.classList.add('hide'); });
-$('#installBtn').onclick = async function(){
+function canOfferInstall(){ return !isStandalonePWA(); }
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; });
+window.addEventListener('appinstalled', ()=>{ deferredInstallPrompt=null; });
+async function openInstallInfo(){
   if(deferredInstallPrompt){
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
-    updateInstallBtnVisibility();
     return;
   }
   const ios = isIOSDevice();
@@ -515,7 +523,7 @@ $('#installBtn').onclick = async function(){
       `}
     </div>`;
   showAct();
-};
+}
 
 /* ===== Auth ===== */
 $('#lg_btn').onclick=login;
@@ -532,23 +540,19 @@ async function login(){
 }
 async function enterApp(){
   $('#login').classList.add('hide'); $('#main').classList.remove('hide');
-  updateInstallBtnVisibility();
   const {data:{user}}=await db.auth.getUser();
   me.id=user.id;
+  me.email=user.email;
   const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro, giao_vien_id').eq('id',user.id).maybeSingle();
   me.name=(prof&&prof.ho_ten)||user.email;
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
   me.gvId=(prof&&prof.giao_vien_id)||null;
-  $('#me_name').textContent=me.name;
-  $('#me_role').textContent={quan_ly:'Quản lý', nhan_vien:'Nhân viên', giao_vien:'Giáo viên'}[me.role]||me.role;
-  if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); $('#navGvAcc').classList.remove('hide'); }
+  if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
   if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
-$('#logout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
-$('#meWho').onclick=openChangePassword;
-$('#navGvAcc').onclick=openGvAccounts;
+/* Đăng xuất / đổi mật khẩu / quản lý GV giờ nằm trong trang Profile (xem openProfile()) */
 
 /* ===== Load ===== */
 async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong(), loadFaceIds()]); }
@@ -1682,6 +1686,38 @@ async function saveClass(){
 }
 
 /* ===== ĐỔI MẬT KHẨU (tự phục vụ, mọi vai trò) ===== */
+/* ===== PROFILE (mở từ avatar ở Tổng quan — gom các chức năng trước nằm ở topbar) ===== */
+function openProfile(){
+  const roleLabel={quan_ly:'Quản lý', nhan_vien:'Nhân viên', giao_vien:'Giáo viên'}[me.role]||me.role;
+  const showInstall=canOfferInstall();
+  $('#detailBody').innerHTML=`
+    <div class="hero">
+      <div class="avatar lg" style="background:${avaC(me.id)};margin:0 auto">${ini1(me.name)}</div>
+      <div class="dname">${displayName(me.name)}</div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:3px">${me.email||''}</div>
+      <div style="margin-top:11px;text-align:center"><span class="spill" style="color:var(--primary);background:var(--primary-soft)">${roleLabel}</span></div>
+    </div>
+    <div class="section">
+      <div class="lbl">Tài khoản</div>
+      <div class="group">
+        <div class="row tap haslead" id="prowChangePw"><div class="lead"><div class="ricon"><i class="hgi-stroke hgi-square-lock-password"></i></div></div><div class="main"><div class="t">Đổi mật khẩu</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        ${isManager()?`<div class="row tap haslead" id="prowGvAcc"><div class="lead"><div class="ricon"><i class="hgi-stroke hgi-mortarboard-01"></i></div></div><div class="main"><div class="t">Quản lý tài khoản GV</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`:''}
+      </div>
+    </div>
+    ${showInstall?`<div class="section">
+      <div class="lbl">Ứng dụng</div>
+      <div class="group"><div class="row tap haslead" id="prowInstall"><div class="lead"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div></div><div class="main"><div class="t">Cài vào màn hình chính</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div></div>
+    </div>`:''}
+    <div class="section">
+      <div class="group"><div class="row tap haslead danger" id="prowLogout"><div class="lead"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></div></div><div class="main"><div class="t" style="color:var(--danger)">Đăng xuất</div></div></div></div>
+    </div>`;
+  $('#prowChangePw').onclick=openChangePassword;
+  if(isManager()) $('#prowGvAcc').onclick=openGvAccounts;
+  if(showInstall) $('#prowInstall').onclick=openInstallInfo;
+  $('#prowLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
+  showDetailPage('Tổng quan');
+}
+
 function openChangePassword(){
   $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Đổi mật khẩu</div><div class="asub">${me.name}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
     <div class="sheetcard">
@@ -1708,7 +1744,6 @@ function genTempPassword(){
   let s=''; for(let i=0;i<10;i++) s+=chars[Math.floor(Math.random()*chars.length)];
   return s;
 }
-function navLabel(){ return {dashboard:'Tổng quan', hoc_sinh:'Học sinh', lop:'Lớp học', thu_chi:'Thu chi'}[view]||'Trang chủ'; }
 async function openGvAccounts(){
   $('#detailBody').innerHTML=`<div class="pagetitle" style="margin:0 0 12px"><h1>Quản lý tài khoản GV</h1><button class="addbtn" id="gvAddBtn"><i class="hgi-stroke hgi-add-01"></i></button></div>
     <div class="group" id="gvAccList">
@@ -1716,7 +1751,7 @@ async function openGvAccounts(){
       <div class="row haslead"><div class="lead"><div class="skel avatar"></div></div><div class="main"><div class="skel line w60"></div><div class="skel line w30"></div></div></div>
     </div>`;
   $('#gvAddBtn').onclick=openGvQuickAdd;
-  showDetailPage(navLabel());
+  showDetailPage('Cài đặt', openProfile);
   const {data,error}=await db.from('profiles').select('id, giao_vien_id').not('giao_vien_id','is',null);
   if(error){ toast(error.message,false); gvProfiles=[]; } else gvProfiles=data||[];
   renderGvAccList();
@@ -1912,7 +1947,10 @@ function buildDashboard(){
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Không có em nào đang chờ test / học thử.</div>';
   $('#screen').innerHTML=`
     <div class="dash">
-      <div class="titlerow" style="margin:2px 0 14px"><h1>Tổng quan</h1></div>
+      <div class="dashhead">
+        <h1 class="brandtitle">Impe<span>tus</span></h1>
+        <div class="meblock" id="meBlock"><div class="who"><div class="n">${displayName(me.name)}</div><div class="s">Cài đặt</div></div><div class="av" style="background:${avaC(me.id)}">${ini1(me.name)}</div></div>
+      </div>
       <div class="cfhero" data-go="thu_chi"><div class="lbl">Dòng tiền tháng ${month}</div><div class="big${dConlai<0?' neg':''}">${vnd(dConlai)}<span style="font-size:20px;color:var(--faint)"> đ</span></div><div class="note">${dThu||dChi?`Thu ${vnd(dThu)}đ · Chi ${vnd(dChi)}đ`:'Chưa có giao dịch — ghi ở tab Thu chi. Học phí sẽ tự vào khi bật SePay.'}</div></div>
       <div class="tiles">
         <div class="tile" data-go="hs:dang_hoc"><div class="n">${dangHoc}</div><div class="l">Học sinh đang học</div></div>
@@ -1931,6 +1969,7 @@ function buildDashboard(){
       <div class="infonote"><b>Sắp có:</b> doanh thu &amp; công nợ học phí sẽ tự hiện ở đây khi mình bật <b>thu học phí (SePay)</b>. Điểm danh Hikvision đã tích hợp — số liệu sẽ bắt đầu đổ về khi kết nối máy xong.</div>
     </div>`;
   $('#screen').querySelectorAll('.dash .row').forEach(r=>{ if(r.dataset.id) r.onclick=()=>openStudentDetail(students.find(s=>s.id===r.dataset.id)); });
+  $('#meBlock').onclick=openProfile;
   $('#screen').querySelectorAll('.dash .classrow').forEach(r=>r.onclick=()=>openClassDetail(classes.find(c=>c.id===r.dataset.cid)));
   $('#screen').querySelectorAll('.dash .missToggle').forEach(t=>{
     t.onclick=(e)=>{
@@ -2421,9 +2460,10 @@ function closePage(){
   if(pageOnClose){ const fn=pageOnClose; pageOnClose=null; fn(); }
 }
 $('#pageCancel').onclick=closePage;
-function showDetailPage(label){ if(label) $('#detailBackLabel').textContent=label; $('#detailPage').classList.add('show'); }
+let detailBackFn=null;
+function showDetailPage(label,backFn){ if(label) $('#detailBackLabel').textContent=label; detailBackFn=backFn||null; $('#detailPage').classList.add('show'); }
 function closeDetailPage(){ $('#detailPage').classList.remove('show'); }
-$('#detailBack').onclick=closeDetailPage;
+$('#detailBack').onclick=()=>{ if(detailBackFn){ const fn=detailBackFn; fn(); } else { closeDetailPage(); } };
 function showConfirmDialog(title,msg,onConfirm){
   $('#dlgTitle').textContent=title; $('#dlgMsg').textContent=msg;
   $('#dialogScrim').classList.remove('hide');
