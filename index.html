@@ -899,21 +899,23 @@ async function loadGvHomeData(mine, year, month){
       rosterByClass[r.lop_hoc_id].push(r.hoc_sinh);
     });
   }
-  let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[], nxlbSet=new Set();
+  let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[], nxlbSet=new Set(), shareMap={};
   if(classIds.length){
-    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}, {data:nxlb}] = await Promise.all([
+    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}, {data:nxlb}, {data:shares}] = await Promise.all([
       db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today),
       db.from('ket_qua_thang').select('lop_hoc_id, hoc_sinh_id').in('lop_hoc_id', classIds).eq('thang', month).eq('nam', year),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').in('lop_hoc_id', classIds).gte('ngay_vang', weekStart).lte('ngay_vang', weekEnd),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd),
-      db.from('nhan_xet_lop_buoi').select('lop_hoc_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today)
+      db.from('nhan_xet_lop_buoi').select('lop_hoc_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today),
+      db.from('buoi_hoc_chia_se').select('*').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today)
     ]);
     evalSet=new Set((dgb||[]).map(e=>`${e.lop_hoc_id}|${e.hoc_sinh_id}|${e.ngay}`));
     kqtSet=new Set((kqt||[]).map(k=>`${k.lop_hoc_id}|${k.hoc_sinh_id}`));
     hbRa=ra||[]; hbVao=vao||[];
     nxlbSet=new Set((nxlb||[]).map(n=>`${n.lop_hoc_id}|${n.ngay}`));
+    (shares||[]).forEach(s=>{ shareMap[`${s.lop_hoc_id}|${s.ngay}`]=s; });
   }
-  return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao, nxlbSet};
+  return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao, nxlbSet, shareMap};
 }
 function shortDate(iso){ const [y,m,d]=iso.split('-'); return parseInt(d,10)+'/'+parseInt(m,10); }
 function attendanceForDate(c, date, roster){
@@ -937,6 +939,31 @@ function monthSessionDates(mine, year, month){
 function buildDateStripHtml(dates, selected){
   return `<div class="dstrip" id="gvDstrip">${dates.map(d=>`<div class="dchip ${d===selected?'on':''}" data-date="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('')}</div>`;
 }
+function shareLinkStatus(row){
+  if(!row) return 'none';
+  if(row.thu_hoi_luc) return 'revoked';
+  if(row.het_han && new Date(row.het_han).getTime()<=Date.now()) return 'expired';
+  return 'active';
+}
+function shareLinkHtml(c, date, data){
+  const roster=data.rosterByClass[c.id]||[];
+  const doneHs=roster.length && roster.every(s=>data.evalSet.has(`${c.id}|${s.id}|${date}`));
+  const doneBuoi=data.nxlbSet && data.nxlbSet.has(`${c.id}|${date}`);
+  if(!doneHs || !doneBuoi){
+    return `<button class="btn soft block" disabled style="opacity:.55;cursor:default;margin-top:8px">Tạo link kết quả</button>
+      <div style="font-size:11px;color:var(--faint);margin-top:5px;text-align:center">Hoàn thành NX chung và NX học sinh trước</div>`;
+  }
+  const row=data.shareMap?data.shareMap[`${c.id}|${date}`]:null;
+  const status=shareLinkStatus(row);
+  if(status==='active'){
+    return `<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn soft block" data-share-copy="${c.id}" data-date="${date}" data-token="${row.token}" style="flex:1;background:var(--primary-soft);color:var(--primary)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:5px"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Sao chép link</button>
+      <button class="btn soft" data-share-revoke="${c.id}" data-date="${date}" data-id="${row.id}" style="width:44px;flex:none;color:var(--danger)"><i class="hgi-stroke hgi-cancel-01"></i></button>
+    </div>`;
+  }
+  return `<button class="btn primary block" data-share-create="${c.id}" data-date="${date}" style="margin-top:8px">Tạo link kết quả</button>`;
+}
 function gvSessionButtonHtml(c, date, data){
   const roster=data.rosterByClass[c.id]||[];
   if(!roster.length) return `<button class="btn soft block" disabled style="opacity:.55;cursor:default">Chưa có học sinh</button>`;
@@ -947,11 +974,60 @@ function gvSessionButtonHtml(c, date, data){
     <button class="btn ${doneBuoi?'soft':'primary'} block" data-eval-class="${c.id}" data-date="${date}" style="flex:1;padding-left:6px;padding-right:6px;font-size:14px">NX chung</button>
     <button class="btn ${doneHs?'soft':'primary'} block" data-eval="${c.id}" data-date="${date}" style="flex:1;padding-left:6px;padding-right:6px;font-size:14px">NX học sinh</button>
   </div>`;
+  html += shareLinkHtml(c, date, data);
   const sessions=classSessionDatesInMonth(c,data.year,data.month);
   if(sessions.length && sessions[sessions.length-1]===date){
     html += `<button class="btn soft block" data-report="${c.id}" style="background:var(--primary-soft);color:var(--primary);margin-top:8px">Nhận xét tháng</button>`;
   }
   return html;
+}
+function genShareToken(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g,'');
+  return Array.from({length:32},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
+}
+function shareUrl(token){ return location.origin+'/api/kq?t='+token; }
+async function createShareLink(c, date, btn){
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang tạo…'; }
+  const token=genShareToken();
+  const het_han=new Date(Date.now()+30*24*3600*1000).toISOString();
+  const {data,error}=await db.from('buoi_hoc_chia_se')
+    .upsert({lop_hoc_id:c.id, ngay:date, token, het_han, thu_hoi_luc:null, nguoi_tao:me.id, ngay_sua:new Date().toISOString()}, {onConflict:'lop_hoc_id,ngay'})
+    .select('*').single();
+  if(error){ toast(error.message,false); if(btn){ btn.disabled=false; btn.textContent='Tạo link kết quả'; } return; }
+  if(gvHomeData && gvHomeData.shareMap) gvHomeData.shareMap[`${c.id}|${date}`]=data;
+  renderLopToiList();
+  openShareSheet(c, date, data.token);
+}
+function openShareSheet(c, date, token){
+  const url=shareUrl(token);
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">Link kết quả buổi học</div><div class="asub">${c.ten_lop} · ${fmtDate(date)} · hết hạn sau 30 ngày</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="field" style="margin-top:14px"><input id="shareUrlBox" readonly value="${url}" style="font-size:13px" onclick="this.select()"></div>
+    <div class="qracts" style="margin-top:12px">
+      <button class="qact primary" id="shShare"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>Chia sẻ</button>
+      <button class="qact" id="shCopy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy link</button>
+    </div>
+    <div class="actopt" id="shRevoke" style="margin-top:14px"><i class="hgi-stroke hgi-cancel-01" style="color:var(--danger)"></i><span style="color:var(--danger)">Thu hồi link này</span></div>`;
+  $('#shShare').onclick=async()=>{
+    if(navigator.share){ try{ await navigator.share({title:'Kết quả buổi học '+c.ten_lop, text:'Kết quả buổi học '+c.ten_lop+' — '+fmtDate(date), url}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
+    copyShareLinkText(url);
+  };
+  $('#shCopy').onclick=()=>copyShareLinkText(url);
+  $('#shRevoke').onclick=()=>{ const row=gvHomeData.shareMap[`${c.id}|${date}`]; if(row) revokeShareLink(c, date, row.id); };
+  show('#sheet');
+}
+async function copyShareLinkText(url){
+  try{ await navigator.clipboard.writeText(url); toast('Đã sao chép link'); }
+  catch(e){ toast('Không copy được — chép tay giúp em',false); }
+}
+async function revokeShareLink(c, date, id){
+  if(!confirm('Thu hồi link này? Phụ huynh đang giữ link sẽ không xem được nữa.')) return;
+  const {error}=await db.from('buoi_hoc_chia_se').update({thu_hoi_luc:new Date().toISOString()}).eq('id',id);
+  if(error) return toast(error.message,false);
+  if(gvHomeData && gvHomeData.shareMap[`${c.id}|${date}`]) gvHomeData.shareMap[`${c.id}|${date}`].thu_hoi_luc=new Date().toISOString();
+  closeSheets();
+  renderLopToiList();
+  toast('Đã thu hồi link');
 }
 function gvSessionCardHtml(c, date, data){
   const roster=data.rosterByClass[c.id]||[];
@@ -1075,6 +1151,9 @@ function renderLopToiList(){
   $('#list').querySelectorAll('[data-eval-class]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.evalClass), el.dataset.date, 'chung'); });
   $('#list').querySelectorAll('[data-eval]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.eval), el.dataset.date, 'hocsinh'); });
   $('#list').querySelectorAll('[data-report]').forEach(el=>{ el.onclick=()=>openBaoCaoThang(classes.find(c=>c.id===el.dataset.report)); });
+  $('#list').querySelectorAll('[data-share-create]').forEach(el=>{ el.onclick=()=>createShareLink(classes.find(c=>c.id===el.dataset.shareCreate), el.dataset.date, el); });
+  $('#list').querySelectorAll('[data-share-copy]').forEach(el=>{ el.onclick=()=>openShareSheet(classes.find(c=>c.id===el.dataset.shareCopy), el.dataset.date, el.dataset.token); });
+  $('#list').querySelectorAll('[data-share-revoke]').forEach(el=>{ el.onclick=()=>revokeShareLink(classes.find(c=>c.id===el.dataset.shareRevoke), el.dataset.date, el.dataset.id); });
   const onChip=$('#gvDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
 }
 
