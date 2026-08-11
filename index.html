@@ -1459,7 +1459,8 @@ async function openDanhGiaBuoi(c, date, mode){
   pageOnClose=()=>{ if(view==='lop_toi') buildLopToi(); else if(curClass && curClass.id===c.id) renderGvClassDetail(curClass); };
   renderEvalScreen(curDate);
 }
-function renderEvalScreen(curDate){
+function renderEvalScreen(curDate, preserveScroll){
+  const scrollY=preserveScroll? $('#pageBody').scrollTop : 0;
   const {roster, sessions, mode}=gvEvalCtx;
   const dateChips=sessions.map(d=>`<div class="dchip ${d===curDate?'on':''}" data-d="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('');
   const nx=gvEvalCtx.evalData.nxlbMap[curDate]||{};
@@ -1490,6 +1491,7 @@ function renderEvalScreen(curDate){
   $('#evalDstrip').querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>renderEvalScreen(el.dataset.d); });
   const onChip=$('#evalDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
   if(mode==='chung') wireNxlbBlock(curDate); else wireEvalCards(curDate);
+  if(preserveScroll) $('#pageBody').scrollTop=scrollY;
 }
 function wireNxlbBlock(curDate){
   $('#pageBody').querySelectorAll('.nxlbField').forEach(ta=>{ autoGrow(ta); ta.oninput=()=>autoGrow(ta); });
@@ -1588,7 +1590,7 @@ function wireEvalCards(curDate){
         const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
         base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, coMat, dateISO);
         gvEvalCtx.draft[key]=base;
-        renderEvalScreen(curDate);
+        renderEvalScreen(curDate, true);
       };
     });
   });
@@ -1623,7 +1625,7 @@ function wireEvalCards(curDate){
       try{ await navigator.clipboard.writeText(cur.nhan_xet_text); toast('Đã lưu & copy — dán vào Zalo'); }
       catch(e){ toast('Đã lưu. Trình duyệt chặn copy tự động, anh/chị copy tay giúp em.', false); }
       delete gvEvalCtx.draft[key];
-      renderEvalScreen(curDate);
+      renderEvalScreen(curDate, true);
     };
   });
 }
