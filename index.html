@@ -899,19 +899,21 @@ async function loadGvHomeData(mine, year, month){
       rosterByClass[r.lop_hoc_id].push(r.hoc_sinh);
     });
   }
-  let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[];
+  let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[], nxlbSet=new Set();
   if(classIds.length){
-    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}] = await Promise.all([
+    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}, {data:nxlb}] = await Promise.all([
       db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today),
       db.from('ket_qua_thang').select('lop_hoc_id, hoc_sinh_id').in('lop_hoc_id', classIds).eq('thang', month).eq('nam', year),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').in('lop_hoc_id', classIds).gte('ngay_vang', weekStart).lte('ngay_vang', weekEnd),
-      db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd)
+      db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd),
+      db.from('nhan_xet_lop_buoi').select('lop_hoc_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today)
     ]);
     evalSet=new Set((dgb||[]).map(e=>`${e.lop_hoc_id}|${e.hoc_sinh_id}|${e.ngay}`));
     kqtSet=new Set((kqt||[]).map(k=>`${k.lop_hoc_id}|${k.hoc_sinh_id}`));
     hbRa=ra||[]; hbVao=vao||[];
+    nxlbSet=new Set((nxlb||[]).map(n=>`${n.lop_hoc_id}|${n.ngay}`));
   }
-  return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao};
+  return {today, year, month, monthStart, weekStart, weekEnd, rosterByClass, evalSet, kqtSet, hbRa, hbVao, nxlbSet};
 }
 function shortDate(iso){ const [y,m,d]=iso.split('-'); return parseInt(d,10)+'/'+parseInt(m,10); }
 function attendanceForDate(c, date, roster){
@@ -939,8 +941,12 @@ function gvSessionButtonHtml(c, date, data){
   const roster=data.rosterByClass[c.id]||[];
   if(!roster.length) return `<button class="btn soft block" disabled style="opacity:.55;cursor:default">Chưa có học sinh</button>`;
   if(date>data.today) return `<button class="btn soft block" disabled style="opacity:.55;cursor:default">Buổi sắp tới</button>`;
-  const done=roster.every(s=>data.evalSet.has(`${c.id}|${s.id}|${date}`));
-  let html=`<button class="btn ${done?'soft':'primary'} block" data-eval="${c.id}" data-date="${date}">${done?'Đã nhận xét buổi':'Nhận xét buổi'}</button>`;
+  const doneHs=roster.every(s=>data.evalSet.has(`${c.id}|${s.id}|${date}`));
+  const doneBuoi=data.nxlbSet && data.nxlbSet.has(`${c.id}|${date}`);
+  let html=`<div style="display:flex;gap:8px">
+    <button class="btn ${doneBuoi?'soft':'primary'} block" data-eval-class="${c.id}" data-date="${date}" style="flex:1;padding-left:6px;padding-right:6px;font-size:14px">NX chung</button>
+    <button class="btn ${doneHs?'soft':'primary'} block" data-eval="${c.id}" data-date="${date}" style="flex:1;padding-left:6px;padding-right:6px;font-size:14px">NX học sinh</button>
+  </div>`;
   const sessions=classSessionDatesInMonth(c,data.year,data.month);
   if(sessions.length && sessions[sessions.length-1]===date){
     html += `<button class="btn soft block" data-report="${c.id}" style="background:var(--primary-soft);color:var(--primary);margin-top:8px">Nhận xét tháng</button>`;
@@ -963,7 +969,7 @@ function gvSessionCardHtml(c, date, data){
       </div>
       <i class="hgi-stroke hgi-arrow-right-01" style="color:var(--faint);flex:none;font-size:18px"></i>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 15px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 14px;padding:11px 15px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)">
       <span>Điểm danh: ${attHtml}</span>
       ${ta?`<span>TA: <b style="color:var(--ink)">${ta}</b></span>`:''}
     </div>
@@ -1066,7 +1072,8 @@ function renderLopToiList(){
   $('#gvNextMonth').onclick=()=>gvChangeMonth(1);
   $('#gvDstrip')?.querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>{ gvSelectedDate=el.dataset.date; renderLopToiList(); }; });
   $('#list').querySelectorAll('[data-goto]').forEach(el=>{ el.onclick=()=>openClassDetail(classes.find(c=>c.id===el.dataset.goto)); });
-  $('#list').querySelectorAll('[data-eval]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.eval), el.dataset.date); });
+  $('#list').querySelectorAll('[data-eval-class]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.evalClass), el.dataset.date, 'chung'); });
+  $('#list').querySelectorAll('[data-eval]').forEach(el=>{ el.onclick=()=>openDanhGiaBuoi(classes.find(c=>c.id===el.dataset.eval), el.dataset.date, 'hocsinh'); });
   $('#list').querySelectorAll('[data-report]').forEach(el=>{ el.onclick=()=>openBaoCaoThang(classes.find(c=>c.id===el.dataset.report)); });
   const onChip=$('#gvDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
 }
@@ -1159,14 +1166,125 @@ const NX_BUOI={
   kha:'Con tham gia hoạt động trên lớp, tiếp thu bài ở mức khá.',
   can_cai_thien:'Con cần tập trung hơn và tích cực tham gia các hoạt động trên lớp.'
 };
+/* Câu mẫu theo nhóm lớp — nhóm xác định qua lop_hoc.level ("Trình độ") */
+const NX_TEMPLATES={
+  phonics:{
+    tot:[
+      'Con phát âm rõ ràng, nhận diện âm rất tốt, ghi nhớ từ vựng nhanh và chủ động sử dụng tiếng Anh để trả lời câu hỏi trong lớp.',
+      'Con phát âm chính xác hầu hết các âm đã học, vốn từ vựng tốt và tự tin giao tiếp với giáo viên bằng các mẫu câu đơn giản.',
+      'Con tiếp thu bài nhanh, phát âm chuẩn, nhớ từ vựng tốt và phản xạ giao tiếp ngày càng tự nhiên.',
+      'Con học tập tập trung, phát âm rõ ràng, sử dụng từ vựng linh hoạt và mạnh dạn tham gia các hoạt động giao tiếp.',
+      'Con duy trì phong độ học tập tốt, phát âm chuẩn, vốn từ phong phú và giao tiếp tự tin với giáo viên.'
+    ],
+    kha:[
+      'Con phát âm tương đối tốt, ghi nhớ được phần lớn từ vựng. Cần chủ động hơn khi giao tiếp để tăng sự tự tin.',
+      'Con nắm được các âm đã học và vốn từ cơ bản. Nếu luyện tập phát âm và nói thường xuyên hơn, con sẽ tiến bộ nhanh.',
+      'Con tiếp thu bài ổn, phát âm còn sai ở một số âm khó. Cần ôn tập từ vựng đều đặn và tích cực trả lời trong giờ học.',
+      'Con có ý thức học tập tốt, tuy nhiên phản xạ giao tiếp còn chậm. Cần luyện nói nhiều hơn để tăng độ tự nhiên.',
+      'Con ghi nhớ bài khá tốt, phát âm tương đối chính xác. Trung tâm khuyến khích con chủ động sử dụng tiếng Anh nhiều hơn.'
+    ],
+    can_cai_thien:[
+      'Con còn nhầm lẫn một số âm cơ bản, vốn từ vựng chưa chắc và chưa mạnh dạn giao tiếp. Cần ôn tập thường xuyên tại nhà.',
+      'Con cần tập trung hơn trong giờ học để cải thiện khả năng phát âm và ghi nhớ từ vựng.',
+      'Phản xạ tiếng Anh của con còn chậm. Gia đình nên phối hợp luyện phát âm và ôn từ vựng mỗi ngày.',
+      'Con chưa duy trì được sự tập trung nên ảnh hưởng đến việc ghi nhớ âm và từ mới. Cần luyện tập đều đặn để theo kịp chương trình.',
+      'Con cần chủ động tham gia các hoạt động trên lớp hơn. Việc ôn tập phát âm và từ vựng thường xuyên sẽ giúp con tiến bộ rõ rệt.'
+    ]
+  },
+  starters:{
+    tot:[
+      'Con phát âm tốt, vốn từ phong phú, sử dụng đúng các cấu trúc đã học và giao tiếp tự tin.',
+      'Con nắm chắc từ vựng và cấu trúc câu, phát âm rõ ràng, phản xạ giao tiếp nhanh.',
+      'Con tiếp thu bài tốt, vận dụng chính xác cấu trúc trong nói và viết.',
+      'Con chủ động sử dụng cấu trúc mới trong giao tiếp, phát âm chuẩn và ghi nhớ bài tốt.',
+      'Con học tập nghiêm túc, sử dụng đúng từ vựng và cấu trúc, giao tiếp tự nhiên.'
+    ],
+    kha:[
+      'Con nắm được phần lớn từ vựng và cấu trúc. Cần luyện tập thêm để sử dụng chính xác hơn khi giao tiếp.',
+      'Con phát âm khá tốt, tuy nhiên vẫn còn nhầm lẫn ở một số cấu trúc ngữ pháp cơ bản.',
+      'Con tiếp thu bài ổn nhưng cần luyện nói nhiều hơn để vận dụng cấu trúc linh hoạt.',
+      'Con ghi nhớ từ vựng khá tốt, cần ôn tập cấu trúc thường xuyên để hạn chế lỗi.',
+      'Con có tiến bộ, tuy nhiên cần chủ động sử dụng các cấu trúc đã học trong giao tiếp.'
+    ],
+    can_cai_thien:[
+      'Con còn quên từ vựng và sử dụng cấu trúc chưa chính xác. Cần ôn tập hằng ngày.',
+      'Con phát âm và phản xạ còn chậm, cần luyện tập thêm để ghi nhớ cấu trúc.',
+      'Con chưa thật sự tập trung trong giờ học nên việc vận dụng cấu trúc còn hạn chế.',
+      'Con cần chủ động phát biểu và luyện tập nhiều hơn để cải thiện phát âm và khả năng sử dụng câu.',
+      'Con cần ôn từ vựng thông qua viết từ/làm quiz về cấu trúc để theo kịp tiến độ.'
+    ]
+  },
+  movers:{
+    tot:[
+      'Con phát âm tốt, vốn từ vựng phong phú, sử dụng chính xác cấu trúc và ngữ pháp, giao tiếp tự tin.',
+      'Con nắm chắc kiến thức ngữ pháp, phản xạ nhanh và vận dụng tốt trong cả nói và viết.',
+      'Con sử dụng linh hoạt từ vựng, cấu trúc và ngữ pháp trong các hoạt động trên lớp.',
+      'Con học tập nghiêm túc, giao tiếp tự nhiên và ít mắc lỗi ngữ pháp.',
+      'Con duy trì kết quả học tập tốt, khả năng sử dụng tiếng Anh ngày càng thành thạo.'
+    ],
+    kha:[
+      'Con nắm được kiến thức nhưng vẫn còn một số lỗi ngữ pháp. Cần luyện tập thêm để sử dụng chính xác hơn.',
+      'Con phát âm và từ vựng khá tốt, cần củng cố cấu trúc và ngữ pháp.',
+      'Con có tiến bộ, tuy nhiên cần tăng tốc độ phản xạ khi sử dụng các mẫu câu.',
+      'Con ghi nhớ bài khá tốt nhưng cần cẩn thận hơn khi áp dụng ngữ pháp.',
+      'Con cần luyện tập thường xuyên để sử dụng từ vựng và ngữ pháp linh hoạt hơn.'
+    ],
+    can_cai_thien:[
+      'Con còn quên kiến thức ngữ pháp và sử dụng cấu trúc chưa chính xác. Cần ôn tập thường xuyên.',
+      'Con cần tập trung hơn trong giờ học để cải thiện phát âm, từ vựng và ngữ pháp.',
+      'Khả năng vận dụng kiến thức còn hạn chế do chưa ôn bài đầy đủ.',
+      'Con cần chủ động luyện nói và làm bài tập ngữ pháp sau mỗi buổi học.',
+      'Con còn chưa tập trung trong giờ, phần từ vựng còn quên và chưa vận dụng được cấu trúc vào bài tập. Con nên đăng ký tham gia các buổi phụ đạo của trung tâm để được hỗ trợ nhé.'
+    ]
+  },
+  ket:{
+    tot:[
+      'Con phát âm tốt, vốn từ vựng phong phú, sử dụng chính xác cấu trúc và ngữ pháp, đồng thời có khả năng đọc hiểu tốt.',
+      'Con nắm chắc kiến thức, đọc hiểu nhanh, biết suy luận và vận dụng hiệu quả vào bài làm.',
+      'Con học tập nghiêm túc, vốn từ tốt và xử lý các dạng bài đọc chính xác.',
+      'Con có khả năng đọc hiểu tốt, xác định ý chính và thông tin chi tiết hiệu quả.',
+      'Con duy trì kết quả học tập ổn định, kỹ năng đọc hiểu và xử lý đề thi rất tốt.'
+    ],
+    kha:[
+      'Con nắm được kiến thức cơ bản, tuy nhiên cần cải thiện tốc độ và độ chính xác khi làm bài đọc hiểu.',
+      'Con có vốn từ khá, nhưng cần luyện thêm kỹ năng suy luận trong bài đọc.',
+      'Con sử dụng cấu trúc và ngữ pháp tương đối tốt, cần đọc nhiều hơn để nâng cao khả năng xử lý đề.',
+      'Con có tiến bộ, tuy nhiên vẫn còn bỏ sót một số thông tin trong bài đọc.',
+      'Con cần luyện tập thêm các dạng bài đọc hiểu để tăng độ chính xác.'
+    ],
+    can_cai_thien:[
+      'Con còn gặp khó khăn trong việc ghi nhớ từ vựng và đọc hiểu văn bản. Cần ôn tập đều đặn sau mỗi buổi học.',
+      'Con cần tập trung hơn trong giờ học để cải thiện khả năng đọc hiểu và ngữ pháp.',
+      'Việc luyện đọc của con chưa thường xuyên nên tốc độ và khả năng suy luận còn hạn chế.',
+      'Con cần mở rộng vốn từ và luyện thêm các dạng bài đọc để theo kịp chương trình.'
+    ]
+  }
+};
+function nxCategoryForClass(c){
+  const lv=(c&&c.level||'').trim();
+  if(lv==='Phonics') return 'phonics';
+  if(lv==='Starters') return 'starters';
+  if(lv==='Movers'||lv==='Flyers') return 'movers';
+  if(lv==='KET') return 'ket';
+  return null;
+}
+function pickNxSentence(category, level, excludeText){
+  const pool = category && NX_TEMPLATES[category] ? NX_TEMPLATES[category][level] : null;
+  if(!pool || !pool.length) return NX_BUOI[level]||'';
+  if(pool.length===1) return pool[0];
+  let choices=excludeText? pool.filter(s=>s!==excludeText) : pool;
+  if(!choices.length) choices=pool;
+  return choices[Math.floor(Math.random()*choices.length)];
+}
 let gvEvalCtx=null;
 async function loadEvalScreenData(c, year, month){
   const monthStart=year+'-'+String(month).padStart(2,'0')+'-01';
   const nextY=month===12?year+1:year, nextM=month===12?1:month+1;
   const nextMonth=nextY+'-'+String(nextM).padStart(2,'0')+'-01';
-  const [{data:sessions}, {data:dgb}] = await Promise.all([
+  const [{data:sessions}, {data:dgb}, {data:nxlb}] = await Promise.all([
     db.from('buoi_hoc').select('id, bat_dau').eq('lop_hoc_id',c.id).gte('bat_dau',monthStart+'T00:00:00+07:00').lt('bat_dau',nextMonth+'T00:00:00+07:00'),
-    db.from('danh_gia_buoi').select('*').eq('lop_hoc_id',c.id).gte('ngay',monthStart).lt('ngay',nextMonth)
+    db.from('danh_gia_buoi').select('*').eq('lop_hoc_id',c.id).gte('ngay',monthStart).lt('ngay',nextMonth),
+    db.from('nhan_xet_lop_buoi').select('*').eq('lop_hoc_id',c.id).gte('ngay',monthStart).lt('ngay',nextMonth)
   ]);
   const sessionDateById={};
   (sessions||[]).forEach(s=>{ const vn=new Date(new Date(s.bat_dau).getTime()+7*3600*1000); sessionDateById[s.id]=vn.toISOString().slice(0,10); });
@@ -1174,7 +1292,8 @@ async function loadEvalScreenData(c, year, month){
   const sessionIds=(sessions||[]).map(s=>s.id);
   if(sessionIds.length){ const r=await db.from('diem_danh').select('buoi_hoc_id, hoc_sinh_id, trang_thai').in('buoi_hoc_id',sessionIds); dd=r.data||[]; }
   const dgbMap={}; (dgb||[]).forEach(e=>{ dgbMap[`${e.hoc_sinh_id}|${e.ngay}`]=e; });
-  return {sessionDateById, dd, dgbMap};
+  const nxlbMap={}; (nxlb||[]).forEach(n=>{ nxlbMap[n.ngay]=n; });
+  return {sessionDateById, dd, dgbMap, nxlbMap};
 }
 function coMatOn(sid, dateISO, evalData){
   const ids=Object.keys(evalData.sessionDateById).filter(id=>evalData.sessionDateById[id]===dateISO);
@@ -1199,15 +1318,15 @@ function composeMsg(c, s, cur, t, coMat, dateISO){
   if(cur.dat_muc_tieu===true) parts.push('đạt mục tiêu buổi học');
   else if(cur.dat_muc_tieu===false) parts.push('chưa đạt mục tiêu buổi học');
   const bodyText=parts.filter(Boolean).join(', ');
-  const nxLine=cur.nhan_xet_text? cur.nhan_xet_text : (cur.nhan_xet? (NX_BUOI[cur.nhan_xet]||'') : '');
+  const nxLine=cur.nhan_xet_text? cur.nhan_xet_text : (cur.nhan_xet_sentence? cur.nhan_xet_sentence : (cur.nhan_xet? (NX_BUOI[cur.nhan_xet]||'') : ''));
   return `${c.ten_lop} — ${fmtDate(dateISO)}\nCon ${s.ho_ten} hôm nay${bodyText?' '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
 }
 function evalCur(sid, dateISO){
   const key=`${sid}|${dateISO}`;
   if(gvEvalCtx.draft[key]) return {...gvEvalCtx.draft[key]};
   const saved=gvEvalCtx.evalData.dgbMap[key];
-  if(saved) return {btvn:saved.du_lieu?.btvn||null, dat_muc_tieu:(saved.du_lieu&&'dat_muc_tieu' in saved.du_lieu)?saved.du_lieu.dat_muc_tieu:null, nhan_xet:saved.du_lieu?.nhan_xet||null, nhan_xet_text:(saved.du_lieu&&saved.du_lieu.nhan_xet_text!=null)?saved.du_lieu.nhan_xet_text:null};
-  return {btvn:null, dat_muc_tieu:null, nhan_xet:null, nhan_xet_text:null};
+  if(saved) return {btvn:saved.du_lieu?.btvn||null, dat_muc_tieu:(saved.du_lieu&&'dat_muc_tieu' in saved.du_lieu)?saved.du_lieu.dat_muc_tieu:null, nhan_xet:saved.du_lieu?.nhan_xet||null, nhan_xet_text:(saved.du_lieu&&saved.du_lieu.nhan_xet_text!=null)?saved.du_lieu.nhan_xet_text:null, nhan_xet_sentence:null};
+  return {btvn:null, dat_muc_tieu:null, nhan_xet:null, nhan_xet_text:null, nhan_xet_sentence:null};
 }
 async function loadGvStudentHistory(s){
   const [{data:dgb}, {data:kqt}] = await Promise.all([
@@ -1241,8 +1360,9 @@ function renderGvKqtHistory(kqt){
       ${k.nhan_xet_chung?`<div class="body" style="margin-top:4px;color:var(--muted)">${k.nhan_xet_chung}</div>`:''}
     </div>`).join('')}</div>`;
 }
-async function openDanhGiaBuoi(c, date){
-  showPageBack('Đánh giá buổi học lớp '+c.ten_lop);
+async function openDanhGiaBuoi(c, date, mode){
+  mode = mode==='chung' ? 'chung' : 'hocsinh';
+  showPageBack((mode==='chung'?'Nhận xét chung lớp ':'Đánh giá buổi học lớp ')+c.ten_lop);
   $('#pageBody').innerHTML='<div class="state"><div class="skel line w40" style="margin:0 auto"></div></div>';
   const {data:reg}=await db.from('dang_ky_lop').select('trang_thai, hoc_sinh(id, ho_ten, ma_hoc_sinh, trang_thai)').eq('lop_hoc_id',c.id);
   const roster=(reg||[]).filter(r=>r.hoc_sinh && r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')).map(r=>r.hoc_sinh);
@@ -1256,22 +1376,65 @@ async function openDanhGiaBuoi(c, date){
     curDate = pastOrToday.length? pastOrToday[pastOrToday.length-1] : (sessions[0]||today);
   }
   const evalData=await loadEvalScreenData(c,year,month);
-  gvEvalCtx={c, roster, sessions, evalData, draft:{}};
+  gvEvalCtx={c, roster, sessions, evalData, draft:{}, mode};
   pageOnClose=()=>{ if(view==='lop_toi') buildLopToi(); else if(curClass && curClass.id===c.id) renderGvClassDetail(curClass); };
   renderEvalScreen(curDate);
 }
 function renderEvalScreen(curDate){
-  const {roster, sessions}=gvEvalCtx;
+  const {roster, sessions, mode}=gvEvalCtx;
   const dateChips=sessions.map(d=>`<div class="dchip ${d===curDate?'on':''}" data-d="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('');
+  const nx=gvEvalCtx.evalData.nxlbMap[curDate]||{};
+  const chungHtml=`
+    <div class="section" style="margin-top:2px">
+      <div class="lbl">I. Nhận xét chung</div>
+      <div class="group" style="padding:14px 16px">
+        <div class="field" style="margin-top:0"><label>1. Tinh thần học tập — Chuyên cần</label>
+          <textarea class="tarea nxlbField" id="nxlb_chuyencan" placeholder="Nhận xét chuyên cần cả lớp…">${nx.chuyen_can||''}</textarea>
+        </div>
+        <div class="field"><label>2a. Bài luyện tập ở nhà — Phiếu Homework</label>
+          <textarea class="tarea nxlbField" id="nxlb_phieu" placeholder="Nhận xét phiếu homework…">${nx.phieu_homework||''}</textarea>
+        </div>
+        <div class="field"><label>2b. Bài luyện tập ở nhà — Bài tập bổ trợ</label>
+          <textarea class="tarea nxlbField" id="nxlb_botro" placeholder="Nhận xét bài tập bổ trợ (VD: liệt kê tên các em hoàn thành tốt)…">${nx.bai_tap_bo_tro||''}</textarea>
+        </div>
+        <button class="btn primary block" id="nxlbSave" style="margin-top:14px">Lưu nhận xét chung</button>
+      </div>
+    </div>`;
   const doneCount=roster.filter(s=>gvEvalCtx.evalData.dgbMap[`${s.id}|${curDate}`]).length;
   const cards=roster.map(s=>evalCardHtml(s,curDate)).join('');
-  $('#pageBody').innerHTML=`
-    <div class="dstrip" id="evalDstrip">${dateChips}</div>
+  const hocsinhHtml=`
     <div class="progline"><span>Đã nhận xét ${doneCount}/${roster.length} em</span><span>${fmtDate(curDate)}</span></div>
     ${cards}`;
+  $('#pageBody').innerHTML=`
+    <div class="dstrip" id="evalDstrip">${dateChips}</div>
+    ${mode==='chung'? chungHtml : hocsinhHtml}`;
   $('#evalDstrip').querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>renderEvalScreen(el.dataset.d); });
   const onChip=$('#evalDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
-  wireEvalCards(curDate);
+  if(mode==='chung') wireNxlbBlock(curDate); else wireEvalCards(curDate);
+}
+function wireNxlbBlock(curDate){
+  $('#pageBody').querySelectorAll('.nxlbField').forEach(ta=>{ autoGrow(ta); ta.oninput=()=>autoGrow(ta); });
+  const btn=$('#nxlbSave');
+  if(!btn) return;
+  btn.onclick=async()=>{
+    const {c}=gvEvalCtx;
+    const chuyen_can=$('#nxlb_chuyencan').value.trim()||null;
+    const phieu_homework=$('#nxlb_phieu').value.trim()||null;
+    const bai_tap_bo_tro=$('#nxlb_botro').value.trim()||null;
+    const existing=gvEvalCtx.evalData.nxlbMap[curDate];
+    btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
+    let error;
+    if(existing){
+      const r=await db.from('nhan_xet_lop_buoi').update({chuyen_can, phieu_homework, bai_tap_bo_tro, ngay_sua:new Date().toISOString()}).eq('id',existing.id);
+      error=r.error; if(!error) Object.assign(existing,{chuyen_can, phieu_homework, bai_tap_bo_tro});
+    } else {
+      const r=await db.from('nhan_xet_lop_buoi').insert({lop_hoc_id:c.id, ngay:curDate, chuyen_can, phieu_homework, bai_tap_bo_tro, nguoi_tao:me.id}).select('*').single();
+      error=r.error; if(!error) gvEvalCtx.evalData.nxlbMap[curDate]=r.data;
+    }
+    btn.disabled=false; btn.textContent='Lưu nhận xét chung';
+    if(error) return toast(error.message,false);
+    toast('Đã lưu nhận xét chung');
+  };
 }
 function evalCardHtml(s, dateISO){
   const {c, evalData}=gvEvalCtx;
@@ -1308,7 +1471,9 @@ function evalCardHtml(s, dateISO){
         <span class="choice ${cur.nhan_xet==='tot'?'on ok':''}" data-v="tot">Tốt</span>
         <span class="choice ${cur.nhan_xet==='kha'?'on':''}" data-v="kha">Khá</span>
         <span class="choice ${cur.nhan_xet==='can_cai_thien'?'on warn':''}" data-v="can_cai_thien">Cần cải thiện</span>
-      </div></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--faint);margin-top:5px">Bấm lại đúng mức đang chọn để đổi câu mẫu khác</div>
+      </div>
       <div class="field"><label>Gửi phụ huynh</label>
       <div class="sendbox">
         <textarea class="preview nxbuoi" data-hs="${s.id}" data-date="${dateISO}" placeholder="Bấm 1 mức Nhận xét ở trên để tự điền, hoặc gõ tay…">${boxText}</textarea>
@@ -1326,7 +1491,17 @@ function wireEvalCards(curDate){
         let v=ch.dataset.v; if(field==='dat_muc_tieu') v=(v==='true');
         const key=`${sid}|${dateISO}`;
         const base=evalCur(sid,dateISO);
-        base[field]=(base[field]===v)? null : v;
+        if(field==='nhan_xet'){
+          const category=nxCategoryForClass(gvEvalCtx.c);
+          if(base.nhan_xet===v){
+            base.nhan_xet_sentence=pickNxSentence(category, v, base.nhan_xet_sentence);
+          } else {
+            base.nhan_xet=v;
+            base.nhan_xet_sentence=pickNxSentence(category, v, null);
+          }
+        } else {
+          base[field]=(base[field]===v)? null : v;
+        }
         base.nhan_xet_text=null;
         const s=gvEvalCtx.roster.find(x=>x.id===sid);
         const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
