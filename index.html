@@ -618,7 +618,6 @@ async function enterParentApp(){
 }
 function renderParentHome(){
   const segHtml = phCon.length>1 ? `<div class="seg" style="margin-bottom:18px">${phCon.map(s=>`<button class="${s.id===phActiveId?'on':''}" data-pid="${s.id}">${s.ho_ten}${s.trang_thai!=='dang_hoc'?' · Đã nghỉ':''}</button>`).join('')}</div>` : '';
-  const activeChild = phCon.find(c=>c.id===phActiveId);
   const myClassesList=phClasses[phActiveId]||[];
   const classHtml = myClassesList.length ? myClassesList.map(l=>`
     <div class="row"><div class="ricon"><i class="hgi-stroke hgi-mortarboard-01"></i></div><div class="main"><div class="t">${l.ten_lop}</div><div class="meta">${l.cac_ngay_trong_tuan||'—'} · ${l.gio_bat_dau?l.gio_bat_dau.slice(0,5):'—'}${l.gio_ket_thuc?'–'+l.gio_ket_thuc.slice(0,5):''}${l.giao_vien?' · GV '+l.giao_vien.ho_ten:''}</div></div></div>`).join('')
@@ -633,13 +632,13 @@ function renderParentHome(){
     </div>
     <div style="padding:0 16px 16px">
       ${segHtml}
-      <div class="section"><div class="lbl">${activeChild ? activeChild.ho_ten : 'Lớp đang học'}</div><div class="group">${classHtml}</div></div>
-      <div class="group">
+      <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${classHtml}</div></div>
+      <div class="section"><div class="lbl">Hoạt động</div><div class="group">
         <div class="row tap" id="phRowDiemDanh"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Xem hôm nay và trong tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
         <div class="row tap" id="phRowNhanXet"><div class="ricon"><i class="hgi-stroke hgi-comment-01"></i></div><div class="main"><div class="t">Nhận xét</div><div class="meta">Theo buổi và theo tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
         <div class="row tap" id="phRowHocPhi"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Khoản cần đóng và lịch sử</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
-      </div>
-      <div class="section"><div class="lbl">Liên hệ trung tâm</div><div class="group">
+      </div></div>
+      <div class="section"><div class="lbl">Liên hệ</div><div class="group">
         <div class="row tap" id="phCallCenter"><div class="ricon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div class="main"><div class="t">Hotline trung tâm</div><div class="meta">${PH_CONTACT.hotline}</div></div></div>
         <div class="row tap" id="phZaloCenter"><div class="ricon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div><div class="main"><div class="t">Nhắn Zalo trung tâm</div><div class="meta">${PH_CONTACT.zaloName}</div></div></div>
       </div></div>
