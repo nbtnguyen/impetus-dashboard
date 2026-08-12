@@ -607,7 +607,7 @@ function renderParentHome(){
       ${segHtml}
       <div class="group">
         <div class="row tap" id="phRowDiemDanh"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Xem hôm nay và trong tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
-        <div class="row tap"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Sắp có</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        <div class="row tap" id="phRowHocPhi"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Khoản cần đóng và lịch sử</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
       </div>
     </div>`;
   if(phCon.length>1){
@@ -615,6 +615,65 @@ function renderParentHome(){
   }
   $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
   $('#phRowDiemDanh').onclick=openParentAttendance;
+  $('#phRowHocPhi').onclick=openParentHocPhi;
+}
+
+async function openParentHocPhi(){
+  const child=phCon.find(x=>x.id===phActiveId);
+  showDetailPage('Học phí', ()=>{ closeDetailPage(); });
+  $('#detailBody').innerHTML='<div class="state"><div class="skel line w40" style="margin:0 auto"></div></div>';
+
+  const {data}=await db.from('thanh_toan').select('*, dang_ky_lop(lop_hoc(ten_lop))').eq('hoc_sinh_id', child.id).order('ngay_tao',{ascending:false});
+  const all=data||[];
+  const due=all.filter(p=>p.trang_thai==='cho_thanh_toan');
+  const paid=all.filter(p=>p.trang_thai==='da_thu');
+  const totalDue=due.reduce((s,p)=>s+Number(p.so_tien||0),0);
+
+  const kyLabel=p=> p.ky_tu&&p.ky_den ? (fmtDate(p.ky_tu)+' – '+fmtDate(p.ky_den)) : (p.mo_ta||({hoc_phi:'Học phí',sach:'Sách',phi_khac:'Phí khác'})[p.loai]||'');
+  const lopTen=p=> (p.dang_ky_lop&&p.dang_ky_lop.lop_hoc&&p.dang_ky_lop.lop_hoc.ten_lop) || ({hoc_phi:'Học phí',sach:'Sách',phi_khac:'Phí khác'})[p.loai] || '';
+
+  const dueHtml = due.length ? due.map(p=>`
+    <div class="row tap phpay" data-id="${p.id}">
+      <div class="ricon" style="background:var(--warn-soft);color:var(--warn)"><i class="hgi-stroke hgi-qr-code"></i></div>
+      <div class="main"><div class="t">${lopTen(p)}</div><div class="meta">${kyLabel(p)}</div></div>
+      <div style="text-align:right;flex:none"><div style="font-weight:700;color:var(--warn)">${vnd(p.so_tien)}đ</div></div>
+    </div>`).join('') : '<div class="row"><span class="meta">Không có khoản nào cần đóng.</span></div>';
+
+  const paidHtml = paid.length ? paid.map(p=>`
+    <div class="row"><div class="main"><div class="t">${lopTen(p)}</div><div class="meta">${kyLabel(p)}${p.ngay_thanh_toan?' · đóng '+fmtDate(p.ngay_thanh_toan.slice(0,10)):''}</div></div>
+      <div style="text-align:right;flex:none"><div style="font-weight:600;color:var(--ok)">${vnd(p.so_tien)}đ</div></div>
+    </div>`).join('') : '<div class="row"><span class="meta">Chưa có lịch sử đóng học phí.</span></div>';
+
+  $('#detailBody').innerHTML = `
+    <div class="section"><div class="lbl">Cần đóng${totalDue?` <span class="badge">· ${vnd(totalDue)}đ</span>`:''}</div><div class="group">${dueHtml}</div></div>
+    <div class="section"><div class="lbl">Lịch sử đã đóng</div><div class="group">${paidHtml}</div></div>`;
+  $('#detailBody').querySelectorAll('.phpay').forEach(r=>{ r.onclick=()=>{ const p=due.find(x=>x.id===r.dataset.id); if(p) showParentQR(p, child); }; });
+}
+
+function showParentQR(p, child){
+  const pShow=Object.assign({}, p, { hoc_sinh:{ho_ten:child.ho_ten, ma_hoc_sinh:''} });
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">Chuyển khoản học phí</div><div class="asub">${child.ho_ten}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="qrcard" style="margin-top:14px">
+      <div class="qrbox"><img src="${qrUrl(p.so_tien,p.noi_dung_ck)}" alt="QR"></div>
+      <div class="qramt">${vnd(p.so_tien)}đ</div>
+      <div class="qrinfo">
+        <div class="r"><span class="k">Nội dung CK</span><span class="v mono">${p.noi_dung_ck||''}</span></div>
+        <div class="r"><span class="k">Ngân hàng</span><span class="v">${BANK.nganHang}</span></div>
+        <div class="r"><span class="k">Số tài khoản</span><span class="v mono">${BANK.stk}</span></div>
+        <div class="r"><span class="k">Chủ tài khoản</span><span class="v">${BANK.ten}</span></div>
+      </div>
+    </div>
+    <div class="qracts">
+      <button class="qact primary" id="qShare"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>Chia sẻ QR</button>
+      <button class="qact" id="qSave"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg>Lưu ảnh</button>
+      <button class="qact" id="qCopy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy CK</button>
+    </div>
+    <div class="waitbar" style="margin-top:14px">Tiền về sẽ TỰ xác nhận trong app, không cần báo lại cho trung tâm.</div>`;
+  $('#qShare').onclick=()=>shareQR(pShow);
+  $('#qSave').onclick=()=>saveQR(pShow);
+  $('#qCopy').onclick=()=>copyQRInfo(pShow);
+  show('#sheet');
 }
 
 async function openParentAttendance(){
