@@ -606,7 +606,7 @@ function renderParentHome(){
     <div style="padding:0 16px 16px">
       ${segHtml}
       <div class="group">
-        <div class="row tap"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Sắp có</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        <div class="row tap" id="phRowDiemDanh"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Xem hôm nay và trong tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
         <div class="row tap"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Sắp có</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
       </div>
     </div>`;
@@ -614,6 +614,65 @@ function renderParentHome(){
     document.querySelectorAll('.seg [data-pid]').forEach(btn=>{ btn.onclick=()=>{ phActiveId=btn.dataset.pid; renderParentHome(); }; });
   }
   $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
+  $('#phRowDiemDanh').onclick=openParentAttendance;
+}
+
+async function openParentAttendance(){
+  const child=phCon.find(x=>x.id===phActiveId);
+  showDetailPage('Điểm danh', ()=>{ closeDetailPage(); });
+  $('#detailBody').innerHTML='<div class="state"><div class="skel line w40" style="margin:0 auto"></div></div>';
+
+  const now=new Date();
+  const todayCode=DAYS[(now.getDay()+6)%7];
+  const todayStart=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd=new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+  const monthStart=new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd=new Date(now.getFullYear(), now.getMonth()+1, 1);
+
+  const {data:dk}=await db.from('dang_ky_lop').select('lop_hoc_id, lop_hoc(id, ten_lop, cac_ngay_trong_tuan, trang_thai)').eq('hoc_sinh_id', child.id).eq('trang_thai','dang_hoc');
+  const activeClasses=(dk||[]).map(d=>d.lop_hoc).filter(l=>l && l.trang_thai!=='da_dong');
+  const todayClasses=activeClasses.filter(l=>(l.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(todayCode));
+
+  const STAT={
+    co_mat:{icon:'hgi-checkmark-circle-02', label:'Có mặt', fg:'var(--ok)', bg:'var(--ok-soft)'},
+    vang:{icon:'hgi-cancel-circle', label:'Vắng mặt', fg:'var(--danger)', bg:'var(--danger-soft)'},
+    bao_nghi:{icon:'hgi-calendar-block-02', label:'Đã báo nghỉ', fg:'var(--warn)', bg:'var(--warn-soft)'}
+  };
+
+  let todayHtml='';
+  if(todayClasses.length){
+    const lopIds=todayClasses.map(l=>l.id);
+    const {data:bh}=await db.from('buoi_hoc').select('id, lop_hoc_id, bat_dau').in('lop_hoc_id', lopIds).gte('bat_dau', todayStart.toISOString()).lt('bat_dau', todayEnd.toISOString());
+    let dd=[];
+    if(bh&&bh.length){
+      const r=await db.from('diem_danh').select('buoi_hoc_id, trang_thai, thoi_gian_quet').in('buoi_hoc_id', bh.map(b=>b.id)).eq('hoc_sinh_id', child.id);
+      dd=r.data||[];
+    }
+    todayHtml = todayClasses.map(l=>{
+      const sess=(bh||[]).find(b=>b.lop_hoc_id===l.id);
+      const rec=sess ? dd.find(d=>d.buoi_hoc_id===sess.id) : null;
+      const st=rec && STAT[rec.trang_thai];
+      const icon = st ? st.icon : 'hgi-time-04';
+      const fg = st ? st.fg : 'var(--faint)';
+      const bg = st ? st.bg : 'var(--soft)';
+      let meta = st ? st.label : 'Chưa ghi nhận điểm danh';
+      if(st && rec.trang_thai==='co_mat' && rec.thoi_gian_quet) meta += ' lúc '+new Date(rec.thoi_gian_quet).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+      const sub = st ? '' : '<div class="meta" style="margin-top:1px">Có thể do máy quét chưa cập nhật</div>';
+      return `<div class="row"><div class="ricon" style="background:${bg};color:${fg}"><i class="hgi-stroke ${icon}"></i></div><div class="main"><div class="t">${l.ten_lop}</div><div class="meta">${meta}</div>${sub}</div></div>`;
+    }).join('');
+  }
+
+  const {data:mdd}=await db.from('diem_danh').select('trang_thai, thoi_gian_quet, buoi_hoc(bat_dau, lop_hoc(ten_lop))').eq('hoc_sinh_id', child.id).eq('trang_thai','co_mat');
+  const monthRows=(mdd||[]).filter(d=>{ const bd=d.buoi_hoc&&d.buoi_hoc.bat_dau; if(!bd) return false; const dt=new Date(bd); return dt>=monthStart && dt<monthEnd; }).sort((a,b)=>new Date(b.buoi_hoc.bat_dau)-new Date(a.buoi_hoc.bat_dau));
+
+  const monthListHtml = monthRows.length ? monthRows.map(r=>{
+    const dt=new Date(r.buoi_hoc.bat_dau);
+    return `<div class="row"><div class="main"><div class="t">${fmtDate(dt.toISOString().slice(0,10))}</div><div class="meta">${(r.buoi_hoc.lop_hoc&&r.buoi_hoc.lop_hoc.ten_lop)||''}</div></div></div>`;
+  }).join('') : '<div class="row"><span class="meta">Chưa có buổi nào được ghi nhận trong tháng này.</span></div>';
+
+  $('#detailBody').innerHTML = `
+    ${todayHtml? `<div class="section"><div class="lbl">Hôm nay</div><div class="group">${todayHtml}</div></div>` : ''}
+    <div class="section"><div class="lbl">Tháng ${now.getMonth()+1} — đã điểm danh ${monthRows.length} buổi</div><div class="group">${monthListHtml}</div></div>`;
 }
 
 /* ===== Load ===== */
