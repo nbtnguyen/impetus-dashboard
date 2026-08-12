@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Impetus · Design System</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/800.css">
+<link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
+<style>
+/* ============================================================
+   IMPETUS DESIGN SYSTEM · v1  (Revolut-light · Inter · HugeIcons)
+   Nguồn sự thật cho mọi màn. Refactor app + tính năng mới bám theo.
+   ============================================================ */
+:root{
+  /* --- MÀU NỀN / BỀ MẶT --- */
+  --bg:#F6F6F6;          /* nền trang */
+  --surface:#FFFFFF;     /* thẻ, group, sheet */
+  --soft:#ECECEE;        /* input, nút phụ, pill chưa chọn */
+  --line:#E6E6EA;        /* đường kẻ, viền mảnh */
+  /* --- MÀU CHỮ --- */
+  --ink:#191c1f;         /* chữ chính */
+  --muted:#505a63;       /* chữ phụ */
+  --faint:#8d969e;       /* chữ mờ, mã, chú thích */
+  /* --- THƯƠNG HIỆU --- */
+  --primary:#494fdf;     /* cobalt · nút chính, link, focus (DÙNG DÈ) */
+  --primary-press:#3a40c4;
+  --primary-soft:#EAEAFB;
+  /* --- TRẠNG THÁI HỌC SINH --- */
+  --st-dang-hoc:#0E9F6E; --st-cho-test:#7C3AED; --st-hoc-thu:#0E7490;
+  --st-bao-luu:#C77700;  --st-da-nghi:#7A8696;
+  /* --- NGỮ NGHĨA --- */
+  --ok:#0E9F6E; --ok-soft:#E3F4EC;
+  --warn:#C77700; --warn-soft:#FBF0DC;
+  --danger:#D92D20; --danger-soft:#FDECEA;
+  /* --- BO GÓC --- */
+  --r-group:20px; --r-card:16px; --r-input:14px; --r-chip:8px; --r-pill:999px;
+  /* --- CHỮ (cỡ) — LUẬT: mọi font-size trong CSS PHẢI dùng biến này, không viết số px trực tiếp --- */
+  --text-page:28px;      /* tiêu đề trang */
+  --text-section:12px;   /* nhãn mục IN HOA */
+  --text-name:16.5px;    /* tên / dòng chính trong row */
+  --text-body:15px;      /* nội dung thường, giá trị, nút */
+  --text-meta:13px;      /* dòng phụ trong hero/thẻ */
+  --text-sub:12.5px;     /* subtitle 1 dòng (mã, tag, đã đóng) */
+  --text-fine:12px;      /* chú thích nhỏ nhất */
+  /* --- KHOẢNG CÁCH — LUẬT: mọi margin/padding PHẢI dùng biến này (thang 4 bội số) --- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+  /* --- AN TOÀN MÀN HÌNH (tai thỏ / thanh cầm iPhone) --- */
+  --safe-b:env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); letter-spacing:-.01em; -webkit-font-smoothing:antialiased}
+.wrap{max-width:440px; margin:0 auto; padding:22px 16px 60px}
+
+/* ---- khung tài liệu (chỉ dùng cho trang showcase này) ---- */
+.doc-h{font-size:26px; font-weight:800; letter-spacing:-.03em; margin:0}
+.doc-sub{color:var(--muted); font-size:14px; margin:6px 0 4px}
+.block{margin-top:34px}
+.block > h2{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--primary); margin:0 0 4px}
+.block > .desc{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.5}
+.cap{font-size:11.5px; color:var(--faint); font-weight:600; margin:14px 0 7px; text-transform:uppercase; letter-spacing:.04em}
+.rowwrap{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.mono{font-size:11px; color:var(--faint)}
+
+/* ========================================================
+   TOKEN SWATCHES (showcase)
+   ======================================================== */
+.swgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
+.sw{background:var(--surface); border-radius:12px; padding:10px; display:flex; align-items:center; gap:10px}
+.sw .chip{width:34px; height:34px; border-radius:9px; flex:none; border:1px solid rgba(0,0,0,.06)}
+.sw .t{font-size:12.5px; font-weight:600} .sw .v{font-size:11px; color:var(--faint)}
+.typescale > div{margin-bottom:6px}
+.t-page{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em}
+.t-sec{font-size:var(--text-section); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint)}
+.t-name{font-size:var(--text-name); font-weight:600; letter-spacing:-.02em}
+.t-body{font-size:var(--text-body)} .t-meta{font-size:var(--text-meta); color:var(--muted)} .t-fine{font-size:var(--text-fine); color:var(--faint)}
+.radrow{display:flex; gap:10px; align-items:flex-end}
+.radbox{background:var(--primary-soft); border:1px solid var(--primary); width:56px; height:56px; display:grid; place-items:end center; padding-bottom:4px; font-size:10px; color:var(--primary); font-weight:700}
+.spacerow{display:flex; gap:8px; align-items:center}
+.spx{background:var(--primary); height:22px; border-radius:3px}
+
+/* ========================================================
+   ⬇⬇ COMPONENT LAYER — ĐÂY LÀ CSS CHÍNH ĐỂ APP DÙNG ⬇⬇
+   ======================================================== */
+
+/* AVATAR — luôn tròn */
+.avatar{width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center; color:#fff; font-weight:700; font-size:17px; letter-spacing:.3px}
+.avatar.lg{width:88px; height:88px; font-size:34px}
+.avatar.sm{width:34px; height:34px; font-size:13px}
+
+/* GROUP + ROW — khối trắng liền, phân cách bằng đường mảnh (KHÔNG viền từng ô) */
+.group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
+.row{display:flex; align-items:center; gap:12px; padding:14px 16px; position:relative; background:var(--surface)}
+.row + .row::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
+.row.tap{cursor:pointer} .row.tap:active{background:#F2F2F4}
+.row .lead{width:44px; flex:none} /* ô avatar/icon đầu dòng */
+.row.haslead + .row.haslead::before{left:72px} /* kẻ thụt sau avatar */
+.row .main{flex:1; min-width:0}
+.row .main .t{font-size:var(--text-name); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .main .d,.row .main .meta{font-size:var(--text-sub); font-weight:500; color:var(--faint); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .k{font-size:var(--text-body); color:var(--muted)}
+.row .val{margin-left:auto; font-size:var(--text-body); font-weight:600; color:var(--ink); text-align:right}
+.row .rchev{color:var(--faint); flex:none}
+.row .addico{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; font-size:19px; flex:none}
+.row.add .t{font-weight:600; font-size:15px}
+
+/* SECTION — nhãn nhỏ IN HOA + group */
+.section{margin-top:22px}
+.section > .lbl{font-size:var(--text-section); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); margin:0 4px 9px; display:flex; align-items:center; gap:7px}
+.section > .lbl .badge{color:var(--danger)}
+
+/* BUTTONS */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; font:inherit; font-weight:700; font-size:var(--text-body); border:0; border-radius:var(--r-input); padding:13px 18px; cursor:pointer; letter-spacing:-.01em}
+.btn.primary{background:var(--primary); color:#fff} .btn.primary:active{background:var(--primary-press)}
+.btn.soft{background:var(--soft); color:var(--ink)}
+.btn.ghost{background:transparent; color:var(--muted)}
+.btn.danger{background:transparent; color:var(--danger)}
+.btn.block{width:100%}
+.btn.pill{border-radius:var(--r-pill)}
+.btn i{font-size:19px; line-height:1}
+/* nút thu nhỏ trong row (vd Thu học phí) */
+.btn.mini{padding:9px 16px; font-size:13.5px; border-radius:var(--r-pill)}
+/* nút hành động ô vuông (QR / Sửa / Nhắn) */
+.acttiles{display:flex; gap:10px}
+.acttile{flex:1; background:var(--surface); border:0; border-radius:var(--r-card); padding:14px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; font:inherit}
+.acttile:active{background:#F2F2F4}
+.acttile i{font-size:20px; color:var(--ink); line-height:1}
+.acttile span{font-size:12px; font-weight:600; color:var(--ink)}
+
+/* PILL FILTER (thanh lọc) */
+.pills{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none} .pills::-webkit-scrollbar{display:none}
+.pillf{flex:none; font:inherit; font-size:14px; font-weight:600; padding:8px 15px; border-radius:var(--r-pill); background:var(--soft); color:var(--ink); border:0; cursor:pointer}
+.pillf.on{background:var(--ink); color:#fff}
+
+/* CHIP trạng thái (chữ màu trơn) + soft pill (nền nhạt) */
+.stt{font-size:13.5px; font-weight:600}
+.stt.dang_hoc{color:var(--st-dang-hoc)} .stt.cho_test{color:var(--st-cho-test)} .stt.hoc_thu{color:var(--st-hoc-thu)} .stt.bao_luu{color:var(--st-bao-luu)} .stt.da_nghi{color:var(--st-da-nghi)}
+.spill{font-size:13px; font-weight:600; padding:5px 13px; border-radius:var(--r-pill); display:inline-block}
+.spill.dang_hoc{color:var(--st-dang-hoc); background:#E3F4EC} .spill.cho_test{color:var(--st-cho-test); background:#F1EBFC} .spill.hoc_thu{color:var(--st-hoc-thu); background:#E1F1F6} .spill.bao_luu{color:var(--st-bao-luu); background:#FBF0DC} .spill.da_nghi{color:var(--st-da-nghi); background:#EDEFF0}
+.paid{color:var(--ok); font-weight:700; font-size:13.5px}
+.unpaid{color:var(--danger); font-weight:700; font-size:13.5px}
+
+/* SUBTITLE (dòng 2) — MỘT loại duy nhất: 12.5px, xám mờ, các phần cách nhau bằng ·
+   Không phân biệt màu/đậm giữa mã HS và lớp — chúng cùng là subtitle. */
+.meta{font-size:var(--text-sub); font-weight:500; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.meta .sep{margin:0 4px 0 3px; opacity:.5}
+/* trạng thái đóng phí là thông tin QUAN TRỌNG hơn → cho phép tô màu, nhưng CÙNG size */
+.meta .paid{color:var(--ok); font-weight:600}
+.meta .unpaid{color:var(--danger); font-weight:600}
+/* alias để markup cũ không vỡ — tất cả về đúng 1 style subtitle */
+.tag,.code{font-size:var(--text-sub); font-weight:500; color:var(--faint); background:none; padding:0; border-radius:0}
+.paid{color:var(--ok); font-weight:600; font-size:var(--text-sub)}
+.unpaid{color:var(--danger); font-weight:600; font-size:var(--text-sub)}
+
+/* SEARCH */
+.searchbar{display:flex; align-items:center; gap:9px; background:var(--soft); border-radius:var(--r-input); padding:12px 14px; color:var(--faint)}
+.searchbar i{font-size:19px}
+.searchbar input{border:0; outline:0; background:transparent; font:inherit; font-size:16px; width:100%; color:var(--ink)}
+.searchbar input::placeholder{color:var(--faint)}
+
+/* INPUT / FIELD */
+.field{margin-top:14px}
+.field label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:7px}
+.field input,.field select{width:100%; min-width:0; max-width:100%; box-sizing:border-box; font:inherit; font-size:16px; padding:13px 14px; border:1px solid var(--line); border-radius:var(--r-input); background:var(--surface); color:var(--ink); outline:0}
+/* DATEFIELD — sửa lỗi Safari iPhone: input[type=date] rỗng vẫn hiện "hôm nay" chữ đen thay vì placeholder xám.
+   Phủ nhãn giả xám đè lên, ẩn đi khi đã có giá trị thật (đổi qua JS: input.value ? ẩn nhãn : hiện nhãn). */
+.datefield{position:relative; width:100%; min-width:0}
+.datefield input[type="date"]{position:relative; z-index:1; color:var(--ink); width:100%; min-width:0; max-width:100%; box-sizing:border-box}
+.datefield input[type="date"].empty{color:transparent}
+.datefield .dfph{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:16px; pointer-events:none; z-index:2}
+.datefield input[type="date"]:not(.empty) + .dfph{display:none}
+.field input:focus,.field select:focus{border-color:var(--primary)}
+.seg{display:flex; gap:6px; background:var(--soft); border-radius:12px; padding:4px}
+.seg button{flex:1; font:inherit; font-size:14px; font-weight:600; padding:9px 0; border:0; border-radius:9px; background:transparent; color:var(--muted); cursor:pointer}
+.seg button.on{background:var(--surface); color:var(--ink)}
+
+/* HERO (đầu trang chi tiết) */
+.hero{text-align:center; padding:8px 0 4px}
+.hero .dname{font-size:24px; font-weight:700; letter-spacing:-.03em; margin-top:12px}
+
+/* PAGE TITLE */
+.pagetitle{display:flex; align-items:center; justify-content:space-between}
+.pagetitle h1{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0}
+.pagetitle h1 .n{color:var(--faint); font-weight:600}
+.addbtn{width:40px; height:40px; border-radius:var(--r-pill); background:var(--primary); color:#fff; border:0; display:grid; place-items:center; cursor:pointer}
+.addbtn i{font-size:20px}
+
+/* NAV bar trang push */
+.navbar{height:52px; display:flex; align-items:center; justify-content:space-between; background:rgba(246,246,246,.85); backdrop-filter:blur(18px); border-radius:12px; padding:0 8px}
+.navbar .back{display:flex; align-items:center; gap:1px; color:var(--ink); font-size:16px; font-weight:600; background:0; border:0; cursor:pointer; font-family:inherit}
+.navbar .back i{font-size:22px}
+.navbar .edit{color:var(--ink); font-size:14px; font-weight:600; background:var(--soft); border:0; border-radius:var(--r-pill); padding:7px 15px; cursor:pointer; font-family:inherit}
+
+/* ========================================================
+   14 · DASHBOARD — hero dòng tiền, ô thống kê, dòng cảnh báo
+   ======================================================== */
+.cfhero{background:var(--surface); border-radius:var(--r-group); padding:20px 18px}
+.cfhero .lbl{font-size:13px; color:var(--muted); font-weight:600}
+.cfhero .big{font-size:34px; font-weight:700; letter-spacing:-.03em; margin-top:4px}
+.cfhero .big.neg{color:var(--danger)}
+.cfhero .note{font-size:12.5px; color:var(--faint); margin-top:6px}
+.tilegrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px}
+.tile{background:var(--surface); border-radius:var(--r-card); padding:14px 6px; text-align:center; cursor:pointer}
+.tile:active{background:#F2F2F4}
+.tile .n{font-size:20px; font-weight:700; letter-spacing:-.02em}
+.tile .n.danger{color:var(--danger)}
+.tile .l{font-size:11px; color:var(--muted); font-weight:600; margin-top:3px}
+.alertrow{display:flex; align-items:center; gap:12px; padding:13px 16px}
+.alertrow .aic{width:36px; height:36px; border-radius:10px; background:var(--danger-soft); color:var(--danger); display:grid; place-items:center; flex:none}
+.alertrow .main{flex:1; min-width:0}
+.alertrow .main .t{font-size:15px; font-weight:600}
+.alertrow .main .d{font-size:12.5px; color:var(--faint); margin-top:2px}
+
+/* ========================================================
+   15 · THU CHI — thanh tháng, tổng 3 cột, dòng giao dịch
+   ======================================================== */
+.monthnav{display:flex; align-items:center; justify-content:space-between; background:var(--surface); border-radius:var(--r-card); padding:5px}
+.monthnav button{width:36px; height:36px; border:0; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); font-size:20px; font-family:inherit}
+.monthnav .mlabel{font-weight:700; font-size:15px}
+.sumgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px}
+.sumcard{background:var(--surface); border-radius:var(--r-card); padding:13px 6px; text-align:center}
+.sumcard .n{font-weight:700; font-size:15px} .sumcard .l{font-size:11px; color:var(--muted); font-weight:600; margin-top:4px}
+.sumcard.thu .n{color:var(--ok)} .sumcard.chi .n{color:var(--danger)}
+.tcamt{font-weight:700; font-size:15px; flex:none} .tcamt.thu{color:var(--ok)} .tcamt.chi{color:var(--danger)}
+
+/* ========================================================
+   16 · HỌC PHÍ — subtabs (dùng lại .seg), thẻ QR receipt
+   ======================================================== */
+.qrcard{background:var(--surface); border-radius:var(--r-group); padding:20px 18px; text-align:center}
+.qrbox{width:180px; height:180px; margin:0 auto; border-radius:16px; background:repeating-conic-gradient(#0002 0% 25%,#0000 0% 50%) 0/16px 16px; display:grid; place-items:center; color:var(--faint); font-size:12px}
+.qramt{font-size:26px; font-weight:700; margin-top:14px; letter-spacing:-.02em}
+.qrinfo{margin-top:14px; text-align:left; border-top:1px solid var(--line)}
+.qrinfo .r{display:flex; justify-content:space-between; padding:9px 2px; font-size:13.5px; border-bottom:1px solid var(--line)}
+.qrinfo .r .k{color:var(--muted)} .qrinfo .r .v{font-weight:600}
+.qracts{display:flex; gap:8px; margin-top:16px}
+.qact{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px; border-radius:14px; background:var(--soft); cursor:pointer; font:inherit; font-size:11.5px; font-weight:600; color:var(--ink); border:0}
+.qact.primary{background:var(--primary); color:#fff}
+.qact i{font-size:18px}
+
+/* ========================================================
+   17 · GLOBAL — bottom sheet / action sheet (khung minh hoạ)
+   ======================================================== */
+.sheetmock{background:var(--bg); border-radius:24px 24px 0 0; padding:10px 16px 20px; box-shadow:0 -8px 30px rgba(20,22,28,.10)}
+.sheetmock .grip{width:36px; height:4px; background:var(--line); border-radius:99px; margin:0 auto 14px}
+.sheetcard{background:var(--surface); border-radius:var(--r-group); padding:4px 16px 12px; margin-top:14px}
+.summ{background:var(--surface); border-radius:var(--r-card); padding:12px 14px; margin-top:14px; display:flex; align-items:center; gap:12px}
+.summ .av{width:40px; height:40px; border-radius:50%; color:#fff; display:grid; place-items:center; font-weight:700; flex:none}
+.summ .nm{font-weight:700; font-size:15px}
+.summ .cd{font-size:12.5px; color:var(--muted); margin-top:1px}
+/* Action sheet (mục 17 v2) — full-width, dính đáy, NỀN XÁM bên trong, mỗi lựa chọn là 1 card trắng riêng */
+.actmock{background:var(--bg); border-radius:22px 22px 0 0; padding:10px 16px 20px; margin-top:8px}
+.actmock .grip{width:36px; height:4px; background:var(--line); border-radius:99px; margin:0 auto 14px}
+.actmock .achead{display:flex; align-items:flex-start; justify-content:space-between; padding:0 2px}
+.actmock .achead .atitle{font-size:18px; font-weight:700; letter-spacing:-.01em}
+.actmock .achead .asub{font-size:13px; color:var(--muted); margin-top:3px}
+.actmock .aclose{width:30px; height:30px; border-radius:50%; background:var(--soft); color:var(--muted); display:grid; place-items:center; flex:none; border:0}
+.actmock .aclose i{font-size:15px}
+.actopt{background:var(--surface); border-radius:var(--r-card); padding:14px; display:flex; align-items:center; gap:12px; margin-top:14px; cursor:pointer}
+.actopt + .actopt{margin-top:10px}
+.actopt i{font-size:19px; color:var(--ink); flex:none}
+
+/* TOAST */
+.toastmock{display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:#fff; font-size:13.5px; font-weight:600; padding:11px 18px; border-radius:var(--r-pill)}
+.toastmock.err{background:var(--danger)}
+
+/* EMPTY STATE */
+.emptystate{text-align:center; padding:44px 20px; color:var(--muted); font-size:14px}
+.emptystate b{display:block; color:var(--ink); font-size:15px; font-weight:700; margin-bottom:4px}
+
+/* ========================================================
+   20 · FORM (trang push · nhập đầy đủ 1 lần)
+   ======================================================== */
+.formnav{height:52px; display:flex; align-items:center; justify-content:space-between; background:rgba(246,246,246,.9); backdrop-filter:blur(18px); border-radius:12px; padding:0 6px}
+.formnav .cancel{color:var(--muted); font-size:16px; font-weight:500; background:0; border:0; cursor:pointer; padding:8px 12px; font-family:inherit}
+.formnav .ftitle{font-size:16px; font-weight:700}
+.formnav .spacer{width:64px}
+.req{color:var(--danger); margin-left:2px}
+.hint{font-size:12px; color:var(--faint); margin-top:6px}
+/* chip chọn NHIỀU (vd ngày trong tuần) */
+.chipset{display:flex; gap:7px; flex-wrap:wrap; margin-top:2px}
+.choice{font:inherit; font-size:14px; font-weight:600; padding:9px 14px; border-radius:var(--r-pill); background:var(--soft); color:var(--muted); border:0; cursor:pointer}
+.choice.on{background:var(--primary); color:#fff}
+/* ========================================================
+   21 · LOADING — skeleton (danh sách) + spinner (nút)
+   ======================================================== */
+@keyframes shimmer{0%{background-position:-120px 0}100%{background-position:120px 0}}
+.skel{background:#ECECEE linear-gradient(90deg,#ECECEE 0%,#F6F6F6 50%,#ECECEE 100%) no-repeat; background-size:120px 100%; animation:shimmer 1.1s ease-in-out infinite; border-radius:8px}
+.skel.avatar{width:44px; height:44px; border-radius:50%; flex:none}
+.skel.line{height:13px; margin-top:6px} .skel.line.w60{width:60%} .skel.line.w40{width:40%} .skel.line.w30{width:30%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px; height:16px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; flex:none}
+.btn.loading{opacity:.85; pointer-events:none}
+
+/* ========================================================
+   22 · DIALOG XÁC NHẬN (khác action sheet — cảnh báo nguy hiểm)
+   ======================================================== */
+.dialogscrim{position:fixed; inset:0; background:rgba(20,22,28,.4); display:grid; place-items:center; padding:24px}
+.dialogcard{background:var(--surface); border-radius:20px; max-width:300px; width:100%; overflow:hidden; text-align:center}
+.dialogcard .dbody{padding:22px 20px 18px}
+.dialogcard .dtitle{font-size:var(--text-name); font-weight:700}
+.dialogcard .dmsg{font-size:var(--text-meta); color:var(--muted); margin-top:6px; line-height:1.5}
+.dialogcard .dacts{display:flex; border-top:1px solid var(--line)}
+.dialogcard .dacts button{flex:1; padding:14px 0; font:inherit; font-size:var(--text-body); font-weight:600; border:0; background:transparent; cursor:pointer}
+.dialogcard .dacts button + button{border-left:1px solid var(--line)}
+.dialogcard .dacts .dcancel{color:var(--ink)}
+.dialogcard .dacts .ddanger{color:var(--danger); font-weight:700}
+
+/* ========================================================
+   23 · SAFE AREA (tai thỏ / thanh cầm iPhone)
+   ======================================================== */
+.safe-b{padding-bottom:calc(var(--sp-4) + var(--safe-b))}
+
+/* frame giả lập để xem component trong ngữ cảnh */
+.frame{background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:14px}
+
+/* ===== 24 · Bottom Nav ===== */
+.bottomnavmock{position:relative; margin:0 auto; width:100%; max-width:400px; height:62px; display:flex;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid rgba(255,255,255,.6); border-radius:31px;
+  box-shadow:0 10px 30px rgba(16,32,55,.16), 0 2px 6px rgba(16,32,55,.08), inset 0 1px 0 rgba(255,255,255,.9)}
+.navitem{position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:var(--faint); font-size:11px; font-weight:600; cursor:pointer; border:0; background:transparent; z-index:2}
+.navitem i{font-size:23px; line-height:1}
+.navitem.active{color:var(--primary)}
+.navitem.active::before{content:''; position:absolute; inset:6px 8px; background:rgba(120,120,128,.14); border-radius:var(--r-pill); z-index:-1}
+
+/* ===== 25 · Header Tổng quan & Profile ===== */
+.dashhead{display:flex; align-items:center; justify-content:space-between; margin:14px 0 20px}
+.dashhead .brandtitle{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0}
+.dashhead .brandtitle span{color:var(--primary)}
+.dashhead .meblock{display:flex; align-items:center; gap:9px; cursor:pointer}
+.dashhead .meblock .who{text-align:right; line-height:1.25}
+.dashhead .meblock .who .n{font-weight:700; font-size:13.5px; color:var(--ink)}
+.dashhead .meblock .who .s{font-size:11.5px; color:var(--faint); font-weight:600}
+.dashhead .meblock .av{width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:15px; flex:none}
+.row .ricon{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; flex:none}
+.row .ricon i{font-size:18px}
+.row .ricon svg{width:17px; height:17px}
+.row.danger .ricon{background:var(--danger-soft); color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1 class="doc-h">Impetus · Design System</h1>
+  <p class="doc-sub">v1 — Revolut-light · Inter · HugeIcons. Nguồn sự thật cho mọi màn. Mọi tính năng mới bám theo bộ này.</p>
+
+  <!-- ============ TOKENS ============ -->
+  <div class="block">
+    <h2>1 · Màu (Color tokens)</h2>
+    <p class="desc">Nền xám nhạt, thẻ trắng, chữ đen. Cobalt <b>chỉ dùng cho hành động chính</b> (dùng dè). Mỗi trạng thái 1 màu cố định.</p>
+    <div class="cap">Nền / bề mặt / chữ</div>
+    <div class="swgrid swgrid">
+      <div class="swgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      </div>
+    </div>
+    <div class="swgrid">
+      <div class="sw"><span class="chip" style="background:#F6F6F6"></span><div><div class="t">Nền</div><div class="v">#F6F6F6</div></div></div>
+      <div class="sw"><span class="chip" style="background:#FFFFFF"></span><div><div class="t">Thẻ</div><div class="v">#FFFFFF</div></div></div>
+      <div class="sw"><span class="chip" style="background:#ECECEE"></span><div><div class="t">Phụ / input</div><div class="v">#ECECEE</div></div></div>
+      <div class="sw"><span class="chip" style="background:#191c1f"></span><div><div class="t">Chữ chính</div><div class="v">#191c1f</div></div></div>
+      <div class="sw"><span class="chip" style="background:#505a63"></span><div><div class="t">Chữ phụ</div><div class="v">#505a63</div></div></div>
+      <div class="sw"><span class="chip" style="background:#8d969e"></span><div><div class="t">Chữ mờ</div><div class="v">#8d969e</div></div></div>
+    </div>
+    <div class="cap">Thương hiệu</div>
+    <div class="swgrid">
+      <div class="sw"><span class="chip" style="background:#494fdf"></span><div><div class="t">Primary (cobalt)</div><div class="v">#494fdf</div></div></div>
+      <div class="sw"><span class="chip" style="background:#EAEAFB"></span><div><div class="t">Primary nhạt</div><div class="v">#EAEAFB</div></div></div>
+    </div>
+    <div class="cap">Trạng thái học sinh</div>
+    <div class="swgrid">
+      <div class="sw"><span class="chip" style="background:#0E9F6E"></span><div><div class="t">Đang học</div><div class="v">#0E9F6E</div></div></div>
+      <div class="sw"><span class="chip" style="background:#7C3AED"></span><div><div class="t">Chờ test</div><div class="v">#7C3AED</div></div></div>
+      <div class="sw"><span class="chip" style="background:#0E7490"></span><div><div class="t">Học thử</div><div class="v">#0E7490</div></div></div>
+      <div class="sw"><span class="chip" style="background:#C77700"></span><div><div class="t">Bảo lưu</div><div class="v">#C77700</div></div></div>
+      <div class="sw"><span class="chip" style="background:#7A8696"></span><div><div class="t">Đã nghỉ</div><div class="v">#7A8696</div></div></div>
+      <div class="sw"><span class="chip" style="background:#D92D20"></span><div><div class="t">Nguy hiểm</div><div class="v">#D92D20</div></div></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>2 · Chữ (Type · Inter)</h2>
+    <p class="desc">Một font duy nhất — Inter. Thang cỡ cố định để mọi màn nhất quán.</p>
+    <div class="typescale">
+      <div class="t-page">Tiêu đề trang · 28 / 700</div>
+      <div class="t-sec">Tiêu đề mục · 12 / 700 · IN HOA</div>
+      <div class="t-name">Tên / dòng chính · 16.5 / 600</div>
+      <div class="t-body">Nội dung thường · 15 / 400–500</div>
+      <div class="t-meta">Chữ phụ / mô tả · 13</div>
+      <div class="t-fine">Mã, chú thích · 12</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>3 · Bo góc & Khoảng cách</h2>
+    <div class="cap">Bo góc</div>
+    <div class="radrow">
+      <div class="radbox" style="border-radius:20px">20</div>
+      <div class="radbox" style="border-radius:16px">16</div>
+      <div class="radbox" style="border-radius:14px">14</div>
+      <div class="radbox" style="border-radius:8px">8</div>
+      <div class="radbox" style="border-radius:999px">pill</div>
+    </div>
+    <div class="cap">Khoảng cách (4 / 8 / 12 / 16 / 20 / 24)</div>
+    <div class="spacerow"><div class="spx" style="width:4px"></div><div class="spx" style="width:8px"></div><div class="spx" style="width:12px"></div><div class="spx" style="width:16px"></div><div class="spx" style="width:20px"></div><div class="spx" style="width:24px"></div></div>
+    <p class="desc" style="margin-top:12px"><b>Bóng đổ:</b> gần như không (phẳng). Tách khối bằng nền trắng trên nền xám + đường kẻ mảnh, không dùng shadow.</p>
+  </div>
+
+  <div class="block">
+    <h2>4 · Icon (HugeIcons stroke-rounded)</h2>
+    <p class="desc">Một bộ duy nhất — HugeIcons. Dùng <span class="mono">&lt;i class="hgi-stroke hgi-tên"&gt;</span>, chỉnh màu/cỡ bằng CSS. <b>Không tự vẽ SVG.</b></p>
+    <div class="rowwrap" style="font-size:24px; color:var(--ink)">
+      <i class="hgi-stroke hgi-dashboard-square-01"></i>
+      <i class="hgi-stroke hgi-user-multiple-02"></i>
+      <i class="hgi-stroke hgi-mortarboard-01"></i>
+      <i class="hgi-stroke hgi-wallet-01"></i>
+      <i class="hgi-stroke hgi-qr-code"></i>
+      <i class="hgi-stroke hgi-pencil-edit-02"></i>
+      <i class="hgi-stroke hgi-search-01"></i>
+      <i class="hgi-stroke hgi-add-01"></i>
+      <i class="hgi-stroke hgi-arrow-left-01"></i>
+      <i class="hgi-stroke hgi-arrow-right-01"></i>
+      <i class="hgi-stroke hgi-call"></i>
+      <i class="hgi-stroke hgi-message-01"></i>
+    </div>
+  </div>
+
+  <!-- ============ COMPONENTS ============ -->
+  <div class="block">
+    <h2>5 · Avatar</h2>
+    <div class="rowwrap">
+      <div class="avatar sm" style="background:#494fdf">A</div>
+      <div class="avatar" style="background:#e01e5a">B</div>
+      <div class="avatar lg" style="background:#C77700">H</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>6 · Group + Row (khối liền — lõi của hệ)</h2>
+    <p class="desc">Mọi danh sách/thông tin đều là <b>1 group trắng</b>, các dòng ngăn bằng đường mảnh. KHÔNG viền riêng từng ô. Đây là thứ thay cho <span class="mono">.rost / .opt / .card</span> cũ.</p>
+
+    <div class="cap">Dòng danh sách (avatar + tên + meta + trạng thái + chevron)</div>
+    <div class="group">
+      <div class="row tap haslead"><div class="lead"><div class="avatar" style="background:#e01e5a">Đ</div></div><div class="main"><div class="t">Trần Minh Đức</div><div class="meta">HS244<span class="sep">·</span>Starters A<span class="sep">·</span>Movers B</div></div><span class="stt dang_hoc">Đang học</span><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+      <div class="row tap haslead"><div class="lead"><div class="avatar" style="background:#2b8be0">L</div></div><div class="main"><div class="t">Hoàng Nhật Linh</div><div class="meta">HS243<span class="sep">·</span>Phonics 1</div></div><span class="stt cho_test">Chờ test</span><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+    </div>
+
+    <div class="cap">Dòng nhãn – giá trị (thông tin)</div>
+    <div class="group">
+      <div class="row"><span class="k">Mã học sinh</span><span class="val">HS244</span></div>
+      <div class="row"><span class="k">Ngày sinh</span><span class="val">12/03/2016</span></div>
+      <div class="row"><span class="k">Điện thoại</span><span class="val" style="color:var(--primary)">0966 123 456</span></div>
+    </div>
+
+    <div class="cap">Dòng có nút thu / trạng thái đã đóng</div>
+    <div class="group">
+      <div class="row"><div class="main"><div class="t">G5 NC3</div><div class="meta"><span class="unpaid">Chưa đóng</span></div></div><button class="btn primary mini">Thu học phí</button></div>
+      <div class="row"><div class="main"><div class="t">Starters A</div><div class="meta">Đóng tới 31/08/2026</div></div><span class="paid">✓ Đã đóng</span></div>
+    </div>
+
+    <div class="cap">Dòng "thêm" (＋ ...)</div>
+    <div class="group">
+      <div class="row tap add"><div class="addico">+</div><div class="main"><div class="t">Thêm / chuyển lớp</div></div></div>
+      <div class="row tap add"><div class="addico">+</div><div class="main"><div class="t">Ghi buổi vắng</div></div></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>7 · Section (nhãn IN HOA + group)</h2>
+    <div class="frame">
+      <div class="section" style="margin-top:0">
+        <div class="lbl">Học phí <span class="badge">· 1 cần thu</span></div>
+        <div class="group"><div class="row"><div class="main"><div class="t">G5 NC3</div><div class="meta"><span class="unpaid">Chưa đóng</span></div></div><button class="btn primary mini">Thu học phí</button></div></div>
+      </div>
+      <div class="section">
+        <div class="lbl">Lớp đang học</div>
+        <div class="group">
+          <div class="row"><div class="main"><div class="t">G5 NC3</div></div><span class="stt dang_hoc">Đang học</span></div>
+          <div class="row tap add"><div class="addico">+</div><div class="main"><div class="t">Thêm / chuyển lớp</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>8 · Nút (Buttons)</h2>
+    <div class="cap">Nút chính / phụ / nguy hiểm</div>
+    <div class="rowwrap">
+      <button class="btn primary">Lưu</button>
+      <button class="btn soft">Hủy</button>
+      <button class="btn danger">Xóa học sinh</button>
+    </div>
+    <div class="cap">Nút full-width (trong form/sheet)</div>
+    <button class="btn primary block">Xác nhận đã đóng</button>
+    <div class="cap" style="margin-top:14px">Nút hành động ô vuông (đầu trang chi tiết)</div>
+    <div class="acttiles">
+      <button class="acttile"><i class="hgi-stroke hgi-qr-code"></i><span>QR học phí</span></button>
+      <button class="acttile"><i class="hgi-stroke hgi-pencil-edit-02"></i><span>Sửa</span></button>
+      <button class="acttile"><i class="hgi-stroke hgi-message-01"></i><span>Nhắn PH</span></button>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>9 · Pill lọc (Filter)</h2>
+    <div class="pills">
+      <button class="pillf on">Tất cả</button>
+      <button class="pillf">Đang học</button>
+      <button class="pillf">Chờ test</button>
+      <button class="pillf">Học thử</button>
+      <button class="pillf">Bảo lưu</button>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>10 · Chip trạng thái & Tag</h2>
+    <div class="cap">Trong danh sách — chữ màu trơn</div>
+    <div class="rowwrap"><span class="stt dang_hoc">Đang học</span><span class="stt cho_test">Chờ test</span><span class="stt hoc_thu">Học thử</span><span class="stt bao_luu">Bảo lưu</span><span class="stt da_nghi">Đã nghỉ</span></div>
+    <div class="cap">Ở hero chi tiết — pill nền nhạt</div>
+    <div class="rowwrap"><span class="spill dang_hoc">Đang học</span><span class="spill cho_test">Chờ test</span><span class="spill bao_luu">Bảo lưu</span></div>
+    <div class="cap">Dòng phụ (subtitle) — MỘT loại: 12.5px, xám mờ, ngăn nhau bằng ·</div>
+    <div class="meta">HS244<span class="sep">·</span>Starters A<span class="sep">·</span>Movers B</div>
+    <div class="meta" style="margin-top:6px">G5 NC3<span class="sep">·</span><span class="unpaid">Chưa đóng</span></div>
+    <div class="meta" style="margin-top:6px">Starters A<span class="sep">·</span><span class="paid">Đã đóng tới 31/08</span></div>
+  </div>
+
+  <div class="block">
+    <h2>11 · Ô tìm kiếm & Input</h2>
+    <div class="searchbar"><i class="hgi-stroke hgi-search-01"></i><input placeholder="Tìm học sinh"></div>
+    <div class="field"><label>Họ tên</label><input placeholder="Nguyễn Văn A"></div>
+    <div class="field"><label>Hình thức</label><div class="chipset"><button class="choice on">Tiền mặt</button><button class="choice">CK tay</button></div></div>
+    <p class="desc" style="margin-top:12px"><b>Lưu ý phân biệt:</b> <span class="mono">.seg</span> (thanh liền khối) CHỈ dùng khi thật sự là <b>chuyển tab/view</b> (vd sub-tab Học phí ở mục 16). Khi <b>chọn 1 giá trị trong form</b> (Giới tính, Trạng thái, Quan hệ, Hình thức...) → dùng <span class="mono">.chipset .choice</span> — từng lựa chọn tách rời, không phải thanh liền. Cùng class này cũng dùng cho chọn-nhiều (ngày trong tuần), chỉ khác ở hành vi JS (chọn 1 thay cho cái khác / chọn độc lập).</p>
+  </div>
+
+  <div class="block">
+    <h2>12 · Tiêu đề trang & Nav</h2>
+    <div class="cap">Tiêu đề trang (danh sách)</div>
+    <div class="pagetitle"><h1>Học sinh <span class="n">250</span></h1><button class="addbtn"><i class="hgi-stroke hgi-add-01"></i></button></div>
+    <div class="cap">Nav bar (trang chi tiết push)</div>
+    <div class="navbar"><button class="back"><i class="hgi-stroke hgi-arrow-left-01"></i>Học sinh</button><button class="edit">Sửa</button></div>
+  </div>
+
+  <div class="block">
+    <h2>13 · Hero (đầu trang chi tiết)</h2>
+    <div class="frame">
+      <div class="hero"><div class="avatar lg" style="background:#e01e5a;margin:0 auto">Đ</div><div class="dname">Trần Minh Đức</div><div style="margin-top:11px"><span class="spill dang_hoc">Đang học</span></div></div>
+      <div class="acttiles" style="margin-top:16px">
+        <button class="acttile"><i class="hgi-stroke hgi-qr-code"></i><span>QR học phí</span></button>
+        <button class="acttile"><i class="hgi-stroke hgi-pencil-edit-02"></i><span>Sửa</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>14 · Dashboard (Tổng quan)</h2>
+    <p class="desc">Thẻ hero số lớn + lưới ô thống kê bấm được + dòng cảnh báo cần chú ý.</p>
+    <div class="cap">Hero dòng tiền</div>
+    <div class="cfhero"><div class="lbl">Dòng tiền tháng 07/2026</div><div class="big">190.000<span style="font-size:20px;color:var(--faint)"> đ</span></div><div class="note">Thu 190.000đ · Chi 0đ</div></div>
+    <div class="cap">Ô thống kê (bấm điều hướng)</div>
+    <div class="tilegrid">
+      <div class="tile"><div class="n">141</div><div class="l">Đang học</div></div>
+      <div class="tile"><div class="n">12</div><div class="l">Lớp</div></div>
+      <div class="tile"><div class="n danger">7</div><div class="l">Đến hạn</div></div>
+    </div>
+    <div class="cap">Dòng cảnh báo (nợ học bù, đến hạn...)</div>
+    <div class="group">
+      <div class="alertrow"><div class="aic"><i class="hgi-stroke hgi-calendar-03"></i></div><div class="main"><div class="t">3 em cần học bù</div><div class="d">Chưa xếp buổi bù trong tuần này</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>15 · Thu chi</h2>
+    <div class="cap">Thanh chọn tháng</div>
+    <div class="monthnav"><button>‹</button><span class="mlabel">Tháng 07/2026</span><button>›</button></div>
+    <div class="cap">Tổng 3 cột</div>
+    <div class="sumgrid">
+      <div class="sumcard thu"><div class="n">190.000đ</div><div class="l">Thu</div></div>
+      <div class="sumcard chi"><div class="n">0đ</div><div class="l">Chi</div></div>
+      <div class="sumcard"><div class="n">190.000đ</div><div class="l">Còn lại</div></div>
+    </div>
+    <div class="cap">Dòng giao dịch (tái dùng .row)</div>
+    <div class="group">
+      <div class="row"><div class="main"><div class="t">Học phí</div><div class="meta">06/07/2026 · SePay · HS002T07CF</div></div><span class="tcamt thu">+170.000đ</span></div>
+      <div class="row"><div class="main"><div class="t">Thuê phòng</div><div class="meta">01/07/2026</div></div><span class="tcamt chi">−2.000.000đ</span></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>16 · Học phí</h2>
+    <div class="cap">Sub-tabs (tái dùng .seg, 3 nút)</div>
+    <div class="seg"><button class="on">Đến hạn</button><button>Phiếu chờ</button><button>Chưa khớp</button></div>
+    <div class="cap">Dòng đến hạn (tái dùng .row)</div>
+    <div class="group">
+      <div class="row"><div class="main"><div class="t">Bảo Ngọc · Movers 3</div><div class="meta"><span class="unpaid">Quá hạn 5 ngày</span></div></div><button class="btn primary mini">Tạo QR</button></div>
+    </div>
+    <div class="cap">Thẻ QR học phí (share cho phụ huynh)</div>
+    <div class="qrcard">
+      <div class="qrbox">QR</div>
+      <div class="qramt">600.000 đ</div>
+      <div class="qrinfo">
+        <div class="r"><span class="k">Học sinh</span><span class="v">Bảo Ngọc · HS472</span></div>
+        <div class="r"><span class="k">Ngân hàng</span><span class="v">TPBank</span></div>
+        <div class="r"><span class="k">Nội dung CK</span><span class="v">HS472T07I4</span></div>
+      </div>
+      <div class="qracts">
+        <button class="qact primary"><i class="hgi-stroke hgi-share-08"></i>Chia sẻ</button>
+        <button class="qact"><i class="hgi-stroke hgi-download-04"></i>Lưu ảnh</button>
+        <button class="qact"><i class="hgi-stroke hgi-copy-01"></i>Copy CK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>17 · Bottom Sheet & Action Sheet</h2>
+    <p class="desc">Cả 2 dùng chung 1 khung: trồi <b>full-width</b> từ dưới, tay cầm ở đỉnh, <b>nền xám</b> (<span class="mono">var(--bg)</span>, giống nền trang), tiêu đề trái + nút <b>X tròn góc phải</b> để đóng (không dùng nút "Đóng"/"Hủy" dạng chữ ở cuối nữa). Chỉ khác nhau ở phần thân: <b>Bottom sheet</b> = field nhập liệu gom chung trong 1 card trắng (giống Section ở mục 20); <b>Action sheet</b> = danh sách lựa chọn, mỗi lựa chọn là 1 card trắng riêng. Áp dụng cho <b>mọi</b> sheet trong app, không riêng 1 màn.</p>
+    <div class="cap">Bottom sheet (khung form — field gom trong 1 card trắng)</div>
+    <div class="sheetmock">
+      <div class="grip"></div>
+      <div class="achead">
+        <div><div class="atitle">Ghi buổi vắng</div><div class="asub">Tạo phiếu học bù cho em nghỉ buổi</div></div>
+        <button class="aclose"><i class="hgi-stroke hgi-cancel-01"></i></button>
+      </div>
+      <div class="summ"><div class="av" style="background:#7c3fae">N</div><div><div class="nm">Bảo Ngọc</div><div class="cd">HS472</div></div></div>
+      <div class="sheetcard">
+        <div class="field" style="margin-top:10px"><label>Hình thức</label><div class="chipset"><button class="choice on">Tiền mặt</button><button class="choice">CK tay</button></div></div>
+      </div>
+      <button class="btn primary block" style="margin-top:16px">Xác nhận đã đóng</button>
+    </div>
+    <div class="cap">Action sheet (chọn nhanh — mỗi lựa chọn là 1 card trắng riêng)</div>
+    <div class="actmock">
+      <div class="grip"></div>
+      <div class="achead">
+        <div><div class="atitle">Bảo Ngọc</div><div class="asub">G5 NC3</div></div>
+        <button class="aclose"><i class="hgi-stroke hgi-cancel-01"></i></button>
+      </div>
+      <div class="actopt"><i class="hgi-stroke hgi-qr-code"></i>Tạo mã QR chuyển khoản</div>
+      <div class="actopt"><i class="hgi-stroke hgi-cash-01"></i>Ghi đã đóng — tiền mặt / CK tay</div>
+    </div>
+    <p class="mono">Khung dùng chung: <span class="mono">.sheet</span> / <span class="mono">.act</span> (nền <span class="mono">var(--bg)</span>, full-width) → <span class="mono">.achead/.atitle/.asub/.aclose</span> (tiêu đề + nút X, thay mọi nút "Đóng"/"Hủy" cuối trang cũ). Thân riêng theo loại sheet: <span class="mono">.summ</span> (card trắng tóm tắt đối tượng — học sinh/lớp, bo <span class="mono">var(--r-card)</span>, tùy chọn) → <span class="mono">.sheetcard</span> (bọc field nhập liệu, bo <span class="mono">var(--r-group)</span>, dùng cho Bottom Sheet) → <span class="mono">.actopt</span> (từng lựa chọn, bo <span class="mono">var(--r-card)</span>, dùng cho Action Sheet). Thay thế hoàn toàn <span class="mono">.opt/.optrow</span> cũ và kiểu sheet nền trắng phẳng cũ ở MỌI sheet trong app.</p>
+  </div>
+
+  <div class="block">
+    <h2>18 · Toast & Trạng thái rỗng</h2>
+    <div class="cap">Toast (báo kết quả ngắn)</div>
+    <div class="rowwrap">
+      <span class="toastmock"><i class="hgi-stroke hgi-checkmark-circle-02"></i>Đã ghi thu 600.000đ</span>
+      <span class="toastmock err"><i class="hgi-stroke hgi-cancel-01"></i>Không thể lưu</span>
+    </div>
+    <div class="cap">Empty state (danh sách trống)</div>
+    <div class="group"><div class="emptystate"><b>Không tìm thấy</b>Thử đổi bộ lọc hoặc từ khóa.</div></div>
+  </div>
+
+  <div class="block">
+    <h2>19 · Badge số đếm</h2>
+    <p class="desc">Chấm đỏ số đếm — dùng trên tab dưới hoặc cạnh mục cần chú ý.</p>
+    <div class="rowwrap">
+      <span style="display:inline-flex;align-items:center;gap:6px">Học bù <span class="cbadge">3</span></span>
+      <span style="display:inline-flex;align-items:center;gap:6px">Thu chi <span class="cbadge">12</span></span>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>20 · Form — Tạo / Sửa (trang push · nhập đầy đủ)</h2>
+    <p class="desc">Trang trượt ngang. Nav: <b>Hủy</b> trái · tiêu đề giữa. Trường chia section IN HOA. Bắt buộc có <span class="req">*</span>. Nút <b>Lưu lớn ở dưới cùng</b>. Trường phụ thuộc (ngày hẹn test) ẩn/hiện theo trạng thái.</p>
+    <p class="desc" style="background:var(--warn-soft); color:#8a5700; padding:11px 14px; border-radius:12px"><b>⚠ Lỗi Safari iPhone đã gặp:</b> <span class="mono">&lt;input type="date"&gt;</span> rỗng vẫn hiển thị <b>ngày hôm nay bằng chữ đen</b> thay vì placeholder xám — dễ tưởng nhầm đã chọn. <b>Bắt buộc</b> bọc mọi ô ngày trong <span class="mono">.datefield</span> (xem CSS + ví dụ bên dưới) — nhãn xám che cho tới khi có giá trị thật.</p>
+
+    <div class="cap">Ví dụ: Tạo học sinh</div>
+    <p class="mono" style="margin:-4px 0 8px">Thử bấm chọn ngày sinh bên dưới — nhãn xám sẽ biến mất khi chọn xong.</p>
+    <div class="frame" style="padding:0;overflow:hidden">
+      <div class="formnav"><button class="cancel">Hủy</button><span class="ftitle">Học sinh mới</span><span class="spacer"></span></div>
+      <div style="padding:8px 14px 16px">
+        <div class="section" style="margin-top:6px"><div class="lbl">Thông tin</div>
+          <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+            <div class="field"><label>Họ tên <span class="req">*</span></label><input placeholder="Nguyễn Văn A"></div>
+            <div class="field"><label>Ngày sinh</label><div class="datefield"><input type="date" class="empty" id="dfDemo1" onchange="this.className=this.value?'':'empty'"><span class="dfph">Chọn ngày sinh</span></div></div>
+            <div class="field"><label>Giới tính</label><div class="chipset"><button class="choice on">Nam</button><button class="choice">Nữ</button></div></div>
+            <div class="field"><label>Trường</label><input placeholder="THCS ..."></div>
+          </div>
+        </div>
+        <div class="section"><div class="lbl">Trạng thái & lớp</div>
+          <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+            <div class="field"><label>Trạng thái <span class="req">*</span></label><div class="chipset"><button class="choice on">Chờ test</button><button class="choice">Học thử</button><button class="choice">Đang học</button></div></div>
+            <div class="field"><label>Ngày hẹn test</label><div class="datefield"><input type="date" class="empty" onchange="this.className=this.value?'':'empty'"><span class="dfph">Chọn ngày hẹn test</span></div><div class="hint">Chỉ hiện khi trạng thái là Chờ test / Học thử. Ô trống hiện nhãn xám, không phải "hôm nay".</div></div>
+            <div class="field"><label>Xếp vào lớp</label><input placeholder="Chọn lớp…" readonly style="cursor:pointer"></div>
+          </div>
+        </div>
+        <div class="section"><div class="lbl">Phụ huynh</div>
+          <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+            <div class="field"><label>Quan hệ</label><div class="chipset"><button class="choice on">Mẹ</button><button class="choice">Bố</button><button class="choice">Khác</button></div></div>
+            <div class="field"><label>Họ tên phụ huynh</label><input placeholder="..."></div>
+            <div class="field"><label>SĐT / Zalo</label><input type="tel" placeholder="09..."></div>
+          </div>
+        </div>
+        <button class="btn primary block" style="margin-top:18px">Lưu học sinh</button>
+      </div>
+    </div>
+
+    <div class="cap">Ví dụ: Tạo lớp — có chip chọn nhiều (ngày trong tuần)</div>
+    <div class="frame" style="padding:0;overflow:hidden">
+      <div class="formnav"><button class="cancel">Hủy</button><span class="ftitle">Lớp mới</span><span class="spacer"></span></div>
+      <div style="padding:8px 14px 16px">
+        <div class="section" style="margin-top:6px"><div class="lbl">Thông tin lớp</div>
+          <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
+            <div class="field"><label>Tên lớp <span class="req">*</span></label><input placeholder="Starters A"></div>
+            <div class="field"><label>Học phí / tháng <span class="req">*</span></label><input type="tel" placeholder="600000"></div>
+          </div>
+        </div>
+        <div class="section"><div class="lbl">Lịch học</div>
+          <div style="background:var(--surface);border-radius:var(--r-group);padding:12px 16px 16px">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px">Các ngày trong tuần</label>
+            <div class="chipset">
+              <button class="choice on">T2</button><button class="choice">T3</button><button class="choice on">T4</button><button class="choice">T5</button><button class="choice on">T6</button><button class="choice">T7</button><button class="choice">CN</button>
+            </div>
+            <div class="field"><label>Giờ bắt đầu</label><input type="time"></div>
+          </div>
+        </div>
+        <button class="btn primary block" style="margin-top:18px">Lưu lớp</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>21 · Loading (Skeleton & Spinner)</h2>
+    <p class="desc">Danh sách đang tải → skeleton (khung xám nhấp nháy), KHÔNG để trắng trơn hay quay vòng giữa màn. Nút đang lưu → spinner nhỏ trong chính nút đó.</p>
+    <div class="cap">Skeleton — dòng danh sách đang tải</div>
+    <div class="group">
+      <div class="row haslead"><div class="lead"><div class="skel avatar"></div></div><div class="main"><div class="skel line w60"></div><div class="skel line w40"></div></div></div>
+      <div class="row haslead"><div class="lead"><div class="skel avatar"></div></div><div class="main"><div class="skel line w60"></div><div class="skel line w30"></div></div></div>
+    </div>
+    <div class="cap">Nút đang lưu (spinner thay vì khoá cứng không phản hồi)</div>
+    <button class="btn primary loading"><span class="spinner"></span>Đang lưu…</button>
+  </div>
+
+  <div class="block">
+    <h2>22 · Dialog xác nhận (khác Action Sheet)</h2>
+    <p class="desc">Dùng cho hành động <b>không thể hoàn tác</b> (xóa học sinh, xóa lớp, hủy phiếu đã thu...). Khác action sheet (danh sách lựa chọn) — đây là hộp thoại giữa màn, 2 nút ngang, có tiêu đề + mô tả hậu quả rõ ràng.</p>
+    <div class="frame" style="padding:26px 20px">
+      <div class="dialogcard" style="margin:0 auto">
+        <div class="dbody"><div class="dtitle">Xóa Trần Minh Đức?</div><div class="dmsg">Toàn bộ dữ liệu lớp học và học bù của em sẽ bị xóa. Không thể hoàn tác.</div></div>
+        <div class="dacts"><button class="dcancel">Hủy</button><button class="ddanger">Xóa</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>23 · Safe Area (iPhone)</h2>
+    <p class="desc">Mọi khối <b>cố định ở đáy màn hình</b> (thanh nav dưới, nút Lưu full-width trong form) PHẢI cộng thêm khoảng đệm tránh thanh cầm — dùng class <span class="mono">.safe-b</span> (biến <span class="mono">--safe-b</span> = <span class="mono">env(safe-area-inset-bottom)</span>).</p>
+    <div class="frame"><button class="btn primary block safe-b">Lưu học sinh</button></div>
+  </div>
+
+  <div class="block">
+    <h2>24 · Bottom Nav (nổi, iOS 26 "floating capsule")</h2>
+    <p class="desc">Thanh điều hướng dạng đảo nổi, cách mép trái/phải/dưới <span class="mono">20px + var(--safe-b)</span>, bo capsule đúng nghĩa (<span class="mono">var(--r-pill)</span>), nền kính mờ (<span class="mono">backdrop-filter: blur(20px) saturate(180%)</span>). Tab đang chọn: viên nền xám trung tính mờ phía sau icon+label — không nhuộm màu primary vào nền, chỉ icon/chữ đổi màu cobalt. Ngoại lệ có chủ đích với nguyên tắc "không đổ bóng" (mục 1.3) — phần tử nổi lơ lửng cần shadow để đọc được độ cao.</p>
+    <div class="frame" style="padding:40px 20px">
+      <div class="bottomnavmock">
+        <button class="navitem active"><i class="hgi-stroke hgi-user-multiple-02"></i>Học sinh</button>
+        <button class="navitem"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp học</button>
+        <button class="navitem"><i class="hgi-stroke hgi-wallet-01"></i>Thu chi</button>
+      </div>
+    </div>
+    <p class="mono">Class thật: <span class="mono">.bottomnav</span> (container, <span class="mono">position:fixed</span> khi chạy thật — demo trên dùng <span class="mono">.bottomnavmock</span> để hiện tĩnh trong trang) + <span class="mono">.navitem</span> (từng tab, <span class="mono">.active</span> khi đang chọn).</p>
+  </div>
+
+  <div class="block">
+    <h2>25 · Header Tổng quan &amp; Trang Profile</h2>
+    <p class="desc">Từ v1.3: bỏ hẳn topbar cũ khỏi toàn app. Chỉ tab Tổng quan có header riêng (<span class="mono">.dashhead</span>): wordmark "Impetus" + avatar/tên góc phải, bấm mở trang Profile (tái dùng khung push-page <span class="mono">#detailPage</span> có sẵn — không tạo trang riêng). 3 tab còn lại không có header, chỉ còn tiêu đề trang như cũ.</p>
+    <div class="cap">Header Tổng quan (.dashhead)</div>
+    <div class="dashhead" style="margin:0">
+      <h1 class="brandtitle">Impe<span>tus</span></h1>
+      <div class="meblock"><div class="who"><div class="n">Trung Nguyễn</div><div class="s">Cài đặt</div></div><div class="av" style="background:#2f6fed">T</div></div>
+    </div>
+    <div class="cap">Trang Profile (mở từ avatar — tái dùng Hero mục 13 + Group/Row mục 6)</div>
+    <div class="hero"><div class="avatar lg" style="background:#2f6fed;margin:0 auto">T</div><div class="dname">Trung Nguyễn</div><div style="text-align:center;font-size:13px;color:var(--muted);margin-top:3px">trung@impetus.edu.vn</div><div style="margin-top:11px;text-align:center"><span class="spill" style="color:var(--primary);background:var(--primary-soft)">Quản lý</span></div></div>
+    <div class="section">
+      <div class="lbl">Tài khoản</div>
+      <div class="group">
+        <div class="row tap haslead"><div class="lead"><div class="ricon"><i class="hgi-stroke hgi-square-lock-password"></i></div></div><div class="main"><div class="t">Đổi mật khẩu</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        <div class="row tap haslead"><div class="lead"><div class="ricon"><i class="hgi-stroke hgi-mortarboard-01"></i></div></div><div class="main"><div class="t">Quản lý tài khoản GV</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="group"><div class="row tap haslead danger"><div class="lead"><div class="ricon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></div></div><div class="main"><div class="t" style="color:var(--danger)">Đăng xuất</div></div></div></div>
+    </div>
+    <p class="mono">Class mới: <span class="mono">.dashhead</span> (header) + <span class="mono">.meblock</span> (khối avatar/tên bấm được) + <span class="mono">.ricon</span> (icon vuông dẫn đầu dòng, tái dùng ngôn ngữ hình <span class="mono">.addico</span>). Hero + Group/Row dùng lại nguyên mục 13 &amp; 6, không tạo mới.</p>
+  </div>
+
+  <div class="block">
+    <h2>Quy ước code (bắt buộc khi refactor & làm màn mới)</h2>
+    <p class="desc" style="line-height:1.7">
+      1. <b>Không hard-code</b> màu/cỡ chữ/khoảng cách trong CSS màn hình — luôn dùng <span class="mono">var(--...)</span>. Đây là điều kiện DUY NHẤT để "sửa 1 lần, cả app đổi" có tác dụng thật.<br>
+      2. <b>Bảng trạng thái/màu/nhãn</b> (vd trạng thái học sinh → tên hiển thị + màu) khai báo <b>1 lần duy nhất</b> ở đầu file JS, mọi màn gọi lại — không lặp map ở từng hàm.<br>
+      3. <b>Tên cột database</b>: tiếng Việt không dấu, <span class="mono">snake_case</span> (vd <span class="mono">ngay_sinh</span>, <span class="mono">trang_thai</span>) — áp dụng cho mọi bảng mới sau này.<br>
+      4. <b>Tổ chức file</b>: chia theo mốc comment rõ ràng — <span class="mono">/* === TOKENS === */</span>, <span class="mono">/* === COMPONENTS === */</span>, <span class="mono">/* === MÀN HỌC SINH === */</span>... để dò nhanh trong 1 file dài.<br>
+      5. <b>Component trước, tự viết CSS mới sau cùng</b>: cần giao diện gì → tìm trong bộ này trước; chỉ thêm mới khi thực sự chưa có, và phải thêm vào đúng file design system này.<br>
+      6. <b>Mọi ô chọn ngày</b> (<span class="mono">input type="date"</span>) bắt buộc bọc trong <span class="mono">.datefield</span> + nhãn giả — Safari iPhone hiện "hôm nay" chữ đen ở ô rỗng, không phải placeholder xám như ô text thường (xem mục 20).
+    </p>
+  </div>
+
+  <div class="block">
+    <h2>Quy tắc điều hướng</h2>
+    <p class="desc" style="line-height:1.6">
+      • <b>Trang push</b> (trượt phải): xem chi tiết 1 đối tượng (học sinh, lớp) <b>và các form tạo/sửa dài</b> (nhập đầy đủ 1 lần). Có nav ‹ back / Hủy.<br>
+      • <b>Bottom sheet</b>: thao tác ngắn 2-4 trường (ghi đã đóng, tạo phiếu QR nhanh).<br>
+      • <b>Action sheet</b>: chọn nhanh 1 hành động / 1 mục từ danh sách (chọn lớp, chọn giáo viên, xác nhận xóa).<br>
+      • <b>Toast</b>: báo kết quả ngắn.
+    </p>
+  </div>
+
+  <p class="doc-sub" style="margin-top:40px; text-align:center">Hết · Impetus Design System v1.3</p>
+</div>
+</body>
+</html>
