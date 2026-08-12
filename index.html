@@ -420,7 +420,7 @@
 <div id="login">
   <div class="lg-brand"><div class="logo">I</div><div class="t"><div class="n">Impe<span>tus</span></div><div class="s">Hệ thống quản lý trung tâm</div></div></div>
   <h1>Đăng nhập</h1><p class="sub">Dùng tài khoản đã tạo trên hệ thống.</p>
-  <div class="field"><label>Email</label><input id="lg_email" type="email" autocomplete="username" placeholder="email@trungtam.vn"></div>
+  <div class="field"><label>Email hoặc số điện thoại</label><input id="lg_email" type="text" autocomplete="username" placeholder="email@trungtam.vn hoặc 09xxxxxxxx"></div>
   <div class="field"><label>Mật khẩu</label><input id="lg_pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
   <div class="lg-err" id="lg_err"></div>
   <button class="bigbtn" id="lg_btn">Đăng nhập</button>
@@ -555,12 +555,28 @@ $('#pr_btn').onclick=async()=>{
     enterApp();
   }catch(e){ b.disabled=false; b.innerHTML=old; showPrErr('Lỗi kết nối: '+e.message); }
 };
+function looksLikePhone(s){ return !s.includes('@') && /^[0-9+\-\s.]+$/.test(s); }
+function normPhoneClient(raw){ let d=String(raw||'').replace(/\D/g,''); if(d.length===11&&d.startsWith('84')) d='0'+d.slice(2); if(d.length===9&&!d.startsWith('0')) d='0'+d; return d; }
 async function login(){
-  const email=$('#lg_email').value.trim(), pass=$('#lg_pass').value;
+  const idf=$('#lg_email').value.trim(), pass=$('#lg_pass').value;
   $('#lg_err').classList.remove('show');
-  if(!email||!pass){ showLgErr('Nhập email và mật khẩu.'); return; }
+  if(!idf||!pass){ showLgErr('Nhập email/số điện thoại và mật khẩu.'); return; }
   const b=$('#lg_btn'); b.disabled=true; b.innerHTML='<span class="spinner-sm"></span>Đang đăng nhập…';
-  const {error}=await db.auth.signInWithPassword({email,password:pass});
+  if(looksLikePhone(idf)){
+    const phone=normPhoneClient(idf);
+    if(phone.length!==10){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Số điện thoại không đúng định dạng.'); return; }
+    try{
+      const res=await fetch('/api/ph-dang-nhap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({so_dien_thoai:phone,password:pass})});
+      const out=await res.json();
+      if(!res.ok||!out.success){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr(out.message||'Sai số điện thoại hoặc mật khẩu.'); return; }
+      const {error}=await db.auth.setSession({access_token:out.access_token, refresh_token:out.refresh_token});
+      b.disabled=false; b.textContent='Đăng nhập';
+      if(error){ showLgErr('Có lỗi khi đăng nhập, thử lại.'); return; }
+      enterApp();
+    }catch(e){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Lỗi kết nối: '+e.message); }
+    return;
+  }
+  const {error}=await db.auth.signInWithPassword({email:idf,password:pass});
   b.disabled=false; b.textContent='Đăng nhập';
   if(error){ showLgErr(error.message.includes('Invalid')?'Sai email hoặc mật khẩu.':error.message); return; }
   enterApp();
