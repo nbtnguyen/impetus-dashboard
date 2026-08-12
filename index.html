@@ -608,6 +608,7 @@ function renderParentHome(){
       <div class="group">
         <div class="row tap" id="phRowDiemDanh"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Xem hôm nay và trong tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
         <div class="row tap" id="phRowHocPhi"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Khoản cần đóng và lịch sử</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        <div class="row tap" id="phRowNhanXet"><div class="ricon"><i class="hgi-stroke hgi-comment-01"></i></div><div class="main"><div class="t">Nhận xét</div><div class="meta">Theo buổi và theo tháng</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
       </div>
     </div>`;
   if(phCon.length>1){
@@ -616,6 +617,16 @@ function renderParentHome(){
   $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
   $('#phRowDiemDanh').onclick=openParentAttendance;
   $('#phRowHocPhi').onclick=openParentHocPhi;
+  $('#phRowNhanXet').onclick=openParentNhanXet;
+}
+
+async function openParentNhanXet(){
+  const child=phCon.find(x=>x.id===phActiveId);
+  showDetailPage('Nhận xét', ()=>{ closeDetailPage(); });
+  $('#detailBody').innerHTML=`<div id="gvKqtHist"></div><div class="section"><div class="lbl">Lịch sử nhận xét theo buổi</div><div class="group" id="gvDgbHist"><div class="row"><span class="meta">Đang tải…</span></div></div></div>`;
+  const hist=await loadGvStudentHistory(child);
+  renderGvKqtHistory(hist.kqt);
+  renderGvDgbHistory(hist.dgb);
 }
 
 async function openParentHocPhi(){
