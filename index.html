@@ -53,7 +53,8 @@
   .app{width:100%; max-width:440px; min-height:100vh; background:var(--bg); position:relative}
   .hide{display:none !important}
 
-  #login{padding:0 22px; min-height:100vh; display:flex; flex-direction:column; justify-content:center; max-width:440px; margin:0 auto}
+  #login,#pReg{padding:0 22px; min-height:100vh; display:flex; flex-direction:column; justify-content:center; max-width:440px; margin:0 auto}
+  .lg-link{color:var(--primary); font-weight:600; cursor:pointer}
   .lg-brand{display:flex; align-items:center; gap:11px; margin-bottom:28px}
   .lg-brand .logo{width:44px; height:44px; border-radius:13px; background:linear-gradient(150deg,var(--primary),#6b81f5); display:grid; place-items:center; color:#fff; font-weight:800; font-size:21px; box-shadow:0 6px 16px rgba(39,71,217,.32)}
   .lg-brand .t .n{font-weight:800; font-size:22px; letter-spacing:-.02em} .lg-brand .t .n span{color:var(--primary)}
@@ -423,6 +424,18 @@
   <div class="field"><label>Mật khẩu</label><input id="lg_pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
   <div class="lg-err" id="lg_err"></div>
   <button class="bigbtn" id="lg_btn">Đăng nhập</button>
+  <p class="sub" style="text-align:center;margin:18px 0 0"><span class="lg-link" id="lg_toReg">Phụ huynh chưa có tài khoản? Đăng ký</span></p>
+</div>
+
+<div id="pReg" class="hide">
+  <div class="lg-brand"><div class="logo">I</div><div class="t"><div class="n">Impe<span>tus</span></div><div class="s">Cổng phụ huynh</div></div></div>
+  <h1>Tạo tài khoản</h1><p class="sub">Dùng số điện thoại đã đăng ký với trung tâm.</p>
+  <div class="field"><label>Số điện thoại</label><input id="pr_phone" type="tel" autocomplete="tel" placeholder="09xxxxxxxx"></div>
+  <div class="field"><label>Email</label><input id="pr_email" type="email" autocomplete="username" placeholder="email@vidu.vn"></div>
+  <div class="field"><label>Mật khẩu</label><input id="pr_pass" type="password" autocomplete="new-password" placeholder="Tối thiểu 6 ký tự"></div>
+  <div class="lg-err" id="pr_err"></div>
+  <button class="bigbtn" id="pr_btn">Đăng ký</button>
+  <p class="sub" style="text-align:center;margin:18px 0 0">Đã có tài khoản? <span class="lg-link" id="pr_toLogin">Đăng nhập</span></p>
 </div>
 
 <!-- APP -->
@@ -522,6 +535,26 @@ async function openInstallInfo(){
 /* ===== Auth ===== */
 $('#lg_btn').onclick=login;
 $('#lg_pass').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+$('#lg_toReg').onclick=()=>{ $('#login').classList.add('hide'); $('#pReg').classList.remove('hide'); };
+$('#pr_toLogin').onclick=()=>{ $('#pReg').classList.add('hide'); $('#login').classList.remove('hide'); };
+function showPrErr(m){ $('#pr_err').textContent=m; $('#pr_err').classList.add('show'); }
+$('#pr_btn').onclick=async()=>{
+  const phone=$('#pr_phone').value.trim(), email=$('#pr_email').value.trim(), pass=$('#pr_pass').value;
+  $('#pr_err').classList.remove('show');
+  if(!phone||!email||!pass){ showPrErr('Nhập đủ số điện thoại, email và mật khẩu.'); return; }
+  if(pass.length<6){ showPrErr('Mật khẩu tối thiểu 6 ký tự.'); return; }
+  const b=$('#pr_btn'); b.disabled=true; const old=b.textContent; b.innerHTML='<span class="spinner-sm"></span>Đang đăng ký…';
+  try{
+    const res=await fetch('/api/ph-dang-ky',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({so_dien_thoai:phone,email,password:pass})});
+    const out=await res.json();
+    if(!res.ok||!out.success){ b.disabled=false; b.innerHTML=old; showPrErr(out.message||'Có lỗi xảy ra.'); return; }
+    const {error}=await db.auth.signInWithPassword({email,password:pass});
+    b.disabled=false; b.innerHTML=old;
+    if(error){ $('#pReg').classList.add('hide'); $('#login').classList.remove('hide'); $('#lg_email').value=email; showLgErr('Đã tạo tài khoản, hãy đăng nhập lại.'); return; }
+    $('#pReg').classList.add('hide');
+    enterApp();
+  }catch(e){ b.disabled=false; b.innerHTML=old; showPrErr('Lỗi kết nối: '+e.message); }
+};
 async function login(){
   const email=$('#lg_email').value.trim(), pass=$('#lg_pass').value;
   $('#lg_err').classList.remove('show');
@@ -533,7 +566,7 @@ async function login(){
   enterApp();
 }
 async function enterApp(){
-  $('#login').classList.add('hide'); $('#main').classList.remove('hide');
+  $('#login').classList.add('hide'); $('#pReg').classList.add('hide'); $('#main').classList.remove('hide');
   const {data:{user}}=await db.auth.getUser();
   me.id=user.id;
   me.email=user.email;
@@ -541,12 +574,47 @@ async function enterApp(){
   me.name=(prof&&prof.ho_ten)||user.email;
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
   me.gvId=(prof&&prof.giao_vien_id)||null;
+  if(me.role==='phu_huynh'){ await enterParentApp(); return; }
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
   if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); $('#navTaiKhoan').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
 /* Đăng xuất / đổi mật khẩu / quản lý GV giờ nằm trong trang Profile (xem openProfile()) */
+
+/* ===== PH Mode (Trang chủ phụ huynh) — KHÔNG dùng chung loadAll()/switchView() với các vai trò khác,
+   chỉ tải đúng dữ liệu con của tài khoản này qua RLS (phu_huynh_co_con) ===== */
+let phCon=[], phActiveId=null;
+async function enterParentApp(){
+  $('.bottomnav').classList.add('hide'); $('#fab').classList.add('hide');
+  const {data}=await db.from('hoc_sinh').select('id, ho_ten, anh_url, trang_thai').order('ho_ten');
+  phCon=data||[];
+  if(!phCon.length){
+    $('#screen').innerHTML='<div style="padding:70px 24px;text-align:center;color:var(--muted);font-size:14px">Chưa tìm thấy học sinh nào liên kết với tài khoản này.<br>Liên hệ trung tâm để được hỗ trợ.</div>';
+    return;
+  }
+  phActiveId=phCon[0].id;
+  renderParentHome();
+}
+function renderParentHome(){
+  const segHtml = phCon.length>1 ? `<div class="seg" style="margin-bottom:18px">${phCon.map(s=>`<button class="${s.id===phActiveId?'on':''}" data-pid="${s.id}">${s.ho_ten}${s.trang_thai!=='dang_hoc'?' · Đã nghỉ':''}</button>`).join('')}</div>` : '';
+  $('#screen').innerHTML = `
+    <div style="padding:20px 16px 4px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:22px;font-weight:800">Xin chào</div>
+      <button class="iconbtn" id="phLogout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
+    </div>
+    <div style="padding:0 16px 16px">
+      ${segHtml}
+      <div class="group">
+        <div class="row tap"><div class="ricon"><i class="hgi-stroke hgi-calendar-check-01"></i></div><div class="main"><div class="t">Điểm danh</div><div class="meta">Sắp có</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+        <div class="row tap"><div class="ricon"><i class="hgi-stroke hgi-wallet-01"></i></div><div class="main"><div class="t">Học phí</div><div class="meta">Sắp có</div></div><i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>
+      </div>
+    </div>`;
+  if(phCon.length>1){
+    document.querySelectorAll('.seg [data-pid]').forEach(btn=>{ btn.onclick=()=>{ phActiveId=btn.dataset.pid; renderParentHome(); }; });
+  }
+  $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
+}
 
 /* ===== Load ===== */
 async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong(), loadFaceIds()]); }
