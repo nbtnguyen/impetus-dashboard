@@ -77,7 +77,11 @@ module.exports = async (req, res) => {
     const { gio_quet, ngay, thu } = parseScanTime(rawBody);
 
     if (!maHS) {
-      return res.status(200).json({ ok: true, message: 'Không đọc được mã học sinh' });
+      await fetch(rest('luot_quet_chua_xac_dinh'), {
+        method: 'POST', headers: minimal,
+        body: JSON.stringify({ ma_hoc_sinh: null, thoi_gian_quet: gio_quet, trang_thai: 'chua_xu_ly', ghi_chu: 'Không đọc được mã học sinh từ payload' })
+      });
+      return res.status(200).json({ ok: true, message: 'Không đọc được mã học sinh, đã ghi lại để xem tay' });
     }
 
     // 1) Tra học sinh theo mã quét được
@@ -118,7 +122,11 @@ module.exports = async (req, res) => {
 
     if (!lop) {
       console.log('Không khớp lớp nào hôm nay cho học sinh', hoc_sinh_id);
-      return res.status(200).json({ ok: true, message: 'Khớp học sinh nhưng không có lớp nào hôm nay', hoc_sinh_id });
+      await fetch(rest('luot_quet_chua_xac_dinh'), {
+        method: 'POST', headers: minimal,
+        body: JSON.stringify({ ma_hoc_sinh: maHS, thoi_gian_quet: gio_quet, trang_thai: 'chua_xu_ly', ghi_chu: 'Khớp học sinh (id ' + hoc_sinh_id + ') nhưng không có lớp nào đăng ký hôm nay' })
+      });
+      return res.status(200).json({ ok: true, message: 'Khớp học sinh nhưng không có lớp nào hôm nay, đã ghi lại để xem tay', hoc_sinh_id });
     }
 
     // 4) Tìm buoi_hoc của lớp này trong ngày hôm nay — chưa có thì tự tạo
