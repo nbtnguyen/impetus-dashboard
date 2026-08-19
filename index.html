@@ -496,7 +496,7 @@ const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
 const canSeeParent=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isGV=()=>me.role==='giao_vien';
-function myClasses(){ if(!me.gvId) return []; return classes.filter(c=> c.giao_vien_id===me.gvId || phancong.some(p=>p.lop_hoc_id===c.id && p.giao_vien_id===me.gvId)); }
+function myClasses(){ if(!me.gvId) return []; return classes.filter(c=> c.giao_vien_nn_id===me.gvId || c.giao_vien_vn_id===me.gvId || phancong.some(p=>p.lop_hoc_id===c.id && p.giao_vien_id===me.gvId)); }
 
 if(!window.supabase){ showLgErr('Không tải được thư viện. Kiểm tra mạng rồi mở lại.'); }
 else { db=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); init(); }
@@ -611,7 +611,7 @@ async function enterParentApp(){
     return;
   }
   phActiveId=phCon[0].id;
-  const {data:dk}=await db.from('dang_ky_lop').select('hoc_sinh_id, lop_hoc(ten_lop, cac_ngay_trong_tuan, gio_bat_dau, gio_ket_thuc, trang_thai, giao_vien(ho_ten))').in('hoc_sinh_id', phCon.map(c=>c.id)).eq('trang_thai','dang_hoc');
+  const {data:dk}=await db.from('dang_ky_lop').select('hoc_sinh_id, lop_hoc(ten_lop, cac_ngay_trong_tuan, gio_bat_dau, gio_ket_thuc, trang_thai, giao_vien_nn:giao_vien!lop_hoc_giao_vien_nn_id_fkey(ho_ten), giao_vien_vn:giao_vien!lop_hoc_giao_vien_vn_id_fkey(ho_ten))').in('hoc_sinh_id', phCon.map(c=>c.id)).eq('trang_thai','dang_hoc');
   phClasses={};
   (dk||[]).forEach(d=>{ if(!d.lop_hoc || d.lop_hoc.trang_thai==='da_dong') return; (phClasses[d.hoc_sinh_id]=phClasses[d.hoc_sinh_id]||[]).push(d.lop_hoc); });
   renderParentHome();
@@ -620,7 +620,7 @@ function renderParentHome(){
   const segHtml = phCon.length>1 ? `<div class="seg" style="margin-bottom:18px">${phCon.map(s=>`<button class="${s.id===phActiveId?'on':''}" data-pid="${s.id}">${s.ho_ten}${s.trang_thai!=='dang_hoc'?' · Đã nghỉ':''}</button>`).join('')}</div>` : '';
   const myClassesList=phClasses[phActiveId]||[];
   const classHtml = myClassesList.length ? myClassesList.map(l=>`
-    <div class="row"><div class="ricon"><i class="hgi-stroke hgi-mortarboard-01"></i></div><div class="main"><div class="t">${l.ten_lop}</div><div class="meta">${l.cac_ngay_trong_tuan||'—'} · ${l.gio_bat_dau?l.gio_bat_dau.slice(0,5):'—'}${l.gio_ket_thuc?'–'+l.gio_ket_thuc.slice(0,5):''}${l.giao_vien?' · GV '+l.giao_vien.ho_ten:''}</div></div></div>`).join('')
+    <div class="row"><div class="ricon"><i class="hgi-stroke hgi-mortarboard-01"></i></div><div class="main"><div class="t">${l.ten_lop}</div><div class="meta">${l.cac_ngay_trong_tuan||'—'} · ${l.gio_bat_dau?l.gio_bat_dau.slice(0,5):'—'}${l.gio_ket_thuc?'–'+l.gio_ket_thuc.slice(0,5):''}${(l.giao_vien_nn||l.giao_vien_vn)?' · GV '+[l.giao_vien_nn?.ho_ten,l.giao_vien_vn?.ho_ten].filter(Boolean).join(' & '):''}</div></div></div>`).join('')
     : '<div class="row"><span class="meta">Chưa xếp lớp.</span></div>';
   $('#screen').innerHTML = `
     <div style="padding:20px 16px 4px;display:flex;justify-content:space-between;align-items:center">
@@ -785,15 +785,24 @@ async function loadFaceIds(){ const {data}=await db.from('diem_danh').select('ho
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
 async function loadUnmatched(){ const {data}=await db.from('giao_dich_chua_khop').select('*').eq('trang_thai','cho_xu_ly').order('ngay_tao',{ascending:false}); unmatched=data||[]; }
-async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
+async function loadClasses(){ const {data}=await db.from('lop_hoc').select('*, giao_vien_nn:giao_vien!lop_hoc_giao_vien_nn_id_fkey(ho_ten), giao_vien_vn:giao_vien!lop_hoc_giao_vien_vn_id_fkey(ho_ten), dang_ky_lop(id, trang_thai, hoc_sinh(trang_thai))').order('ngay_tao',{ascending:false}); classes=data||[]; }
+function classTeacherLabel(c){
+  const nn=c.giao_vien_nn?.ho_ten, vn=c.giao_vien_vn?.ho_ten;
+  if(nn && vn) return nn+' · '+vn;
+  if(nn) return nn+' (NN)';
+  if(vn) return vn+' (VN)';
+  return 'Chưa gán GV';
+}
 async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
 async function loadPhanCong(){ const {data}=await db.from('phan_cong_lop').select('id, lop_hoc_id, giao_vien_id').order('ngay_tao'); phancong=data||[]; }
 function taNames(classId){ return phancong.filter(p=>p.lop_hoc_id===classId).map(p=>{const t=teachers.find(x=>x.id===p.giao_vien_id); return t?t.ho_ten:null;}).filter(Boolean).join(', '); }
 function gvTeachingMeta(t){
-  const main=classes.filter(c=>c.giao_vien_id===t.id).map(c=>c.ten_lop);
+  const nn=classes.filter(c=>c.giao_vien_nn_id===t.id).map(c=>c.ten_lop);
+  const vn=classes.filter(c=>c.giao_vien_vn_id===t.id).map(c=>c.ten_lop);
   const ta=phancong.filter(p=>p.giao_vien_id===t.id).map(p=>{const c=classes.find(x=>x.id===p.lop_hoc_id); return c?c.ten_lop:null;}).filter(Boolean);
   const parts=[];
-  if(main.length) parts.push('GV chính · '+main.join(', '));
+  if(nn.length) parts.push('GVNN · '+nn.join(', '));
+  if(vn.length) parts.push('GVVN · '+vn.join(', '));
   if(ta.length) parts.push('TA · '+ta.join(', '));
   return parts.length?parts.join(' · '):'Chưa dạy lớp nào';
 }
@@ -1046,7 +1055,7 @@ function buildLop(){
 function weekStrip(days){ const d=(days||'').split(',').map(x=>x.trim()); return '<div class="week">'+DAYS.map(x=>`<div class="day ${d.includes(x)?'on':''}">${x}</div>`).join('')+'</div>'; }
 function renderClasses(){
   const L=$('#list');
-  const rows=classes.filter(c=>{ if(!lopQuery)return true; const q=norm(lopQuery); return norm(c.ten_lop).includes(q)||norm(c.giao_vien?.ho_ten||'').includes(q); });
+  const rows=classes.filter(c=>{ if(!lopQuery)return true; const q=norm(lopQuery); return norm(c.ten_lop).includes(q)||norm(c.giao_vien_nn?.ho_ten||'').includes(q)||norm(c.giao_vien_vn?.ho_ten||'').includes(q); });
   if(!classes.length){ L.innerHTML='<div class="state"><div class="big">Chưa có lớp nào</div>'+(isManager()?'Bấm “Tạo lớp mới”.':'Chưa có dữ liệu.')+'</div>'; return; }
   if(!rows.length){ L.innerHTML='<div class="state"><div class="big">Không tìm thấy</div>Thử từ khóa khác.</div>'; return; }
   const now=new Date();
@@ -1064,7 +1073,7 @@ function renderClasses(){
   }
   const sorted=rows.map(c=>({c, t:timing(c)})).sort((a,b)=>a.t.rank-b.t.rank || a.t.key-b.t.key);
   L.innerHTML=sorted.map(({c,t})=>{
-    const parts=[c.giao_vien?.ho_ten||'Chưa gán GV', 'Phòng '+(c.phong||'—')]; if(c.gio_bat_dau) parts.push(c.gio_bat_dau.slice(0,5));
+    const parts=[classTeacherLabel(c), 'Phòng '+(c.phong||'—')]; if(c.gio_bat_dau) parts.push(c.gio_bat_dau.slice(0,5));
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     const total=headcount(c);
     let countHtml;
@@ -2031,7 +2040,8 @@ async function openClassDetail(c){
     </div>
     ${btns.length?`<div style="display:flex;gap:8px;margin-top:14px">${btns.join('')}</div>`:''}
     <div class="section" style="margin-top:22px"><div class="lbl">Thông tin lớp</div><div class="group">
-      <div class="row"><span class="k">Giáo viên</span><span class="val">${c.giao_vien?.ho_ten||'Chưa gán'}</span></div>
+      <div class="row"><span class="k">GV nước ngoài</span><span class="val">${c.giao_vien_nn?.ho_ten||'Chưa gán'}</span></div>
+      <div class="row"><span class="k">GV Việt Nam</span><span class="val">${c.giao_vien_vn?.ho_ten||'Chưa gán'}</span></div>
       <div class="row"><span class="k">Trợ giảng (TA)</span><span class="val">${taNames(c.id)||'—'}</span></div>
       <div class="row"><span class="k">Phòng</span><span class="val">${c.phong||'—'}</span></div>
       <div class="row"><span class="k">Lịch học</span><span class="val">${c.cac_ngay_trong_tuan||'—'}</span></div>
@@ -2117,7 +2127,8 @@ function openClassForm(c){
     </div>
     <div class="section"><div class="lbl">Giáo viên & học phí</div>
       <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
-        <div class="field"><label>Giáo viên chính</label><select id="c_gv"><option value="">— Chưa gán —</option>${teachers.map(t=>`<option value="${t.id}" ${c&&c.giao_vien_id===t.id?'selected':''}>${t.ho_ten}</option>`).join('')}</select>
+        <div class="field"><label>Giáo viên nước ngoài</label><select id="c_gvnn"><option value="">— Chưa gán —</option>${teachers.map(t=>`<option value="${t.id}" ${c&&c.giao_vien_nn_id===t.id?'selected':''}>${t.ho_ten}</option>`).join('')}</select></div>
+        <div class="field"><label>Giáo viên Việt Nam</label><select id="c_gvvn"><option value="">— Chưa gán —</option>${teachers.map(t=>`<option value="${t.id}" ${c&&c.giao_vien_vn_id===t.id?'selected':''}>${t.ho_ten}</option>`).join('')}</select>
           <span class="addlink" id="addGv">＋ Thêm giáo viên mới</span>
           <div id="gvNew" class="hide" style="margin-top:8px"><div class="two"><input id="gvName" type="text" placeholder="Tên giáo viên"><button class="btn soft" id="gvAdd" style="flex:none">Thêm</button></div></div>
         </div>
@@ -2152,7 +2163,8 @@ async function addTeacher(){
   const {data,error}=await db.from('giao_vien').insert({ho_ten:name}).select('id, ho_ten').single();
   if(error)return toast(error.message,false);
   teachers.push(data); teachers.sort((a,b)=>a.ho_ten.localeCompare(b.ho_ten));
-  const sel=$('#c_gv'); const opt=document.createElement('option'); opt.value=data.id; opt.textContent=data.ho_ten; sel.appendChild(opt); sel.value=data.id;
+  ['#c_gvnn','#c_gvvn'].forEach(id=>{ const sel=$(id); if(!sel) return; const opt=document.createElement('option'); opt.value=data.id; opt.textContent=data.ho_ten; sel.appendChild(opt); });
+  const selVn=$('#c_gvvn'); if(selVn) selVn.value=data.id;
   const ta=$('#c_ta'); if(ta){ const b=document.createElement('button'); b.className='choice'; b.dataset.id=data.id; b.textContent=data.ho_ten; ta.appendChild(b); }
   $('#gvName').value=''; $('#gvNew').classList.add('hide'); toast('Đã thêm GV '+name);
 }
@@ -2163,7 +2175,7 @@ async function saveClass(){
   if(!cformDays.length)return toast('Chọn ít nhất 1 ngày học',false);
   const btn=$('#saveC'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
   const order=d=>DAYS.indexOf(d);
-  const payload={ten_lop:ten, level:$('#c_lvl').value, phong:$('#c_phong').value.trim()||null, giao_vien_id:$('#c_gv').value||null, hoc_phi_thang:phi, cac_ngay_trong_tuan:[...cformDays].sort((a,b)=>order(a)-order(b)).join(','), gio_bat_dau:$('#c_gbd').value||null, gio_ket_thuc:$('#c_gkt').value||null, trang_thai:cformStatus, telegram_group_id:$('#c_tele').value.trim()||null};
+  const payload={ten_lop:ten, level:$('#c_lvl').value, phong:$('#c_phong').value.trim()||null, giao_vien_nn_id:$('#c_gvnn').value||null, giao_vien_vn_id:$('#c_gvvn').value||null, hoc_phi_thang:phi, cac_ngay_trong_tuan:[...cformDays].sort((a,b)=>order(a)-order(b)).join(','), gio_bat_dau:$('#c_gbd').value||null, gio_ket_thuc:$('#c_gkt').value||null, trang_thai:cformStatus, telegram_group_id:$('#c_tele').value.trim()||null};
   let err=null, classId=cEditingId;
   if(cEditingId){ const r=await db.from('lop_hoc').update(payload).eq('id',cEditingId); err=r.error; }
   else { const r=await db.from('lop_hoc').insert(payload).select('id').single(); err=r.error; if(!err) classId=r.data.id; }
@@ -2441,7 +2453,7 @@ function buildDashboard(){
         statusHtml = missingHtml
           ? `<span class="missToggle" data-target="miss-${c.id}" style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer">${statusText}<i class="hgi-stroke hgi-arrow-down-01" style="font-size:13px;transition:transform .15s;transform:rotate(-90deg)"></i></span>`
           : `<span style="color:${statusColor};font-weight:600;white-space:nowrap;flex:none">${statusText}</span>`;
-        const parts=[timeStr, c.giao_vien?.ho_ten||'Chưa gán GV'];
+        const parts=[timeStr, classTeacherLabel(c)];
         if(started && expected) parts.push(present+'/'+expected);
         const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
         return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar" style="background:${avaC(c.ten_lop)};font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>${statusHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
