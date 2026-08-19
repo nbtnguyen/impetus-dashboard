@@ -3008,9 +3008,9 @@ function showConfirmDialog(title,msg,onConfirm){
 }
 $('#dlgCancel').onclick=()=>$('#dialogScrim').classList.add('hide');
 function closeSheets(){ $('#scrim').classList.remove('show'); $('#sheet').classList.remove('show'); $('#actSheet').classList.remove('show'); unlockBodyScroll(); }
-function closeAct(){ $('#actSheet').classList.remove('show'); if(!$('#sheet').classList.contains('show')) unlockBodyScroll(); }
+function closeAct(){ $('#actSheet').classList.remove('show'); if(!$('#sheet').classList.contains('show')){ $('#scrim').classList.remove('show'); unlockBodyScroll(); } }
 $('#actGrip').onclick=closeAct;
-$('#scrim').onclick=()=>{ if($('#actSheet').classList.contains('show')){ closeAct(); if(!$('#sheet').classList.contains('show'))$('#scrim').classList.remove('show'); } else closeSheets(); };
+$('#scrim').onclick=()=>{ if($('#actSheet').classList.contains('show')){ closeAct(); } else closeSheets(); };
 let toastT; function toast(m,ok=true){ $('#toastMsg').textContent=m; $('#toast').className='toast show'+(ok?'':' err'); clearTimeout(toastT); toastT=setTimeout(()=>$('#toast').classList.remove('show'),2400); }
 </script>
 </body>
