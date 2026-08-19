@@ -2084,13 +2084,23 @@ function openEnroll(c){
   db.from('dang_ky_lop').select('hoc_sinh_id').eq('lop_hoc_id',c.id).then(({data})=>{
     const enrolledIds=new Set((data||[]).map(d=>d.hoc_sinh_id));
     const avail=students.filter(s=>!enrolledIds.has(s.id) && s.trang_thai!=='da_nghi');
-    $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Thêm vào ${c.ten_lop}</div><div class="asub">Chọn học sinh để gắn vào lớp</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
-      ${avail.length? avail.map(s=>`<div class="actopt" data-id="${s.id}"><span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span><div class="aotxt"><div class="t">${s.ho_ten}</div><div class="d">${s.ma_hoc_sinh}</div></div></div>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn học sinh để thêm</div>Mọi em đang học đã ở trong lớp.</div>'}`;
-    $('#actBody').querySelectorAll('.actopt[data-id]').forEach(o=>o.onclick=async()=>{
+    const rowHtml=s=>`<div class="actopt" data-id="${s.id}"><span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span><div class="aotxt"><div class="t">${s.ho_ten}</div><div class="d">${s.ma_hoc_sinh}</div></div></div>`;
+    const bindRows=()=>{ $('#actBody').querySelectorAll('.actopt[data-id]').forEach(o=>o.onclick=async()=>{
       const {error}=await db.from('dang_ky_lop').insert({hoc_sinh_id:o.dataset.id, lop_hoc_id:c.id, trang_thai:'dang_hoc'});
       closeAct(); if(error)return toast(error.message,false);
       await Promise.all([loadClasses(), loadStudents()]); openClassDetail(classes.find(x=>x.id===c.id)||c); toast('Đã thêm vào lớp');
-    });
+    }); };
+    const renderRows=q=>{
+      const L=$('#enrollList'); if(!L) return;
+      const rows=q? avail.filter(s=>norm(s.ho_ten).includes(norm(q))||norm(s.ma_hoc_sinh).includes(norm(q))) : avail;
+      L.innerHTML = rows.length ? rows.map(rowHtml).join('') : `<div class="state" style="padding:24px"><div class="big">${q?'Không tìm thấy':'Không còn học sinh để thêm'}</div>${q?'Thử từ khóa khác.':'Mọi em đang học đã ở trong lớp.'}</div>`;
+      bindRows();
+    };
+    $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Thêm vào ${c.ten_lop}</div><div class="asub">Chọn học sinh để gắn vào lớp</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+      ${avail.length?`<div class="searchbar" style="margin:12px 2px"><i class="hgi-stroke hgi-search-01"></i><input id="enrollQ" type="text" placeholder="Tìm theo tên hoặc mã…"></div>`:''}
+      <div id="enrollList"></div>`;
+    renderRows('');
+    if(avail.length){ $('#enrollQ').addEventListener('input', e=>renderRows(e.target.value)); }
     showAct();
   });
 }
