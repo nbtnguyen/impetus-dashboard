@@ -2562,14 +2562,33 @@ async function afterEnrollChange(){
   if(curStudent){ curStudent=students.find(x=>x.id===curStudent.id)||curStudent; openStudentDetail(curStudent); }
 }
 function openStudentEnroll(s){
-  const activeIds=new Set((s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.id));
+  const activeRegs=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi');
+  const activeIds=new Set(activeRegs.map(d=>d.lop_hoc.id));
   const avail=classes.filter(c=>!activeIds.has(c.id));
-  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Thêm vào lớp</div><div class="asub">${s.ho_ten} · chọn lớp để xếp vào</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
-    ${avail.length? avail.map(c=>`<div class="actopt" data-id="${c.id}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để thêm</div>Em đã ở trong tất cả lớp.</div>'}`;
+  const singleReg = activeRegs.length===1 ? activeRegs[0] : null;
+  const secLbl=t=>`<div style="font-size:12px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:14px 16px 6px">${t}</div>`;
+  const optRow=(c,mode)=>`<div class="actopt" data-id="${c.id}" data-mode="${mode}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`;
+  let body;
+  if(!avail.length){
+    body='<div class="state" style="padding:24px"><div class="big">Không còn lớp để thêm</div>Em đã ở trong tất cả lớp.</div>';
+  } else if(singleReg){
+    body = secLbl('Chuyển từ '+singleReg.lop_hoc.ten_lop+' sang')+avail.map(c=>optRow(c,'move')).join('')
+      + secLbl('Hoặc học thêm lớp khác (song song)')+avail.map(c=>optRow(c,'add')).join('');
+  } else {
+    body = avail.map(c=>optRow(c,'add')).join('');
+  }
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${singleReg?'Chuyển / thêm lớp':'Thêm vào lớp'}</div><div class="asub">${s.ho_ten}${singleReg?' · chọn cách xử lý':' · chọn lớp để xếp vào'}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>${body}`;
   $('#actBody').querySelectorAll('.actopt').forEach(o=>o.onclick=async()=>{
-    const {error}=await db.from('dang_ky_lop').insert({hoc_sinh_id:s.id, lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'});
-    closeAct(); if(error)return toast(error.message,false);
-    await afterEnrollChange(); toast('Đã xếp vào lớp');
+    closeAct();
+    let error;
+    if(o.dataset.mode==='move'){
+      ({error}=await db.from('dang_ky_lop').update({lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'}).eq('id',singleReg.id));
+    } else {
+      ({error}=await db.from('dang_ky_lop').insert({hoc_sinh_id:s.id, lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'}));
+    }
+    if(error)return toast(error.message,false);
+    await afterEnrollChange();
+    toast(o.dataset.mode==='move'?'Đã chuyển lớp':'Đã xếp vào lớp');
   });
   showAct();
 }
