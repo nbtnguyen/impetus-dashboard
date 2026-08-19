@@ -828,7 +828,7 @@ function updateFab(){
 function buildHocSinh(){
   $('#screen').innerHTML=`
     <div class="controls" style="padding-top:14px">
-      <div class="pagetitle" style="margin:0 0 12px"><h1>Học sinh <span class="n">${students.length}</span></h1>${canWrite()?'<button class="addbtn" id="addStudentBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
+      <div class="pagetitle" style="margin:0 0 12px"><h1>Học sinh <span class="n">${students.filter(s=>s.trang_thai!=='da_nghi').length}</span></h1>${canWrite()?'<button class="addbtn" id="addStudentBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
       <div class="searchbar"><i class="hgi-stroke hgi-search-01"></i><input id="q" type="text" placeholder="Tìm theo tên hoặc mã…" value="${sqQuery}"></div>
       <div class="pills" id="filters" style="margin-top:11px">
         ${['all','cho_test','hoc_thu','dang_hoc','bao_luu','da_nghi'].map(f=>`<button class="pillf ${sqFilter===f?'on':''}" data-f="${f}">${({all:'Tất cả',cho_test:'Chờ test',hoc_thu:'Học thử',dang_hoc:'Đang học',bao_luu:'Bảo lưu',da_nghi:'Đã nghỉ'})[f]}</button>`).join('')}
@@ -2048,8 +2048,9 @@ async function openClassDetail(c){
   if(canWrite()){ const en=$('#enroll'); if(en) en.onclick=()=>openEnroll(c); }
   showDetailPage('Lớp học');
   const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id);
-  const list=(reg||[]).filter(r=>r.hoc_sinh);
-  const officials=list.filter(r=>r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu'));
+  // Ẩn học sinh đã nghỉ (ở lớp này hoặc đã nghỉ hẳn) khỏi danh sách lớp — dữ liệu vẫn còn nguyên trong tab Học sinh.
+  const list=(reg||[]).filter(r=>r.hoc_sinh && r.trang_thai!=='da_nghi' && r.hoc_sinh.trang_thai!=='da_nghi');
+  const officials=list.filter(r=>r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu');
   let checkedIds=new Set();
   if(isToday){
     const buoiIds=buoiHocIdsForDate(todayStr(), c.id);
@@ -2066,7 +2067,7 @@ async function openClassDetail(c){
   if(!list.length){ R.innerHTML='<div class="row"><span class="meta">Chưa có học sinh nào trong lớp.</span></div>'; return; }
   R.innerHTML=list.map(r=>{
     const trial=(r.hoc_sinh.trang_thai==='cho_test'||r.hoc_sinh.trang_thai==='hoc_thu');
-    const isOfficial=r.trang_thai!=='da_nghi' && (r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu');
+    const isOfficial=r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu';
     let sttHtml;
     if(isToday && isOfficial){
       const came=checkedIds.has(r.hoc_sinh.id);
