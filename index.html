@@ -47,6 +47,14 @@
   --shadow:0 1px 3px rgba(20,22,28,.05);
   --sheet-shadow:0 -8px 40px rgba(20,22,28,.16);
 }
+  /* ===== Cỡ chữ desktop (≥1024px) — chỉ áp cho phần đã dùng biến --text-*, xem DESIGN-SYSTEM mục 2 =====
+     Text nhìn từ xa trên màn hình lớn cần to hơn text cầm gần trên điện thoại — bump nhẹ ~10% mỗi bậc,
+     không đổi mobile. Những chỗ còn hard-code px riêng (chưa theo token) KHÔNG bị ảnh hưởng bởi khối này. */
+  @media (min-width:1024px){
+    :root{
+      --text-page:32px; --text-section:13px; --text-name:18px; --text-body:16.5px; --text-meta:14.5px; --text-sub:13.5px; --text-fine:13px;
+    }
+  }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; display:flex; justify-content:center}
@@ -268,6 +276,11 @@
   .page-body{flex:1; overflow-y:auto; padding:8px 14px calc(28px + var(--safe-b))}
   .page-footer{flex:none; padding:12px 16px calc(12px + var(--safe-b)); background:rgba(246,246,246,.95); backdrop-filter:blur(18px); border-top:1px solid var(--line)}
   .page-footer:empty{display:none}
+  /* Đánh giá buổi học — nới rộng riêng trang push này khi đang hiện lưới desktop (≥1024px),
+     vì .page mặc định giới hạn max-width:440px cho mọi trang push (dùng cho mobile).
+     Chỉ toggle bằng JS đúng lúc renderEvalScreen() ở chế độ lưới — không đổi .page cho các
+     trang push khác (xem renderEvalScreen/closePage). Xem DESIGN-SYSTEM mục 26. */
+  @media (min-width:1024px){ .page.evwide{max-width:1060px} }
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
   .field input[type="date"],.field input[type="time"]{overflow:hidden; -webkit-appearance:none; appearance:none; min-height:46px; line-height:1.3; text-align:left; min-width:0; max-width:100%; box-sizing:border-box}
@@ -386,17 +399,21 @@
 .progline{display:flex; justify-content:space-between; margin:8px 2px 12px; font-size:12.5px; color:var(--muted); font-weight:600}
 .evcard{background:var(--surface); border-radius:var(--r-group); margin-bottom:10px; overflow:hidden}
 .evhead{display:flex; align-items:center; gap:10px; padding:13px 15px}
-.evhead .att{font-size:11px; font-weight:700; padding:4px 9px; border-radius:var(--r-pill); flex:none}
-.evhead .att.in{background:var(--ok-soft); color:var(--ok)}
-.evhead .att.out{background:var(--danger-soft); color:var(--danger)}
-.evhead .att.future{background:var(--soft); color:var(--faint)}
+.evhead .att,.gcell .att,.gwho .att{font-size:11px; font-weight:700; padding:4px 9px; border-radius:var(--r-pill); flex:none; display:inline-block}
+.gcell .att,.gwho .att{font-size:12px}
+.evhead .att.in,.gcell .att.in,.gwho .att.in{background:var(--ok-soft); color:var(--ok)}
+.evhead .att.out,.gcell .att.out,.gwho .att.out{background:var(--danger-soft); color:var(--danger)}
+.evhead .att.future,.gcell .att.future,.gwho .att.future{background:var(--soft); color:var(--faint)}
 .evbody{padding:13px 15px 15px}
 .evdivider{margin:0 15px; border-top:1px solid var(--line)}
 .evhead .main .t{font-size:var(--text-name); font-weight:700}
 .tarea{width:100%; min-width:0; max-width:100%; border:0; background:var(--soft); border-radius:var(--r-input); padding:11px 13px; font-family:inherit; font-size:13.5px; color:var(--ink); min-height:56px; resize:none; line-height:1.55}
 .sendbox{margin-top:13px; border-radius:var(--r-input); padding:11px 12px; background:var(--primary-soft)}
 .sendbox .preview{background:var(--surface); border-radius:10px; padding:10px 11px; font-size:12.5px; line-height:1.6; color:var(--ink); width:100%; border:0; resize:none; font-family:inherit; min-height:88px; display:block; overflow:hidden}
-.sendbox .sendbtn2{width:100%; margin-top:9px; height:42px; border-radius:11px}
+.sendactions{display:flex; gap:8px; margin-top:9px}
+.sendactions .sendbtn2{flex:1; height:42px; border-radius:11px; margin-top:0}
+.sendactions .copybtn2{width:42px; height:42px; border-radius:11px; padding:0; flex:none}
+.sendactions .copybtn2 i{font-size:18px}
 .skillcard{background:var(--surface); border-radius:var(--r-group); padding:14px 15px; margin-bottom:10px}
 .skillcard .sh2{display:flex; align-items:center; gap:8px; margin-bottom:9px}
 .skillcard .nm{font-size:13px; font-weight:800; color:var(--ink); letter-spacing:.02em}
@@ -410,6 +427,28 @@
 .htag.ok{background:var(--ok-soft); color:var(--ok)} .htag.warn{background:var(--warn-soft); color:var(--warn)} .htag.off{background:var(--soft); color:var(--faint)}
 .choice.on.ok{background:var(--ok)}
 .choice.on.warn{background:var(--warn)}
+/* ===== Đánh giá buổi học — lưới desktop ≥1024px (DESIGN-SYSTEM mục 26) ===== */
+.evtoolbar{display:flex; align-items:center; gap:var(--sp-3); background:var(--surface); border-radius:var(--r-card); padding:var(--sp-3) var(--sp-4); margin:0 2px 12px; position:sticky; top:0; z-index:5}
+.evtoolbar .estat{flex:1; font-size:14px; color:var(--muted)}
+.evtoolbar .estat b{color:var(--ink)}
+.evtoolbar .edirty{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--warn); margin-right:6px}
+.evtoolbar .btn.sm{padding:9px 16px; font-size:14.5px}
+.evgrid{background:var(--surface); border-radius:var(--r-group); overflow-x:auto}
+.grow{display:grid; grid-template-columns:196px 106px 106px 118px 1fr 40px; gap:var(--sp-3); align-items:start; padding:var(--sp-3) var(--sp-4); position:relative; min-width:1080px}
+.grow + .grow::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
+.grow.head{background:var(--bg); padding:9px 16px}
+.grow.head span{font-size:11.5px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.04em}
+.gwho{display:flex; align-items:flex-start; gap:9px; padding-top:1px; min-width:0}
+.gwho .info{min-width:0}
+.gwho .t{font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px}
+.gcell{padding-top:1px}
+.gcell .chipset{display:flex; flex-direction:column; gap:5px}
+.gcell .choice{display:block; width:100%; box-sizing:border-box; text-align:center; padding:6px 6px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gmsg textarea{width:100%; min-width:0; box-sizing:border-box; border:0; background:var(--bg); color:var(--ink); border-radius:var(--r-input); font-size:14px; padding:8px 10px; resize:vertical; line-height:1.55; min-height:96px; font-family:inherit; overflow-y:auto}
+.gstat{display:flex; justify-content:center; padding-top:5px}
+.savedtag{display:inline-flex; align-items:center}
+.savedtag.done{color:var(--ok); font-size:16px}
+.savedtag .statdot{width:7px; height:7px; border-radius:50%; background:var(--faint); display:inline-block; margin-top:6px}
 .formnav .cancel.backarrow{display:inline-flex; align-items:center; gap:2px}
 .formnav .cancel.backarrow i{font-size:20px}
 </style>
@@ -1596,6 +1635,13 @@ function pickNxSentence(category, level, excludeText){
   return choices[Math.floor(Math.random()*choices.length)];
 }
 let gvEvalCtx=null;
+const EVAL_DESKTOP_MQ=window.matchMedia('(min-width:1024px)');
+function isEvalDesktop(){ return EVAL_DESKTOP_MQ.matches; }
+EVAL_DESKTOP_MQ.addEventListener('change', ()=>{
+  if(gvEvalCtx && gvEvalCtx.mode!=='chung' && gvEvalCtx.curDate && $('#page').classList.contains('show') && $('#evalDstrip')){
+    renderEvalScreen(gvEvalCtx.curDate, true);
+  }
+});
 async function loadEvalScreenData(c, year, month){
   const monthStart=year+'-'+String(month).padStart(2,'0')+'-01';
   const nextY=month===12?year+1:year, nextM=month===12?1:month+1;
@@ -1702,6 +1748,7 @@ async function openDanhGiaBuoi(c, date, mode){
 function renderEvalScreen(curDate, preserveScroll){
   const scrollY=preserveScroll? $('#pageBody').scrollTop : 0;
   const {roster, sessions, mode}=gvEvalCtx;
+  gvEvalCtx.curDate=curDate;
   const dateChips=sessions.map(d=>`<div class="dchip ${d===curDate?'on':''}" data-d="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('');
   const nx=gvEvalCtx.evalData.nxlbMap[curDate]||{};
   const chungHtml=`
@@ -1721,17 +1768,35 @@ function renderEvalScreen(curDate, preserveScroll){
       </div>
     </div>`;
   const doneCount=roster.filter(s=>gvEvalCtx.evalData.dgbMap[`${s.id}|${curDate}`]).length;
-  const cards=roster.map(s=>evalCardHtml(s,curDate)).join('');
-  const hocsinhHtml=`
+  let hocsinhHtml='';
+  if(mode!=='chung'){
+    if(isEvalDesktop()){
+      hocsinhHtml=evalGridHtml(curDate, doneCount);
+    } else {
+      const cards=roster.map(s=>evalCardHtml(s,curDate)).join('');
+      hocsinhHtml=`
     <div class="progline"><span>Đã nhận xét ${doneCount}/${roster.length} em</span><span>${fmtDate(curDate)}</span></div>
     ${cards}`;
+    }
+  }
   $('#pageBody').innerHTML=`
     <div class="dstrip" id="evalDstrip">${dateChips}</div>
     ${mode==='chung'? chungHtml : hocsinhHtml}`;
+  const pageEl=$('#page');
+  if(pageEl) pageEl.classList.toggle('evwide', mode!=='chung' && isEvalDesktop());
   $('#evalDstrip').querySelectorAll('.dchip').forEach(el=>{ el.onclick=()=>renderEvalScreen(el.dataset.d); });
   const onChip=$('#evalDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
-  if(mode==='chung') wireNxlbBlock(curDate); else wireEvalCards(curDate);
+  if(mode==='chung') wireNxlbBlock(curDate);
+  else if(isEvalDesktop()) wireEvalGrid(curDate);
+  else wireEvalCards(curDate);
   if(preserveScroll) $('#pageBody').scrollTop=scrollY;
+}
+function updateEvalProgline(){
+  if(!gvEvalCtx || gvEvalCtx.mode==='chung' || !gvEvalCtx.curDate) return;
+  const {roster, curDate}=gvEvalCtx;
+  const doneCount=roster.filter(s=>gvEvalCtx.evalData.dgbMap[`${s.id}|${curDate}`]).length;
+  const el=$('.progline span:first-child');
+  if(el) el.textContent=`Đã nhận xét ${doneCount}/${roster.length} em`;
 }
 function wireNxlbBlock(curDate){
   $('#pageBody').querySelectorAll('.nxlbField').forEach(ta=>{ autoGrow(ta); ta.oninput=()=>autoGrow(ta); });
@@ -1798,14 +1863,18 @@ function evalCardHtml(s, dateISO){
       <div class="field"><label>Gửi phụ huynh</label>
       <div class="sendbox">
         <textarea class="preview nxbuoi" data-hs="${s.id}" data-date="${dateISO}" placeholder="Bấm 1 mức Nhận xét ở trên để tự điền, hoặc gõ tay…">${boxText}</textarea>
-        <button class="btn primary sendbtn2" data-hs="${s.id}" data-date="${dateISO}">Lưu &amp; Copy để gửi Zalo</button>
+        <div class="sendactions">
+          <button class="btn primary sendbtn2" data-hs="${s.id}" data-date="${dateISO}">Lưu</button>
+          <button class="btn soft copybtn2" data-hs="${s.id}" data-date="${dateISO}" title="Copy để gửi Zalo"><i class="hgi-stroke hgi-copy-01"></i></button>
+        </div>
       </div></div>
     </div>
   </div>`;
 }
 function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; }
-function wireEvalCards(curDate){
-  $('#pageBody').querySelectorAll('.chipset').forEach(cs=>{
+function wireEvalCards(curDate, root){
+  root = root || $('#pageBody');
+  root.querySelectorAll('.chipset').forEach(cs=>{
     cs.querySelectorAll('.choice').forEach(ch=>{
       ch.onclick=()=>{
         const sid=cs.dataset.hs, dateISO=cs.dataset.date, field=cs.dataset.f;
@@ -1834,7 +1903,7 @@ function wireEvalCards(curDate){
       };
     });
   });
-  $('#pageBody').querySelectorAll('.nxbuoi').forEach(ta=>{
+  root.querySelectorAll('.nxbuoi').forEach(ta=>{
     autoGrow(ta);
     ta.oninput=()=>{
       const sid=ta.dataset.hs, dateISO=ta.dataset.date;
@@ -1845,7 +1914,7 @@ function wireEvalCards(curDate){
       autoGrow(ta);
     };
   });
-  $('#pageBody').querySelectorAll('.sendbtn2').forEach(btn=>{
+  root.querySelectorAll('.sendbtn2').forEach(btn=>{
     btn.onclick=async()=>{
       const sid=btn.dataset.hs, dateISO=btn.dataset.date;
       const key=`${sid}|${dateISO}`;
@@ -1855,19 +1924,208 @@ function wireEvalCards(curDate){
       }
       const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text};
       const {c}=gvEvalCtx;
-      btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
+      btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>';
       const saved=gvEvalCtx.evalData.dgbMap[key];
       let error;
       if(saved){ const r=await db.from('danh_gia_buoi').update({du_lieu, ngay_sua:new Date().toISOString()}).eq('id',saved.id); error=r.error; if(!error) saved.du_lieu=du_lieu; }
       else { const r=await db.from('danh_gia_buoi').insert({lop_hoc_id:c.id, hoc_sinh_id:sid, ngay:dateISO, du_lieu, nguoi_tao:me.id}).select('*').single(); error=r.error; if(!error) gvEvalCtx.evalData.dgbMap[key]=r.data; }
-      btn.disabled=false;
-      if(error){ toast(error.message,false); btn.textContent='Lưu & Copy để gửi Zalo'; return; }
-      try{ await navigator.clipboard.writeText(cur.nhan_xet_text); toast('Đã lưu & copy — dán vào Zalo'); }
-      catch(e){ toast('Đã lưu. Trình duyệt chặn copy tự động, anh/chị copy tay giúp em.', false); }
+      if(error){ btn.disabled=false; btn.textContent='Lưu'; toast(error.message,false); return; }
       delete gvEvalCtx.draft[key];
-      renderEvalScreen(curDate, true);
+      toast('Đã lưu');
+      patchEvalCard(sid, dateISO);
+      updateEvalProgline();
     };
   });
+  root.querySelectorAll('.copybtn2').forEach(btn=>{
+    btn.onclick=async()=>{
+      const sid=btn.dataset.hs, dateISO=btn.dataset.date;
+      const cur=evalCur(sid,dateISO);
+      if(!cur.nhan_xet_text){ toast('Chưa có nội dung để copy', false); return; }
+      try{ await navigator.clipboard.writeText(cur.nhan_xet_text); toast('Đã copy — dán vào Zalo'); }
+      catch(e){ toast('Trình duyệt chặn copy tự động, anh/chị copy tay giúp em.', false); }
+    };
+  });
+}
+function patchEvalCard(sid, dateISO){
+  const key=`${sid}|${dateISO}`;
+  const old=$(`.evcard[data-card="${CSS.escape(key)}"]`);
+  if(!old) return;
+  const s=gvEvalCtx.roster.find(x=>x.id===sid);
+  if(!s) return;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=evalCardHtml(s, dateISO);
+  const fresh=tmp.firstElementChild;
+  old.replaceWith(fresh);
+  wireEvalCards(dateISO, fresh);
+}
+/* ============================================================
+   GV MODE — Đánh giá buổi học — LƯỚI DESKTOP (≥1024px)
+   Xem spec-toi-uu-danh-gia-buoi-hoc.md mục 3-4, DESIGN-SYSTEM mục 26
+   ============================================================ */
+function evGridRowHtml(s, dateISO){
+  const {evalData}=gvEvalCtx;
+  const key=`${s.id}|${dateISO}`;
+  const saved=evalData.dgbMap[key];
+  const dirty=!!gvEvalCtx.draft[key];
+  const cur=evalCur(s.id, dateISO);
+  const today=todayStr();
+  const futureDate=dateISO>today;
+  const coMat=futureDate? null : coMatOn(s.id, dateISO, evalData);
+  const attHtml = futureDate? '<span class="att future">Chưa tới giờ</span>' : (coMat===null? '<span class="att future">Chưa điểm danh</span>' : `<span class="att ${coMat?'in':'out'}">${coMat?'Có mặt':'Vắng'}</span>`);
+  const boxText = cur.nhan_xet_text!=null? cur.nhan_xet_text : '';
+  const statHtml = dirty
+    ? '<span class="savedtag pending" title="Chưa lưu"><span class="statdot"></span></span>'
+    : (saved? '<span class="savedtag done" title="Đã lưu"><i class="hgi-stroke hgi-checkmark-circle-02"></i></span>' : '<span class="savedtag pending" title="Chưa lưu"><span class="statdot"></span></span>');
+  return `<div class="grow ${dirty?'dirty':''}" data-row="${key}">
+    <div class="gwho"><span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span><div class="info"><div class="t">${s.ho_ten}</div>${attHtml}</div></div>
+    <div class="gcell"><div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="btvn">
+      <span class="choice ${cur.btvn==='hoan_thanh'?'on ok':''}" data-v="hoan_thanh">Đã làm</span>
+      <span class="choice ${cur.btvn==='chua_hoan_thanh'?'on warn':''}" data-v="chua_hoan_thanh">Chưa làm</span>
+      <span class="choice ${cur.btvn==='khong_kiem_tra'?'on':''}" data-v="khong_kiem_tra">Không KT</span>
+    </div></div>
+    <div class="gcell"><div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="dat_muc_tieu">
+      <span class="choice ${cur.dat_muc_tieu===true?'on ok':''}" data-v="true">Đạt</span>
+      <span class="choice ${cur.dat_muc_tieu===false?'on warn':''}" data-v="false">Chưa đạt</span>
+    </div></div>
+    <div class="gcell"><div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="nhan_xet">
+      <span class="choice ${cur.nhan_xet==='tot'?'on ok':''}" data-v="tot">Tốt</span>
+      <span class="choice ${cur.nhan_xet==='kha'?'on':''}" data-v="kha">Khá</span>
+      <span class="choice ${cur.nhan_xet==='can_cai_thien'?'on warn':''}" data-v="can_cai_thien">Cần cải thiện</span>
+    </div></div>
+    <div class="gcell gmsg"><textarea class="preview nxbuoi" data-hs="${s.id}" data-date="${dateISO}" placeholder="Bấm 1 mức Nhận xét ở trên để tự điền, hoặc gõ tay…">${boxText}</textarea></div>
+    <div class="gstat">${statHtml}</div>
+  </div>`;
+}
+function evalGridHtml(curDate, doneCount){
+  const {roster}=gvEvalCtx;
+  const n=evalDirtyRowsFor(curDate).length;
+  const head=`<div class="grow head"><span>Học sinh</span><span>BTVN</span><span>Mục tiêu</span><span>Nhận xét</span><span>Gửi phụ huynh</span><span></span></div>`;
+  const rows=roster.map(s=>evGridRowHtml(s,curDate)).join('');
+  return `
+    <div class="progline"><span>Đã nhận xét ${doneCount}/${roster.length} em</span><span>${fmtDate(curDate)}</span></div>
+    <div class="evtoolbar" id="evToolbar">
+      <span class="estat" id="evToolbarStat">${n>0? `<span class="edirty"></span><b>${n}</b> em vừa sửa, chưa lưu` : 'Tất cả thay đổi đã được lưu'}</span>
+      <button class="btn primary sm" id="evSaveAllBtn" ${n===0?'disabled':''}>${n>0?`Lưu tất cả (${n})`:'Đã lưu hết'}</button>
+    </div>
+    <div class="evgrid" id="evGrid">${head}${rows}</div>`;
+}
+function evalDirtyRowsFor(dateISO){
+  if(!gvEvalCtx) return [];
+  const {roster}=gvEvalCtx;
+  return roster.filter(s=>gvEvalCtx.draft[`${s.id}|${dateISO}`]);
+}
+function updateEvalToolbar(dateISO){
+  const bar=$('#evToolbarStat'), btn=$('#evSaveAllBtn');
+  if(!bar||!btn) return;
+  const n=evalDirtyRowsFor(dateISO).length;
+  bar.innerHTML = n>0? `<span class="edirty"></span><b>${n}</b> em vừa sửa, chưa lưu` : 'Tất cả thay đổi đã được lưu';
+  btn.disabled = n===0;
+  btn.textContent = n>0? `Lưu tất cả (${n})` : 'Đã lưu hết';
+}
+function wireEvalGridScope(root, curDate){
+  root.querySelectorAll('.chipset').forEach(cs=>{
+    cs.querySelectorAll('.choice').forEach(ch=>{
+      ch.onclick=()=>{
+        const sid=cs.dataset.hs, dateISO=cs.dataset.date, field=cs.dataset.f;
+        let v=ch.dataset.v; if(field==='dat_muc_tieu') v=(v==='true');
+        const key=`${sid}|${dateISO}`;
+        const base=evalCur(sid,dateISO);
+        if(field==='nhan_xet'){
+          const category=nxCategoryForClass(gvEvalCtx.c);
+          if(base.nhan_xet===v){
+            base.nhan_xet_sentence=pickNxSentence(category, v, base.nhan_xet_sentence);
+          } else {
+            base.nhan_xet=v;
+            base.nhan_xet_sentence=pickNxSentence(category, v, null);
+          }
+        } else {
+          base[field]=(base[field]===v)? null : v;
+        }
+        base.nhan_xet_text=null;
+        const s=gvEvalCtx.roster.find(x=>x.id===sid);
+        const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
+        const coMat = dateISO>todayStr()? null : coMatOn(sid,dateISO,gvEvalCtx.evalData);
+        const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
+        base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, coMat, dateISO);
+        gvEvalCtx.draft[key]=base;
+        patchEvalGridRow(sid, dateISO);
+        updateEvalToolbar(dateISO);
+      };
+    });
+  });
+  root.querySelectorAll('.nxbuoi').forEach(ta=>{
+    autoGrow(ta);
+    ta.oninput=()=>{
+      const sid=ta.dataset.hs, dateISO=ta.dataset.date;
+      const key=`${sid}|${dateISO}`;
+      const base=evalCur(sid,dateISO);
+      base.nhan_xet_text=ta.value;
+      gvEvalCtx.draft[key]=base;
+      const row=ta.closest('.grow'); if(row) row.classList.add('dirty');
+      updateEvalToolbar(dateISO);
+      autoGrow(ta);
+    };
+  });
+}
+function wireEvalGrid(curDate){
+  const grid=$('#evGrid'); if(!grid) return;
+  wireEvalGridScope(grid, curDate);
+  const saveAllBtn=$('#evSaveAllBtn');
+  if(saveAllBtn) saveAllBtn.onclick=()=>saveAllDirty(curDate);
+}
+function patchEvalGridRow(sid, dateISO){
+  const key=`${sid}|${dateISO}`;
+  const old=$(`.grow[data-row="${CSS.escape(key)}"]`);
+  if(!old) return;
+  const s=gvEvalCtx.roster.find(x=>x.id===sid);
+  if(!s) return;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=evGridRowHtml(s, dateISO);
+  const fresh=tmp.firstElementChild;
+  old.replaceWith(fresh);
+  wireEvalGridScope(fresh, dateISO);
+}
+async function saveAllDirty(curDate){
+  const btn=$('#evSaveAllBtn'); if(!btn) return;
+  const {c}=gvEvalCtx;
+  const dirtyStudents=evalDirtyRowsFor(curDate);
+  if(!dirtyStudents.length) return;
+  const ready=[], invalidNames=[];
+  dirtyStudents.forEach(s=>{
+    const cur=evalCur(s.id, curDate);
+    if(!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text){ invalidNames.push(s.ho_ten); }
+    else { ready.push({s, cur}); }
+  });
+  if(!ready.length){
+    toast(`Lưu thất bại ${invalidNames.length}/${dirtyStudents.length} em — chưa chọn đủ BTVN/Mục tiêu/Nhận xét`, false);
+    return;
+  }
+  const origLabel=btn.textContent;
+  btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
+  const rows=ready.map(({s,cur})=>({
+    lop_hoc_id:c.id, hoc_sinh_id:s.id, ngay:curDate,
+    du_lieu:{btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text},
+    nguoi_tao:me.id
+  }));
+  const {data, error}=await db.from('danh_gia_buoi').upsert(rows, {onConflict:'lop_hoc_id,hoc_sinh_id,ngay'}).select('*');
+  if(error){
+    btn.disabled=false; btn.textContent=origLabel;
+    toast('Lưu tất cả thất bại: '+error.message, false);
+    return;
+  }
+  (data||[]).forEach(row=>{
+    const k=`${row.hoc_sinh_id}|${row.ngay}`;
+    gvEvalCtx.evalData.dgbMap[k]=row;
+    delete gvEvalCtx.draft[k];
+    patchEvalGridRow(row.hoc_sinh_id, row.ngay);
+  });
+  updateEvalToolbar(curDate);
+  updateEvalProgline();
+  if(invalidNames.length){
+    toast(`Đã lưu ${ready.length} em. Còn ${invalidNames.length} em thiếu thông tin: ${invalidNames.join(', ')}`, false);
+  } else {
+    toast(`Đã lưu ${ready.length} em`);
+  }
 }
 /* ============================================================
    GV MODE — Báo cáo tháng (Phần 3)
@@ -3004,7 +3262,7 @@ function showPageBack(title, backLabel){
   $('#page').classList.add('show');
 }
 function closePage(){
-  $('#page').classList.remove('show'); $('#pageFooter').innerHTML='';
+  $('#page').classList.remove('show'); $('#page').classList.remove('evwide'); $('#pageFooter').innerHTML='';
   $('#pageCancel').innerHTML='Hủy'; $('#pageCancel').classList.remove('backarrow');
   if(pageOnClose){ const fn=pageOnClose; pageOnClose=null; fn(); }
 }
