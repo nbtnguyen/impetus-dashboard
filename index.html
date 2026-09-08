@@ -1774,8 +1774,13 @@ function renderEvalScreen(curDate, preserveScroll){
       hocsinhHtml=evalGridHtml(curDate, doneCount);
     } else {
       const cards=roster.map(s=>evalCardHtml(s,curDate)).join('');
+      const n=evalDirtyRowsFor(curDate).length;
       hocsinhHtml=`
     <div class="progline"><span>Đã nhận xét ${doneCount}/${roster.length} em</span><span>${fmtDate(curDate)}</span></div>
+    <div class="evtoolbar" id="evToolbar">
+      <span class="estat" id="evToolbarStat">${n>0? `<span class="edirty"></span><b>${n}</b> em vừa sửa, chưa lưu` : 'Tất cả thay đổi đã được lưu'}</span>
+      <button class="btn primary sm" id="evSaveAllBtn" ${n===0?'disabled':''}>${n>0?`Lưu tất cả (${n})`:'Đã lưu hết'}</button>
+    </div>
     ${cards}`;
     }
   }
@@ -1788,7 +1793,11 @@ function renderEvalScreen(curDate, preserveScroll){
   const onChip=$('#evalDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
   if(mode==='chung') wireNxlbBlock(curDate);
   else if(isEvalDesktop()) wireEvalGrid(curDate);
-  else wireEvalCards(curDate);
+  else {
+    wireEvalCards(curDate);
+    const saveAllBtn=$('#evSaveAllBtn');
+    if(saveAllBtn) saveAllBtn.onclick=()=>saveAllDirty(curDate);
+  }
   if(preserveScroll) $('#pageBody').scrollTop=scrollY;
 }
 function updateEvalProgline(){
@@ -1934,6 +1943,7 @@ function wireEvalCards(curDate, root){
       toast('Đã lưu');
       patchEvalCard(sid, dateISO);
       updateEvalProgline();
+      updateEvalToolbar(dateISO);
     };
   });
   root.querySelectorAll('.copybtn2').forEach(btn=>{
@@ -2117,7 +2127,8 @@ async function saveAllDirty(curDate){
     const k=`${row.hoc_sinh_id}|${row.ngay}`;
     gvEvalCtx.evalData.dgbMap[k]=row;
     delete gvEvalCtx.draft[k];
-    patchEvalGridRow(row.hoc_sinh_id, row.ngay);
+    if(isEvalDesktop()) patchEvalGridRow(row.hoc_sinh_id, row.ngay);
+    else patchEvalCard(row.hoc_sinh_id, row.ngay);
   });
   updateEvalToolbar(curDate);
   updateEvalProgline();
