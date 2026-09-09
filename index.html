@@ -362,7 +362,7 @@
   .dialogcard{background:var(--surface); border-radius:20px; max-width:300px; width:100%; overflow:hidden; text-align:center}
   .dialogcard .dbody{padding:22px 20px 18px}
   .dialogcard .dtitle{font-size:var(--text-name); font-weight:700}
-  .dialogcard .dmsg{font-size:var(--text-meta); color:var(--muted); margin-top:6px; line-height:1.5}
+  .dialogcard .dmsg{font-size:var(--text-meta); color:var(--muted); margin-top:6px; line-height:1.5; white-space:pre-line}
   .dialogcard .dacts{display:flex; border-top:1px solid var(--line)}
   .dialogcard .dacts button{flex:1; padding:14px 0; font:inherit; font-size:var(--text-body); font-weight:600; border:0; background:transparent; cursor:pointer}
   .dialogcard .dacts button+button{border-left:1px solid var(--line)}
@@ -529,7 +529,7 @@ const addDays=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
 const addMonths=(d,n)=>{const x=new Date(d); x.setMonth(x.getMonth()+n); return x;};
 const toISO=d=>d.toISOString().slice(0,10);
 const CAT={chi:['Thuê nhà','Điện nước','Lương','Mua sắm/Thiết bị','Marketing','Khác'], thu:['Học phí','Bán sách','Khác']};
-let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null, cformTA=[];
+let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', formAvatarUrl=null, editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null, cformTA=[];
 
 const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
@@ -905,7 +905,7 @@ function renderStudents(){
     if(owesN(s)) parts.push(`<span class="unpaid">Nợ ${owesN(s)} buổi</span>`);
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
     return `<div class="row tap haslead" data-id="${s.id}">
-      <div class="lead"><div class="avatar" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</div></div>
+      <div class="lead">${avaHtml(s,'avatar')}</div>
       <div class="main"><div class="t">${s.ho_ten}</div>${faceIds.has(s.id)?'<div class="meta" style="color:var(--ok)">Đã có FaceID</div>':''}<div class="meta">${meta}</div></div>
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
@@ -980,11 +980,11 @@ function openStudentDetail(s){
     ${s.ngay_hen_test?`<div class="row"><span class="k">Ngày hẹn test</span><span class="val">${fmtDate(s.ngay_hen_test)}</span></div>`:''}
     ${isManager()?`<div class="row"><span class="k">Giảm giá học phí</span><span class="val">${s.giam_gia_phan_tram>0?s.giam_gia_phan_tram+'%':'Không'}</span></div>`:''}
     ${s.ghi_chu?`<div class="row"><span class="k">Ghi chú</span><span class="val">${s.ghi_chu}</span></div>`:''}
-    ${canSeeParent()?(ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="val">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="val">${ph.so_dien_thoai||'—'}</span></div>`:'<div class="row"><span class="meta">Chưa có thông tin phụ huynh</span></div>'):''}`;
+    ${canSeeParent()?(ph?`<div class="row"><span class="k">${QH[ph.quan_he]||'Phụ huynh'}</span><span class="val">${ph.ho_ten||'—'}</span></div><div class="row"><span class="k">SĐT / Zalo</span><span class="val">${ph.so_dien_thoai||'—'}</span></div>${ph.email?`<div class="row"><span class="k">Email</span><span class="val">${ph.email}</span></div>`:''}`:'<div class="row"><span class="meta">Chưa có thông tin phụ huynh</span></div>'):''}`;
   const canDel=canWrite()&&['cho_test','hoc_thu','da_nghi'].includes(s.trang_thai);
   $('#detailBody').innerHTML=`
     <div class="hero">
-      <div class="avatar lg" style="background:${avaC(s.ma_hoc_sinh)};margin:0 auto">${ini1(s.ho_ten)}</div>
+      ${avaHtml(s,'avatar lg','margin:0 auto')}
       <div class="dname">${s.ho_ten}</div>
       <div style="margin-top:11px"><span class="spill ${s.trang_thai}">${ST[s.trang_thai]||s.trang_thai}</span></div>
     </div>
@@ -996,6 +996,7 @@ function openStudentDetail(s){
     <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${enrRows}${addLopRow}</div></div>
     <div class="section"><div class="lbl">Buổi cần học bù${chua?` <span class="badge">· ${chua} chưa bù</span>`:''}</div><div class="group">${mkRows}${addHbRow}</div></div>
     <div class="section"><div class="lbl">Thông tin & phụ huynh</div><div class="group">${infoRows}</div></div>
+    <div class="section"><div class="lbl">Khen thưởng / Thành tích</div><div class="group" id="ktGroup"><div class="row"><span class="meta">Đang tải…</span></div></div></div>
     ${isGV()?`<div class="section" id="gvKqtHist"></div><div class="section"><div class="lbl">Lịch sử nhận xét theo buổi</div><div class="group" id="gvDgbHist"><div class="row"><span class="meta">Đang tải…</span></div></div></div>`:''}
     ${canDel?'<button class="btn danger block" id="delS" style="margin-top:var(--sp-6)">Xóa học sinh</button>':''}
   `;
@@ -1008,18 +1009,62 @@ function openStudentDetail(s){
   $('#detailBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
   $('#detailBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
   if(isGV()) loadGvStudentHistory(s).then(hist=>{ renderGvKqtHistory(hist.kqt); renderGvDgbHistory(hist.dgb); });
+  loadKhenThuong(s.id).then(list=>renderKhenThuong(s,list));
   showDetailPage('Học sinh');
 }
 function nextMa(){ let m=0; students.forEach(s=>{const n=parseInt((s.ma_hoc_sinh||'').replace(/\D/g,''))||0; if(n>m)m=n;}); return 'HS'+String(m+1).padStart(3,'0'); }
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.width, h=img.height;
+      if(w>h){ if(w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; } }
+      else { if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; } }
+      const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Không xử lý được ảnh')), 'image/jpeg', quality);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh, thử ảnh khác')); };
+    img.src=url;
+  });
+}
+async function uploadAvatar(file, maHocSinh){
+  const blob=await resizeImageFile(file, 480, 0.82);
+  const path=`${maHocSinh||'hs'}-${Date.now()}.jpg`;
+  const {error}=await db.storage.from('avatars').upload(path, blob, {contentType:'image/jpeg', upsert:false});
+  if(error) throw error;
+  const {data}=db.storage.from('avatars').getPublicUrl(path);
+  return data.publicUrl;
+}
+function avaHtml(s, cls, extraStyle){
+  cls=cls||'avatar'; extraStyle=extraStyle?extraStyle.replace(/;?$/,';'):'';
+  if(s && s.anh_url) return `<img class="${cls}" src="${s.anh_url}" style="${extraStyle}object-fit:cover" alt="">`;
+  return `<div class="${cls}" style="${extraStyle}background:${avaC(s?s.ma_hoc_sinh:'')}">${ini1(s?s.ho_ten:'')}</div>`;
+}
 function openStudentForm(s){
   editingId=s?s.id:null;
   const ph=s&&s.phu_huynh&&s.phu_huynh[0]?s.phu_huynh[0]:null;
   formStatus=s?s.trang_thai:'dang_hoc';
   formGioiTinh=s?(s.gioi_tinh||'Nam'):'Nam';
   formQuanHe=ph?(ph.quan_he||'me'):'me';
+  formAvatarUrl=s?(s.anh_url||null):null;
   const batdauVal=s?(s.ngay_bat_dau||''):new Date().toISOString().slice(0,10);
+  const avaBoxHtml=()=> formAvatarUrl
+    ? `<img class="avatar lg" id="avaImg" src="${formAvatarUrl}" style="object-fit:cover" alt="">`
+    : `<div class="avatar lg" id="avaImg" style="background:${avaC(s?s.ma_hoc_sinh:'x')}">${s?ini1(s.ho_ten):'+'}</div>`;
   $('#pageBody').innerHTML=`
-    <div class="section" style="margin-top:10px"><div class="lbl">Thông tin cơ bản</div>
+    <div class="section" style="margin-top:10px">
+      <div style="display:flex;justify-content:center;padding:6px 0 2px">
+        <div style="position:relative">${avaBoxHtml()}
+          <button type="button" id="avaPickBtn" style="position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--primary);border:2px solid var(--surface);display:grid;place-items:center;color:#fff;cursor:pointer"><i class="hgi-stroke hgi-camera-01" style="font-size:15px"></i></button>
+          <input type="file" id="f_avatarInput" accept="image/*" style="display:none">
+        </div>
+      </div>
+      <div id="avaStatusMsg" style="text-align:center;font-size:12px;color:var(--faint);margin-top:4px;min-height:16px"></div>
+    </div>
+    <div class="section" style="margin-top:0"><div class="lbl">Thông tin cơ bản</div>
       <div style="background:var(--surface);border-radius:var(--r-group);padding:4px 16px 16px">
         <div class="field"><label>Họ và tên <span class="req">*</span></label><input id="f_ten" type="text" value="${s?s.ho_ten:''}" placeholder="Nguyễn Văn An"></div>
         <div class="field"><label>Mã học sinh <span class="req">*</span></label><input id="f_ma" type="text" value="${s?s.ma_hoc_sinh:nextMa()}" ${s?'disabled':''}><div class="hint">${s?'Không đổi mã sau khi tạo (giữ khớp máy).':'Gợi ý sẵn mã kế tiếp.'}</div></div>
@@ -1044,10 +1089,28 @@ function openStudentForm(s){
         <div class="field"><label>Họ tên phụ huynh</label><input id="f_phten" type="text" value="${ph?(ph.ho_ten||''):''}" placeholder="Nguyễn Thị Bình"></div>
         <div class="field"><label>Quan hệ</label><div class="chipset" id="f_phqh">${Object.entries(QH).map(([v,l])=>`<button class="choice ${formQuanHe===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
         <div class="field"><label>SĐT / Zalo</label><input id="f_phsdt" type="tel" value="${ph?(ph.so_dien_thoai||''):''}" placeholder="09xx xxx xxx"></div>
+        <div class="field"><label>Email</label><input id="f_phemail" type="email" value="${ph?(ph.email||''):''}" placeholder="phuhuynh@email.com"></div>
       </div>
     </div>`;
   $('#pageFooter').innerHTML=`<button class="btn primary block safe-b" id="saveS"><span>${s?'Lưu thay đổi':'Lưu học sinh'}</span></button>`;
   $('#f_ma')&&$('#f_ma').addEventListener('input',e=>$('#echo').textContent=e.target.value.trim().toUpperCase()||'—');
+  $('#avaPickBtn').onclick=()=>$('#f_avatarInput').click();
+  $('#f_avatarInput').addEventListener('change', async e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const localUrl=URL.createObjectURL(file);
+    $('#avaImg').outerHTML=`<img class="avatar lg" id="avaImg" src="${localUrl}" style="object-fit:cover;opacity:.55" alt="">`;
+    $('#avaStatusMsg').textContent='Đang tải ảnh lên…';
+    try{
+      const url=await uploadAvatar(file, $('#f_ma').value.trim().toUpperCase());
+      formAvatarUrl=url;
+      $('#avaImg').src=url; $('#avaImg').style.opacity=1;
+      $('#avaStatusMsg').textContent='';
+    }catch(err){
+      $('#avaStatusMsg').textContent='';
+      toast('Tải ảnh lỗi: '+err.message,false);
+      $('#avaImg').outerHTML=avaBoxHtml();
+    }
+  });
   $('#f_gt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_gt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formGioiTinh=b.dataset.v;});
   $('#f_tt').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_tt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formStatus=b.dataset.v;});
   $('#f_phqh').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; document.querySelectorAll('#f_phqh button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); formQuanHe=b.dataset.v;});
@@ -1058,18 +1121,29 @@ async function saveStudent(){
   const ten=$('#f_ten').value.trim(), ma=$('#f_ma').value.trim().toUpperCase();
   if(!ten) return toast('Chưa nhập họ tên',false);
   if(!ma) return toast('Chưa nhập mã học sinh',false);
+  if(!editingId){
+    const dups=students.filter(x=>norm(x.ho_ten)===norm(ten));
+    if(dups.length){
+      const list=dups.map(x=>`${x.ho_ten} (${x.ma_hoc_sinh}${x.trang_thai!=='dang_hoc'?', '+(ST[x.trang_thai]||x.trang_thai):''})`).join('\n');
+      showConfirmDialog('Trùng tên với '+dups.length+' học sinh đã có', 'Đã có:\n'+list+'\n\nVẫn muốn thêm mới?', ()=>doSaveStudent(ten,ma), 'Vẫn thêm mới');
+      return;
+    }
+  }
+  await doSaveStudent(ten,ma);
+}
+async function doSaveStudent(ten,ma){
   const btn=$('#saveS'); btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
-  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:formGioiTinh, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null, ngay_hen_test:($('#f_hentest')&&$('#f_hentest').value)||null};
+  const payload={ma_hoc_sinh:ma, ho_ten:ten, ngay_sinh:$('#f_ns').value||null, gioi_tinh:formGioiTinh, truong_hoc:$('#f_truong').value.trim()||null, ngay_bat_dau:$('#f_batdau').value||null, trang_thai:formStatus, ghi_chu:$('#f_ghichu').value.trim()||null, ngay_hen_test:($('#f_hentest')&&$('#f_hentest').value)||null, anh_url:formAvatarUrl};
   if(isManager()&&$('#f_giam')) payload.giam_gia_phan_tram=+$('#f_giam').value||0;
   let hsId=editingId, err=null;
   if(editingId){ const r=await db.from('hoc_sinh').update(payload).eq('id',editingId); err=r.error; }
   else { const r=await db.from('hoc_sinh').insert(payload).select('id').single(); err=r.error; if(!err)hsId=r.data.id; }
   if(err){ btn.disabled=false; btn.innerHTML=old; return toast(err.code==='23505'?'Mã '+ma+' đã tồn tại':err.message,false); }
-  const phTen=$('#f_phten').value.trim(), phSdt=$('#f_phsdt').value.trim(), phQh=formQuanHe;
-  if(phTen||phSdt){
+  const phTen=$('#f_phten').value.trim(), phSdt=$('#f_phsdt').value.trim(), phEmail=$('#f_phemail').value.trim(), phQh=formQuanHe;
+  if(phTen||phSdt||phEmail){
     const ex=editingId? (students.find(x=>x.id===editingId)?.phu_huynh?.[0]) : null;
-    if(ex) await db.from('phu_huynh').update({ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null}).eq('id',ex.id);
-    else await db.from('phu_huynh').insert({hoc_sinh_id:hsId,ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null});
+    if(ex) await db.from('phu_huynh').update({ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null,email:phEmail||null}).eq('id',ex.id);
+    else await db.from('phu_huynh').insert({hoc_sinh_id:hsId,ho_ten:phTen||null,quan_he:phQh,so_dien_thoai:phSdt||null,email:phEmail||null});
   }
   const lopSel = (!editingId && $('#f_lop')) ? $('#f_lop').value : '';
   if(lopSel){ await db.from('dang_ky_lop').insert({hoc_sinh_id:hsId, lop_hoc_id:lopSel, trang_thai:'dang_hoc'}); await loadClasses(); }
@@ -2928,6 +3002,47 @@ async function doDeleteStudent(s){
   if(error){ toast(error.code==='23503'? 'Không xóa được: em này có lịch sử thanh toán. Giữ trạng thái Đã nghỉ để bảo toàn số liệu.' : error.message, false); return; }
   closeDetailPage(); curStudent=null; await loadAll(); if(view==='hoc_sinh')renderStudents(); if(view==='dashboard')buildDashboard(); toast('Đã xóa học sinh');
 }
+async function loadKhenThuong(hocSinhId){
+  const {data}=await db.from('khen_thuong').select('*').eq('hoc_sinh_id',hocSinhId).order('ngay',{ascending:false});
+  return data||[];
+}
+function renderKhenThuong(s, list){
+  const el=$('#ktGroup'); if(!el) return;
+  const rows=list.length
+    ? list.map(k=>`<div class="row tap" data-id="${k.id}"><div class="main"><div class="t">${k.noi_dung}</div><div class="meta">${fmtDate(k.ngay)}</div></div></div>`).join('')
+    : '<div class="row"><span class="meta">Chưa có khen thưởng nào.</span></div>';
+  const addRow = canWrite()?'<div class="row tap add" id="addKt"><div class="addico">+</div><div class="main"><div class="t">Thêm khen thưởng</div></div></div>':'';
+  el.innerHTML = rows+addRow;
+  el.querySelectorAll('.row[data-id]').forEach(r=>{ if(canWrite()) r.onclick=()=>openAchieveActions(list.find(k=>k.id===r.dataset.id), s); });
+  const add=$('#addKt'); if(add) add.onclick=()=>openAchieveForm(s);
+}
+function openAchieveForm(s){
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">Thêm khen thưởng</div><div class="asub">${s.ho_ten}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard">
+      <div class="field" style="margin-top:10px"><label>Nội dung <span class="req">*</span></label><textarea id="kt_noidung" rows="2" placeholder="VD: 5 sao chăm ngoan, giải nhất thi hùng biện…"></textarea></div>
+      <div class="field"><label>Ngày</label><div class="datefield"><input id="kt_ngay" type="date" value="${new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày</span></div></div>
+    </div>
+    <button class="btn primary block safe-b" id="kt_save" style="margin-top:18px">Lưu khen thưởng</button>`;
+  $('#kt_save').onclick=()=>saveAchieve(s);
+  show('#sheet');
+}
+async function saveAchieve(s){
+  const noidung=$('#kt_noidung').value.trim();
+  if(!noidung) return toast('Chưa nhập nội dung',false);
+  const btn=$('#kt_save'); btn.disabled=true; const old=btn.textContent; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+  const {error}=await db.from('khen_thuong').insert({hoc_sinh_id:s.id, noi_dung:noidung, ngay:$('#kt_ngay').value||new Date().toISOString().slice(0,10), nguoi_tao:me.id});
+  btn.disabled=false; btn.textContent=old;
+  if(error) return toast(error.message,false);
+  closeSheets(); toast('Đã lưu khen thưởng');
+  loadKhenThuong(s.id).then(list=>renderKhenThuong(s,list));
+}
+function openAchieveActions(k, s){
+  $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${fmtDate(k.ngay)}</div><div class="asub">${k.noi_dung}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="actopt" id="delKt"><i class="hgi-stroke hgi-cancel-01" style="color:var(--danger)"></i><span style="color:var(--danger)">Xóa</span></div>`;
+  $('#delKt').onclick=async()=>{ const {error}=await db.from('khen_thuong').delete().eq('id',k.id); closeAct(); if(error)return toast(error.message,false); loadKhenThuong(s.id).then(list=>renderKhenThuong(s,list)); toast('Đã xóa'); };
+  showAct();
+}
 
 /* ===== HỌC PHÍ (chỉ quản lý) — tạo phiếu + QR VietQR thật ===== */
 function genCK(ma){ const mm=String(new Date().getMonth()+1).padStart(2,'0'); const r=Math.random().toString(36).slice(2,4).toUpperCase(); return (ma+'T'+mm+r).toUpperCase().replace(/[^A-Z0-9]/g,''); }
@@ -3297,8 +3412,9 @@ let detailBackFn=null;
 function showDetailPage(label,backFn){ if(label) $('#detailBackLabel').textContent=label; detailBackFn=backFn||null; $('#detailPage').classList.add('show'); }
 function closeDetailPage(){ $('#detailPage').classList.remove('show'); }
 $('#detailBack').onclick=()=>{ if(detailBackFn){ const fn=detailBackFn; fn(); } else { closeDetailPage(); } };
-function showConfirmDialog(title,msg,onConfirm){
+function showConfirmDialog(title,msg,onConfirm,confirmLabel){
   $('#dlgTitle').textContent=title; $('#dlgMsg').textContent=msg;
+  $('#dlgConfirm').textContent=confirmLabel||'Xóa';
   $('#dialogScrim').classList.remove('hide');
   $('#dlgConfirm').onclick=()=>{ $('#dialogScrim').classList.add('hide'); onConfirm(); };
 }
