@@ -208,6 +208,25 @@
   .sheet h2{font-weight:800; letter-spacing:-.02em; font-size:21px; margin:4px 0 2px}
   .sheet .lead{color:var(--muted); font-size:13.5px; margin:0 0 6px}
 
+  /* === Sheet & Action Sheet → modal desktop (≥1024px) ===
+     Dưới 1024px giữ nguyên bottom-sheet trượt lên như cũ, không đổi gì.
+     Từ 1024px: CHỈ đổi vị trí/transform của cùng khung .sheet/.act có sẵn — JS
+     show()/showAct()/closeSheets()/closeAct() giữ nguyên 100%, không đổi 1 dòng.
+     Chuyển từ trồi-đáy sang hộp thoại nổi giữa màn, theo đúng mẫu đã có sẵn
+     .dialogscrim/.dialogcard (mục 22) — tái dùng ngôn ngữ hình, không bịa kiểu mới. */
+  @media (min-width:1024px){
+    .sheet,.act{
+      left:50%; top:50%; bottom:auto;
+      transform:translate(-50%,-50%) scale(.96);
+      opacity:0; pointer-events:none;
+      border-radius:var(--r-group);
+      max-height:85vh;
+      transition:transform .22s cubic-bezier(.32,.72,0,1), opacity .18s;
+    }
+    .sheet.show,.act.show{ transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto }
+    .grip{display:none}
+  }
+
   /* Group + Row (mục 6 design-system) — component danh sách chuẩn */
   .group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
   .dash .group+.group{margin-top:10px}
@@ -281,6 +300,23 @@
      Chỉ toggle bằng JS đúng lúc renderEvalScreen() ở chế độ lưới — không đổi .page cho các
      trang push khác (xem renderEvalScreen/closePage). Xem DESIGN-SYSTEM mục 26. */
   @media (min-width:1024px){ .page.evwide{max-width:1060px} }
+
+  /* === Trang push (mọi #page/#detailPage) → nới rộng bản đơn giản trên desktop (≥1024px) ===
+     Bản đơn giản trước khi làm master-detail 2 cột thật cho Học sinh/Lớp học (ke-hoach-trai-
+     nghiem-web.md mục 3: "có thể làm bản đơn giản trước... rồi nâng cấp lên master-detail sau
+     nếu thấy cần"). Áp dụng chung cho MỌI trang push (chi tiết học sinh/lớp, mọi form tạo/sửa,
+     Profile...) vì tất cả dùng chung 1 khung .page — từ 440px (bó cứng như mobile) lên 640px,
+     đủ thoáng để đọc hero/section/group mà không cần đổi cấu trúc render. .page.evwide (mục
+     trên, riêng cho lưới Đánh giá buổi học) vẫn ăn theo đúng 1060px như cũ nhờ CSS specificity
+     cao hơn (.page.evwide thắng .page). KHÔNG đổi markup/JS — chỉ 1 giá trị max-width. */
+  @media (min-width:1024px){ .page{max-width:640px} }
+
+  /* === Tab Thu chi / Học phí → nới rộng .app trên desktop (≥1024px) ===
+     Cùng đợt bản đơn giản ở trên: .app (khung ngoài cùng, id="main") mặc định max-width:440px
+     cho MỌI tab — cùng kiến trúc với .page nên dùng đúng pattern toggle-class: chỉ nới rộng khi
+     đang ở đúng 2 tab này (view==='thu_chi'||'hoc_phi', gán qua switchView()), tab khác (Học
+     sinh/Lớp học/Dashboard) không bị ảnh hưởng. */
+  @media (min-width:1024px){ .app.wide{max-width:760px} }
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
   .field input[type="date"],.field input[type="time"]{overflow:hidden; -webkit-appearance:none; appearance:none; min-height:46px; line-height:1.3; text-align:left; min-width:0; max-width:100%; box-sizing:border-box}
@@ -863,6 +899,7 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
+  $('#main').classList.toggle('wide', v==='thu_chi'||v==='hoc_phi');
   if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
