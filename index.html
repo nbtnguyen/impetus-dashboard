@@ -208,25 +208,6 @@
   .sheet h2{font-weight:800; letter-spacing:-.02em; font-size:21px; margin:4px 0 2px}
   .sheet .lead{color:var(--muted); font-size:13.5px; margin:0 0 6px}
 
-  /* === Sheet & Action Sheet → modal desktop (≥1024px) ===
-     Dưới 1024px giữ nguyên bottom-sheet trượt lên như cũ, không đổi gì.
-     Từ 1024px: CHỈ đổi vị trí/transform của cùng khung .sheet/.act có sẵn — JS
-     show()/showAct()/closeSheets()/closeAct() giữ nguyên 100%, không đổi 1 dòng.
-     Chuyển từ trồi-đáy sang hộp thoại nổi giữa màn, theo đúng mẫu đã có sẵn
-     .dialogscrim/.dialogcard (mục 22) — tái dùng ngôn ngữ hình, không bịa kiểu mới. */
-  @media (min-width:1024px){
-    .sheet,.act{
-      left:50%; top:50%; bottom:auto;
-      transform:translate(-50%,-50%) scale(.96);
-      opacity:0; pointer-events:none;
-      border-radius:var(--r-group);
-      max-height:85vh;
-      transition:transform .22s cubic-bezier(.32,.72,0,1), opacity .18s;
-    }
-    .sheet.show,.act.show{ transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto }
-    .grip{display:none}
-  }
-
   /* Group + Row (mục 6 design-system) — component danh sách chuẩn */
   .group{background:var(--surface); border-radius:var(--r-group); overflow:hidden}
   .dash .group+.group{margin-top:10px}
@@ -300,23 +281,6 @@
      Chỉ toggle bằng JS đúng lúc renderEvalScreen() ở chế độ lưới — không đổi .page cho các
      trang push khác (xem renderEvalScreen/closePage). Xem DESIGN-SYSTEM mục 26. */
   @media (min-width:1024px){ .page.evwide{max-width:1060px} }
-
-  /* === Trang push (mọi #page/#detailPage) → nới rộng bản đơn giản trên desktop (≥1024px) ===
-     Bản đơn giản trước khi làm master-detail 2 cột thật cho Học sinh/Lớp học (ke-hoach-trai-
-     nghiem-web.md mục 3: "có thể làm bản đơn giản trước... rồi nâng cấp lên master-detail sau
-     nếu thấy cần"). Áp dụng chung cho MỌI trang push (chi tiết học sinh/lớp, mọi form tạo/sửa,
-     Profile...) vì tất cả dùng chung 1 khung .page — từ 440px (bó cứng như mobile) lên 640px,
-     đủ thoáng để đọc hero/section/group mà không cần đổi cấu trúc render. .page.evwide (mục
-     trên, riêng cho lưới Đánh giá buổi học) vẫn ăn theo đúng 1060px như cũ nhờ CSS specificity
-     cao hơn (.page.evwide thắng .page). KHÔNG đổi markup/JS — chỉ 1 giá trị max-width. */
-  @media (min-width:1024px){ .page{max-width:640px} }
-
-  /* === Tab Thu chi / Học phí → nới rộng .app trên desktop (≥1024px) ===
-     Cùng đợt bản đơn giản ở trên: .app (khung ngoài cùng, id="main") mặc định max-width:440px
-     cho MỌI tab — cùng kiến trúc với .page nên dùng đúng pattern toggle-class: chỉ nới rộng khi
-     đang ở đúng 2 tab này (view==='thu_chi'||'hoc_phi', gán qua switchView()), tab khác (Học
-     sinh/Lớp học/Dashboard) không bị ảnh hưởng. */
-  @media (min-width:1024px){ .app.wide{max-width:760px} }
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
   .field input[type="date"],.field input[type="time"]{overflow:hidden; -webkit-appearance:none; appearance:none; min-height:46px; line-height:1.3; text-align:left; min-width:0; max-width:100%; box-sizing:border-box}
@@ -662,10 +626,11 @@ async function enterApp(){
   const {data:{user}}=await db.auth.getUser();
   me.id=user.id;
   me.email=user.email;
-  const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro, giao_vien_id').eq('id',user.id).maybeSingle();
+  const {data:prof}=await db.from('profiles').select('ho_ten, vai_tro, giao_vien_id, giao_vien(la_tro_giang)').eq('id',user.id).maybeSingle();
   me.name=(prof&&prof.ho_ten)||user.email;
   me.role=(prof&&prof.vai_tro)||'nhan_vien';
   me.gvId=(prof&&prof.giao_vien_id)||null;
+  me.laTroGiang=!!(prof&&prof.giao_vien&&prof.giao_vien.la_tro_giang);
   if(me.role==='phu_huynh'){ await enterParentApp(); return; }
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
   if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); $('#navTaiKhoan').classList.remove('hide'); }
@@ -868,7 +833,7 @@ function classTeacherLabel(c){
   if(vn) return vn+' (VN)';
   return 'Chưa gán GV';
 }
-async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten').order('ho_ten'); teachers=data||[]; }
+async function loadTeachers(){ const {data}=await db.from('giao_vien').select('id, ho_ten, la_tro_giang').order('ho_ten'); teachers=data||[]; }
 async function loadPhanCong(){ const {data}=await db.from('phan_cong_lop').select('id, lop_hoc_id, giao_vien_id').order('ngay_tao'); phancong=data||[]; }
 function taNames(classId){ return phancong.filter(p=>p.lop_hoc_id===classId).map(p=>{const t=teachers.find(x=>x.id===p.giao_vien_id); return t?t.ho_ten:null;}).filter(Boolean).join(', '); }
 function gvTeachingMeta(t){
@@ -899,7 +864,6 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  $('#main').classList.toggle('wide', v==='thu_chi'||v==='hoc_phi');
   if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
@@ -1327,6 +1291,13 @@ function monthSessionDates(mine, year, month){
   mine.forEach(c=>classSessionDatesInMonth(c,year,month).forEach(d=>set.add(d)));
   return Array.from(set).sort();
 }
+function gvMonthDates(mine, year, month, today){
+  const dates=monthSessionDates(mine, year, month);
+  if(me.laTroGiang && today && today.slice(0,7)===year+'-'+String(month).padStart(2,'0') && !dates.includes(today)){
+    dates.push(today); dates.sort();
+  }
+  return dates;
+}
 function buildDateStripHtml(dates, selected){
   return `<div class="dstrip" id="gvDstrip">${dates.map(d=>`<div class="dchip ${d===selected?'on':''}" data-date="${d}"><div class="dw">${wdOf(d)}</div><div class="dd">${shortDate(d)}</div></div>`).join('')}</div>`;
 }
@@ -1546,15 +1517,16 @@ async function buildLopToi(){
       <div class="pagetitle" style="margin:0 0 4px"><h1>Lịch dạy</h1></div>
     </div>
     <div class="list" id="list"><div class="state"><div class="skel line w40" style="margin:0 auto"></div></div></div>`;
-  if(!mine.length){ $('#list').innerHTML='<div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>'; return; }
+  if(!mine.length && !me.laTroGiang){ $('#list').innerHTML='<div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>'; return; }
   const now=new Date();
   await loadAndRenderMonth(now.getFullYear(), now.getMonth()+1, true);
 }
 async function loadAndRenderMonth(year, month, isInitial){
-  const data=await loadGvHomeData(gvHomeMine, year, month);
+  const queryClasses = me.laTroGiang ? classes.filter(c=>c.trang_thai==='dang_hoc') : gvHomeMine;
+  const data=await loadGvHomeData(queryClasses, year, month);
   if(view!=='lop_toi') return;
   gvHomeData=data;
-  const dates=monthSessionDates(gvHomeMine, year, month);
+  const dates=gvMonthDates(gvHomeMine, year, month, data.today);
   if(isInitial){
     gvSelectedDate=data.today;
     if(!dates.includes(gvSelectedDate)){
@@ -1575,9 +1547,14 @@ function gvChangeMonth(delta){
 }
 function renderLopToiList(){
   const mine=gvHomeMine, data=gvHomeData, sel=gvSelectedDate;
-  const dates=monthSessionDates(mine, data.year, data.month);
+  const dates=gvMonthDates(mine, data.year, data.month, data.today);
   const wd=wdOf(sel);
-  const classesOnSel=mine.filter(c=>c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
+  let classesOnSel=mine.filter(c=>c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
+  if(me.laTroGiang && sel===data.today){
+    const mineIds=new Set(mine.map(c=>c.id));
+    const extra=classes.filter(c=>!mineIds.has(c.id) && c.trang_thai==='dang_hoc' && (c.cac_ngay_trong_tuan||'').split(',').map(x=>x.trim()).includes(wd));
+    classesOnSel=classesOnSel.concat(extra);
+  }
   const now=new Date();
   const isLatestMonth = data.year===now.getFullYear() && data.month===now.getMonth()+1;
   $('#screen').innerHTML = `
@@ -2738,7 +2715,7 @@ function renderGvAccList(){
     const has=gvProfiles.some(p=>p.giao_vien_id===t.id);
     return `<div class="row tap haslead" data-id="${t.id}">
       <div class="lead"><div class="avatar" style="background:${avaC(t.id)}">${ini1(t.ho_ten)}</div></div>
-      <div class="main"><div class="t">${t.ho_ten}</div><div class="meta">${gvTeachingMeta(t)}</div></div>
+      <div class="main"><div class="t">${t.ho_ten}${t.la_tro_giang?' <span class="stt dang_hoc" style="font-size:10.5px;padding:1px 6px">TA</span>':''}</div><div class="meta">${gvTeachingMeta(t)}</div></div>
       <span class="stt ${has?'dang_hoc':'da_nghi'}" style="flex:none;margin-right:6px">${has?'Đã có TK':'Chưa có TK'}</span>
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
@@ -2763,9 +2740,17 @@ function openGvRowActions(t){
   $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">${t.ho_ten}</div><div class="asub">${gvTeachingMeta(t)}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
     ${has
       ? `<div class="actopt" id="gvResetPw"><i class="hgi-stroke hgi-repeat-01"></i>Đặt lại mật khẩu tạm</div>`
-      : `<div class="actopt" id="gvCreateAcc"><i class="hgi-stroke hgi-add-01"></i>Tạo tài khoản đăng nhập</div>`}`;
+      : `<div class="actopt" id="gvCreateAcc"><i class="hgi-stroke hgi-add-01"></i>Tạo tài khoản đăng nhập</div>`}
+    <div class="actopt" id="gvToggleTA"><i class="hgi-stroke hgi-user-check-01" style="${t.la_tro_giang?'color:var(--primary)':''}"></i>${t.la_tro_giang?'Bỏ đánh dấu Trợ giảng (TA)':'Đánh dấu là Trợ giảng (TA)'}</div>`;
   if(has) $('#gvResetPw').onclick=()=>openGvPasswordForm(t, has.id, true);
   else $('#gvCreateAcc').onclick=()=>openGvPasswordForm(t, null, false);
+  $('#gvToggleTA').onclick=async()=>{
+    const {error}=await db.from('giao_vien').update({la_tro_giang:!t.la_tro_giang}).eq('id',t.id);
+    closeAct();
+    if(error) return toast(error.message,false);
+    t.la_tro_giang=!t.la_tro_giang;
+    toast(t.la_tro_giang?'Đã đánh dấu là TA — thấy hết lớp có buổi hôm nay':'Đã bỏ đánh dấu TA');
+  };
   showAct();
 }
 function openGvPasswordForm(t, profileId, isReset){
