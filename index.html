@@ -999,8 +999,14 @@ function openStudentDetail(s){
     <div class="section"><div class="lbl">Buổi cần học bù${chua?` <span class="badge">· ${chua} chưa bù</span>`:''}</div><div class="group">${mkRows}${addHbRow}</div></div>
     <div class="section"><div class="lbl">Thông tin & phụ huynh</div><div class="group">${infoRows}</div></div>
     <div class="section"><div class="lbl">Kiểm tra đầu vào</div><div class="group">
-      <div class="row ${canWrite()?'tap':''}" id="toggleTestNoi"><div class="main"><div class="t">Test nói</div></div><span class="stt ${s.da_test_noi?'dang_hoc':'da_nghi'}" style="flex:none">${s.da_test_noi?'Đã test':'Chưa test'}</span></div>
-      <div class="row ${canWrite()?'tap':''}" id="toggleTestViet"><div class="main"><div class="t">Test viết</div></div><span class="stt ${s.da_test_viet?'dang_hoc':'da_nghi'}" style="flex:none">${s.da_test_viet?'Đã test':'Chưa test'}</span></div>
+      <div class="row ${canWrite()?'tap':''}" id="toggleTestNoi">
+        <div class="lead"><i class="hgi-stroke ${s.da_test_noi?'hgi-checkmark-circle-02':'hgi-circle'}" style="font-size:23px;color:${s.da_test_noi?'var(--ok)':'var(--faint)'}"></i></div>
+        <div class="main"><div class="t">Test nói</div><div class="meta">${canWrite()?(s.da_test_noi?'Bấm để bỏ đánh dấu':'Bấm để đánh dấu đã test'):(s.da_test_noi?'Đã test':'Chưa test')}</div></div>
+      </div>
+      <div class="row ${canWrite()?'tap':''}" id="toggleTestViet">
+        <div class="lead"><i class="hgi-stroke ${s.da_test_viet?'hgi-checkmark-circle-02':'hgi-circle'}" style="font-size:23px;color:${s.da_test_viet?'var(--ok)':'var(--faint)'}"></i></div>
+        <div class="main"><div class="t">Test viết</div><div class="meta">${canWrite()?(s.da_test_viet?'Bấm để bỏ đánh dấu':'Bấm để đánh dấu đã test'):(s.da_test_viet?'Đã test':'Chưa test')}</div></div>
+      </div>
     </div></div>
     <div class="section"><div class="lbl">Khen thưởng / Thành tích</div><div class="group" id="ktGroup"><div class="row"><span class="meta">Đang tải…</span></div></div></div>
     ${isGV()?`<div class="section" id="gvKqtHist"></div><div class="section"><div class="lbl">Lịch sử nhận xét theo buổi</div><div class="group" id="gvDgbHist"><div class="row"><span class="meta">Đang tải…</span></div></div></div>`:''}
