@@ -200,7 +200,7 @@ module.exports = async (req, res) => {
     }).join('');
 
     const body = `
-<div class="card"><div style="font-size:17px;font-weight:800">${esc(lop.ten_lop)}</div><div style="font-size:12.5px;color:#8d969e;margin-top:2px">${esc(fmtDateVN(share.ngay))}</div></div>
+<div class="card"><div style="font-size:17px;font-weight:800">Kết quả buổi học lớp ${esc(lop.ten_lop)}</div><div style="font-size:12.5px;color:#8d969e;margin-top:2px">${esc(fmtDateVN(share.ngay))}</div></div>
 ${galleryHtml}
 <input class="search" id="q" placeholder="Tìm tên học sinh...">
 ${chungHtml}
