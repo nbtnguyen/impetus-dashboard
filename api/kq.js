@@ -54,6 +54,8 @@ function pageShell(bodyHtml) {
   .brand .n span{color:#494fdf}
   .brand .s{font-size:11px;color:#8d969e}
   .card{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:12px}
+  .gallery{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}
+  .gallery img{width:104px;height:104px;object-fit:cover;border-radius:12px;flex:none;display:block}
   .lbl{font-size:12px;font-weight:700;color:#8d969e;text-transform:uppercase;letter-spacing:.02em;margin:2px 4px 8px}
   input.search{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:11px 13px;border-radius:12px;border:1px solid #E6E6EA;margin-bottom:14px;background:#fff;outline:0}
   input.search:focus{border-color:#494fdf}
@@ -148,13 +150,14 @@ module.exports = async (req, res) => {
       return res.send(statePage('Link đã hết hạn', 'Link kết quả buổi học tự hết hạn sau 30 ngày. Vui lòng liên hệ giáo viên để được hỗ trợ.'));
     }
 
-    const [lopRes, regRes, nxlbRes, dgbRes] = await Promise.all([
+    const [lopRes, regRes, nxlbRes, dgbRes, anhRes] = await Promise.all([
       fetch(rest('lop_hoc?id=eq.' + share.lop_hoc_id + '&select=id,ten_lop'), { headers: srHeaders }),
       fetch(rest('dang_ky_lop?lop_hoc_id=eq.' + share.lop_hoc_id + '&select=trang_thai,hoc_sinh(id,ho_ten,ma_hoc_sinh,trang_thai)'), { headers: srHeaders }),
       fetch(rest('nhan_xet_lop_buoi?lop_hoc_id=eq.' + share.lop_hoc_id + '&ngay=eq.' + share.ngay + '&select=*'), { headers: srHeaders }),
-      fetch(rest('danh_gia_buoi?lop_hoc_id=eq.' + share.lop_hoc_id + '&ngay=eq.' + share.ngay + '&select=hoc_sinh_id,du_lieu'), { headers: srHeaders })
+      fetch(rest('danh_gia_buoi?lop_hoc_id=eq.' + share.lop_hoc_id + '&ngay=eq.' + share.ngay + '&select=hoc_sinh_id,du_lieu'), { headers: srHeaders }),
+      fetch(rest('buoi_hoc_anh?lop_hoc_id=eq.' + share.lop_hoc_id + '&ngay=eq.' + share.ngay + '&select=url&order=ngay_tao'), { headers: srHeaders })
     ]);
-    const [lopArr, regArr, nxlbArr, dgbArr] = await Promise.all([lopRes.json(), regRes.json(), nxlbRes.json(), dgbRes.json()]);
+    const [lopArr, regArr, nxlbArr, dgbArr, anhArr] = await Promise.all([lopRes.json(), regRes.json(), nxlbRes.json(), dgbRes.json(), anhRes.json()]);
 
     const lop = Array.isArray(lopArr) ? lopArr[0] : null;
     if (!lop) {
@@ -168,6 +171,11 @@ module.exports = async (req, res) => {
       .filter((r) => r.hoc_sinh && r.trang_thai !== 'da_nghi' && (r.hoc_sinh.trang_thai === 'dang_hoc' || r.hoc_sinh.trang_thai === 'bao_luu'))
       .map((r) => r.hoc_sinh)
       .sort((a, b) => (a.ho_ten || '').localeCompare(b.ho_ten || '', 'vi'));
+
+    const photos = Array.isArray(anhArr) ? anhArr : [];
+    const galleryHtml = photos.length
+      ? `<div class="lbl">Khoảnh khắc buổi học</div><div class="gallery">${photos.map((p) => `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer"><img src="${esc(p.url)}" loading="lazy" alt=""></a>`).join('')}</div>`
+      : '';
 
     const chungRows = [];
     if (nxlb && nxlb.noi_dung_buoi_hoc) chungRows.push(['Nội dung buổi học', nxlb.noi_dung_buoi_hoc]);
@@ -193,6 +201,7 @@ module.exports = async (req, res) => {
 
     const body = `
 <div class="card"><div style="font-size:17px;font-weight:800">${esc(lop.ten_lop)}</div><div style="font-size:12.5px;color:#8d969e;margin-top:2px">${esc(fmtDateVN(share.ngay))}</div></div>
+${galleryHtml}
 <input class="search" id="q" placeholder="Tìm tên học sinh...">
 ${chungHtml}
 <div class="lbl">II. Nhận xét từng học sinh</div>
