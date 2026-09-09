@@ -16,6 +16,15 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Chạy SAU esc() — chỉ nhận chuỗi đã escape, không nhận HTML thô.
+function linkify(escapedText) {
+  return escapedText.replace(/(https?:\/\/[^\s<]+)/g, (m) => {
+    let url = m, trail = '';
+    while (/[.,;:!?)]$/.test(url)) { trail = url.slice(-1) + trail; url = url.slice(0, -1); }
+    return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>' + trail;
+  });
+}
+
 function fmtDateVN(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
@@ -52,6 +61,7 @@ function pageShell(bodyHtml) {
   .field:last-child{margin-bottom:0}
   .field .t{font-size:12.5px;font-weight:700;color:#191c1f;margin-bottom:3px}
   .field .v{font-size:13.5px;color:#505a63;line-height:1.5}
+  .field .v a{color:#494fdf;word-break:break-all}
   .scard{background:#fff;border-radius:16px;padding:13px 15px;margin-bottom:10px}
   .scard .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .scard .ava{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:800;font-size:12.5px;flex:none}
@@ -164,7 +174,7 @@ module.exports = async (req, res) => {
     if (nxlb && nxlb.phieu_homework) chungRows.push(['Phiếu Homework', nxlb.phieu_homework]);
     if (nxlb && nxlb.bai_tap_bo_tro) chungRows.push(['Bài tập bổ trợ', nxlb.bai_tap_bo_tro]);
     const chungHtml = chungRows.length
-      ? `<div class="lbl">I. Nhận xét chung</div><div class="card">${chungRows.map(([t, v]) => `<div class="field"><div class="t">${esc(t)}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>`
+      ? `<div class="lbl">I. Nhận xét chung</div><div class="card">${chungRows.map(([t, v]) => `<div class="field"><div class="t">${esc(t)}</div><div class="v">${linkify(esc(v))}</div></div>`).join('')}</div>`
       : '';
 
     const studentCards = roster.map((s) => {
