@@ -1685,7 +1685,7 @@ function composeMsg(c, s, cur, t, coMat, dateISO){
   else if(cur.dat_muc_tieu===false) parts.push('chưa đạt mục tiêu buổi học');
   const bodyText=parts.filter(Boolean).join(', ');
   const nxLine=cur.nhan_xet_text? cur.nhan_xet_text : (cur.nhan_xet_sentence? cur.nhan_xet_sentence : (cur.nhan_xet? (NX_BUOI[cur.nhan_xet]||'') : ''));
-  return `${c.ten_lop} — ${fmtDate(dateISO)}\nCon ${s.ho_ten} hôm nay${bodyText?' '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
+  return `Con ${s.ho_ten} hôm nay${bodyText?' '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
 }
 function evalCur(sid, dateISO){
   const key=`${sid}|${dateISO}`;
@@ -1756,8 +1756,8 @@ function renderEvalScreen(curDate, preserveScroll){
     <div class="section" style="margin-top:2px">
       <div class="lbl">I. Nhận xét chung</div>
       <div class="group" style="padding:14px 16px">
-        <div class="field" style="margin-top:0"><label>1. Tinh thần học tập — Chuyên cần</label>
-          <textarea class="tarea nxlbField" id="nxlb_chuyencan" placeholder="Nhận xét chuyên cần cả lớp…">${nx.chuyen_can||''}</textarea>
+        <div class="field" style="margin-top:0"><label>1. Nội dung buổi học</label>
+          <textarea class="tarea nxlbField" id="nxlb_noidung" placeholder="Nội dung, hoạt động của buổi học hôm nay…">${nx.noi_dung_buoi_hoc||''}</textarea>
         </div>
         <div class="field"><label>2a. Bài luyện tập ở nhà — Phiếu Homework</label>
           <textarea class="tarea nxlbField" id="nxlb_phieu" placeholder="Nhận xét phiếu homework…">${nx.phieu_homework||''}</textarea>
@@ -1814,17 +1814,17 @@ function wireNxlbBlock(curDate){
   if(!btn) return;
   btn.onclick=async()=>{
     const {c}=gvEvalCtx;
-    const chuyen_can=$('#nxlb_chuyencan').value.trim()||null;
+    const noi_dung_buoi_hoc=$('#nxlb_noidung').value.trim()||null;
     const phieu_homework=$('#nxlb_phieu').value.trim()||null;
     const bai_tap_bo_tro=$('#nxlb_botro').value.trim()||null;
     const existing=gvEvalCtx.evalData.nxlbMap[curDate];
     btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
     let error;
     if(existing){
-      const r=await db.from('nhan_xet_lop_buoi').update({chuyen_can, phieu_homework, bai_tap_bo_tro, ngay_sua:new Date().toISOString()}).eq('id',existing.id);
-      error=r.error; if(!error) Object.assign(existing,{chuyen_can, phieu_homework, bai_tap_bo_tro});
+      const r=await db.from('nhan_xet_lop_buoi').update({noi_dung_buoi_hoc, phieu_homework, bai_tap_bo_tro, ngay_sua:new Date().toISOString()}).eq('id',existing.id);
+      error=r.error; if(!error) Object.assign(existing,{noi_dung_buoi_hoc, phieu_homework, bai_tap_bo_tro});
     } else {
-      const r=await db.from('nhan_xet_lop_buoi').insert({lop_hoc_id:c.id, ngay:curDate, chuyen_can, phieu_homework, bai_tap_bo_tro, nguoi_tao:me.id}).select('*').single();
+      const r=await db.from('nhan_xet_lop_buoi').insert({lop_hoc_id:c.id, ngay:curDate, noi_dung_buoi_hoc, phieu_homework, bai_tap_bo_tro, nguoi_tao:me.id}).select('*').single();
       error=r.error; if(!error) gvEvalCtx.evalData.nxlbMap[curDate]=r.data;
     }
     btn.disabled=false; btn.textContent='Lưu nhận xét chung';
