@@ -1205,9 +1205,8 @@ function renderClasses(){
         <span class="spill ${c.trang_thai}" style="flex:none">${CST[c.trang_thai]||c.trang_thai}</span>
       </div>
       ${weekStrip(c.cac_ngay_trong_tuan)}
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)">
+      <div style="display:flex;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)">
         <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600">${countHtml}</span>
-        ${isManager()?`<span style="font-weight:600;font-size:13.5px;font-family:'Inter',sans-serif">${vnd(c.hoc_phi_thang)}đ <span style="color:var(--faint);font-weight:500">/tháng</span></span>`:''}
       </div>
     </div>`;
   }).join('');
