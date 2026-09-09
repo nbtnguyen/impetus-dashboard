@@ -1287,16 +1287,17 @@ function openShareSheet(c, date, token){
       <button class="qact" id="shCopy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy link</button>
     </div>
     <div class="actopt" id="shRevoke" style="margin-top:14px"><i class="hgi-stroke hgi-cancel-01" style="color:var(--danger)"></i><span style="color:var(--danger)">Thu hồi link này</span></div>`;
+  const shareText='Kết quả buổi học '+c.ten_lop+' — '+fmtDate(date)+'\n'+url;
   $('#shShare').onclick=async()=>{
     if(navigator.share){ try{ await navigator.share({title:'Kết quả buổi học '+c.ten_lop, text:'Kết quả buổi học '+c.ten_lop+' — '+fmtDate(date), url}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
-    copyShareLinkText(url);
+    copyShareLinkText(shareText);
   };
-  $('#shCopy').onclick=()=>copyShareLinkText(url);
+  $('#shCopy').onclick=()=>copyShareLinkText(shareText);
   $('#shRevoke').onclick=()=>{ const row=gvHomeData.shareMap[`${c.id}|${date}`]; if(row) revokeShareLink(c, date, row.id); };
   show('#sheet');
 }
-async function copyShareLinkText(url){
-  try{ await navigator.clipboard.writeText(url); toast('Đã sao chép link'); }
+async function copyShareLinkText(text){
+  try{ await navigator.clipboard.writeText(text); toast('Đã sao chép link'); }
   catch(e){ toast('Không copy được — chép tay giúp em',false); }
 }
 async function revokeShareLink(c, date, id){
@@ -2892,7 +2893,21 @@ function openEnrollActions(reg, s){
     <div class="actopt" id="rmLop"><i class="hgi-stroke hgi-cancel-01" style="color:var(--danger)"></i><span style="color:var(--danger)">Gỡ khỏi lớp</span></div>`;
   $('#actBody').querySelectorAll('.actopt[data-s]').forEach(o=>o.onclick=async()=>{ await db.from('dang_ky_lop').update({trang_thai:o.dataset.s}).eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã cập nhật'); });
   $('#moveLop').onclick=()=>openMoveClass(reg, s);
-  $('#rmLop').onclick=async()=>{ await db.from('dang_ky_lop').delete().eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã gỡ khỏi lớp'); };
+  $('#rmLop').onclick=async()=>{
+    closeAct();
+    const {error}=await db.from('dang_ky_lop').delete().eq('id',reg.id);
+    if(error){
+      if(error.code==='23503'){
+        const {error:err2}=await db.from('dang_ky_lop').update({trang_thai:'da_nghi'}).eq('id',reg.id);
+        if(err2) return toast(err2.message,false);
+        await afterEnrollChange();
+        return toast('Học sinh đã có lịch sử học phí ở lớp này — đã chuyển sang "Đã nghỉ" thay vì xoá hẳn');
+      }
+      return toast(error.message,false);
+    }
+    await afterEnrollChange();
+    toast('Đã gỡ khỏi lớp');
+  };
   showAct();
 }
 function openMoveClass(reg, s){
