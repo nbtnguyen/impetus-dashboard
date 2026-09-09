@@ -170,7 +170,7 @@ module.exports = async (req, res) => {
       .sort((a, b) => (a.ho_ten || '').localeCompare(b.ho_ten || '', 'vi'));
 
     const chungRows = [];
-    if (nxlb && nxlb.chuyen_can) chungRows.push(['Chuyên cần', nxlb.chuyen_can]);
+    if (nxlb && nxlb.noi_dung_buoi_hoc) chungRows.push(['Nội dung buổi học', nxlb.noi_dung_buoi_hoc]);
     if (nxlb && nxlb.phieu_homework) chungRows.push(['Phiếu Homework', nxlb.phieu_homework]);
     if (nxlb && nxlb.bai_tap_bo_tro) chungRows.push(['Bài tập bổ trợ', nxlb.bai_tap_bo_tro]);
     const chungHtml = chungRows.length
