@@ -905,9 +905,10 @@ function renderStudents(){
     if(ps==='due') parts.push(`<span class="unpaid">Chưa đóng</span>`);
     if(owesN(s)) parts.push(`<span class="unpaid">Nợ ${owesN(s)} buổi</span>`);
     const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
+    const testTags=`<span class="tag ${s.da_test_noi?'good':'bad'}" style="font-size:10.5px;padding:2px 7px;border-radius:100px;margin-right:4px;display:inline-flex;font-weight:700;${s.da_test_noi?'background:var(--ok-bg,#E4F7EE);color:var(--ok,#1E7955)':'background:var(--line);color:var(--muted)'}">${s.da_test_noi?'✓':''} Test nói</span><span class="tag ${s.da_test_viet?'good':'bad'}" style="font-size:10.5px;padding:2px 7px;border-radius:100px;display:inline-flex;font-weight:700;${s.da_test_viet?'background:var(--ok-bg,#E4F7EE);color:var(--ok,#1E7955)':'background:var(--line);color:var(--muted)'}">${s.da_test_viet?'✓':''} Test viết</span>`;
     return `<div class="row tap haslead" data-id="${s.id}">
       <div class="lead">${avaHtml(s,'avatar')}</div>
-      <div class="main"><div class="t">${s.ho_ten}</div>${faceIds.has(s.id)?'<div class="meta" style="color:var(--ok)">Đã có FaceID</div>':''}<div class="meta">${meta}</div></div>
+      <div class="main"><div class="t">${s.ho_ten}</div>${faceIds.has(s.id)?'<div class="meta" style="color:var(--ok)">Đã có FaceID</div>':''}<div class="meta">${meta}</div><div style="margin-top:5px">${testTags}</div></div>
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
     </div>`;
   }).join('')+'</div>';
@@ -997,6 +998,10 @@ function openStudentDetail(s){
     <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${enrRows}${addLopRow}</div></div>
     <div class="section"><div class="lbl">Buổi cần học bù${chua?` <span class="badge">· ${chua} chưa bù</span>`:''}</div><div class="group">${mkRows}${addHbRow}</div></div>
     <div class="section"><div class="lbl">Thông tin & phụ huynh</div><div class="group">${infoRows}</div></div>
+    <div class="section"><div class="lbl">Kiểm tra đầu vào</div><div class="group">
+      <div class="row ${canWrite()?'tap':''}" id="toggleTestNoi"><div class="main"><div class="t">Test nói</div></div><span class="stt ${s.da_test_noi?'dang_hoc':'da_nghi'}" style="flex:none">${s.da_test_noi?'Đã test':'Chưa test'}</span></div>
+      <div class="row ${canWrite()?'tap':''}" id="toggleTestViet"><div class="main"><div class="t">Test viết</div></div><span class="stt ${s.da_test_viet?'dang_hoc':'da_nghi'}" style="flex:none">${s.da_test_viet?'Đã test':'Chưa test'}</span></div>
+    </div></div>
     <div class="section"><div class="lbl">Khen thưởng / Thành tích</div><div class="group" id="ktGroup"><div class="row"><span class="meta">Đang tải…</span></div></div></div>
     ${isGV()?`<div class="section" id="gvKqtHist"></div><div class="section"><div class="lbl">Lịch sử nhận xét theo buổi</div><div class="group" id="gvDgbHist"><div class="row"><span class="meta">Đang tải…</span></div></div></div>`:''}
     ${canDel?'<button class="btn danger block" id="delS" style="margin-top:var(--sp-6)">Xóa học sinh</button>':''}
@@ -1009,9 +1014,20 @@ function openStudentDetail(s){
   $('#detailBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
   $('#detailBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
   $('#detailBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
+  if(canWrite()){
+    $('#toggleTestNoi').onclick=()=>toggleTestFlag(s,'da_test_noi');
+    $('#toggleTestViet').onclick=()=>toggleTestFlag(s,'da_test_viet');
+  }
   if(isGV()) loadGvStudentHistory(s).then(hist=>{ renderGvKqtHistory(hist.kqt); renderGvDgbHistory(hist.dgb); });
   loadKhenThuong(s.id).then(list=>renderKhenThuong(s,list));
   showDetailPage('Học sinh');
+}
+async function toggleTestFlag(s, field){
+  const {error}=await db.from('hoc_sinh').update({[field]:!s[field]}).eq('id',s.id);
+  if(error) return toast(error.message,false);
+  s[field]=!s[field];
+  if(view==='hoc_sinh') renderStudents();
+  openStudentDetail(s);
 }
 function nextMa(){ let m=0; students.forEach(s=>{const n=parseInt((s.ma_hoc_sinh||'').replace(/\D/g,''))||0; if(n>m)m=n;}); return 'HS'+String(m+1).padStart(3,'0'); }
 function resizeImageFile(file, maxDim, quality){
