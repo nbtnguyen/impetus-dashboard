@@ -1851,7 +1851,7 @@ function tallyUpTo(sid, sessUpToDates, evalData){
 }
 function composeMsg(c, s, cur, t, coMat, dateISO){
   const parts=[];
-  if(coMat!==null) parts.push(coMat?'có mặt':'vắng mặt');
+  if(coMat===false) parts.push('vắng mặt');
   if(cur.btvn==='hoan_thanh') parts.push('hoàn thành bài tập về nhà');
   else if(cur.btvn==='chua_hoan_thanh') parts.push('chưa hoàn thành bài tập về nhà');
   else if(cur.btvn==='khong_kiem_tra') parts.push('buổi này cô không kiểm tra bài tập');
@@ -1859,7 +1859,7 @@ function composeMsg(c, s, cur, t, coMat, dateISO){
   else if(cur.dat_muc_tieu===false) parts.push('chưa đạt mục tiêu buổi học');
   const bodyText=parts.filter(Boolean).join(', ');
   const nxLine=cur.nhan_xet_text? cur.nhan_xet_text : (cur.nhan_xet_sentence? cur.nhan_xet_sentence : (cur.nhan_xet? (NX_BUOI[cur.nhan_xet]||'') : ''));
-  return `Con ${s.ho_ten} hôm nay${bodyText?' '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
+  return `Con${bodyText?' hôm nay '+bodyText:''}.${nxLine?'\n'+nxLine:''}`;
 }
 function evalCur(sid, dateISO){
   const key=`${sid}|${dateISO}`;
