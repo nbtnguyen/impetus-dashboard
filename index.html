@@ -459,7 +459,7 @@
 <div id="login">
   <div class="lg-brand"><div class="logo">I</div><div class="t"><div class="n">Impe<span>tus</span></div><div class="s">Hệ thống quản lý trung tâm</div></div></div>
   <h1>Đăng nhập</h1><p class="sub">Dùng tài khoản đã tạo trên hệ thống.</p>
-  <div class="field"><label>Email hoặc số điện thoại</label><input id="lg_email" type="text" autocomplete="username" placeholder="email@trungtam.vn hoặc 09xxxxxxxx"></div>
+  <div class="field"><label>Mã học sinh (phụ huynh) hoặc email (nhân viên)</label><input id="lg_email" type="text" autocomplete="username" placeholder="VD: HS289"></div>
   <div class="field"><label>Mật khẩu</label><input id="lg_pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
   <div class="lg-err" id="lg_err"></div>
   <button class="bigbtn" id="lg_btn">Đăng nhập</button>
@@ -595,31 +595,27 @@ $('#pr_btn').onclick=async()=>{
     enterApp();
   }catch(e){ b.disabled=false; b.innerHTML=old; showPrErr('Lỗi kết nối: '+e.message); }
 };
-function looksLikePhone(s){ return !s.includes('@') && /^[0-9+\-\s.]+$/.test(s); }
-function normPhoneClient(raw){ let d=String(raw||'').replace(/\D/g,''); if(d.length===11&&d.startsWith('84')) d='0'+d.slice(2); if(d.length===9&&!d.startsWith('0')) d='0'+d; return d; }
 async function login(){
   const idf=$('#lg_email').value.trim(), pass=$('#lg_pass').value;
   $('#lg_err').classList.remove('show');
-  if(!idf||!pass){ showLgErr('Nhập email/số điện thoại và mật khẩu.'); return; }
+  if(!idf||!pass){ showLgErr('Nhập email/mã học sinh và mật khẩu.'); return; }
   const b=$('#lg_btn'); b.disabled=true; b.innerHTML='<span class="spinner-sm"></span>Đang đăng nhập…';
-  if(looksLikePhone(idf)){
-    const phone=normPhoneClient(idf);
-    if(phone.length!==10){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Số điện thoại không đúng định dạng.'); return; }
-    try{
-      const res=await fetch('/api/ph-dang-nhap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({so_dien_thoai:phone,password:pass})});
-      const out=await res.json();
-      if(!res.ok||!out.success){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr(out.message||'Sai số điện thoại hoặc mật khẩu.'); return; }
-      const {error}=await db.auth.setSession({access_token:out.access_token, refresh_token:out.refresh_token});
-      b.disabled=false; b.textContent='Đăng nhập';
-      if(error){ showLgErr('Có lỗi khi đăng nhập, thử lại.'); return; }
-      enterApp();
-    }catch(e){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Lỗi kết nối: '+e.message); }
+  if(idf.includes('@')){
+    const {error}=await db.auth.signInWithPassword({email:idf,password:pass});
+    b.disabled=false; b.textContent='Đăng nhập';
+    if(error){ showLgErr(error.message.includes('Invalid')?'Sai email hoặc mật khẩu.':error.message); return; }
+    enterApp();
     return;
   }
-  const {error}=await db.auth.signInWithPassword({email:idf,password:pass});
-  b.disabled=false; b.textContent='Đăng nhập';
-  if(error){ showLgErr(error.message.includes('Invalid')?'Sai email hoặc mật khẩu.':error.message); return; }
-  enterApp();
+  try{
+    const res=await fetch('/api/ph-dang-nhap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ma_hoc_sinh:idf.toUpperCase(),password:pass})});
+    const out=await res.json();
+    if(!res.ok||!out.success){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr(out.message||'Sai mã học sinh hoặc mật khẩu.'); return; }
+    const {error}=await db.auth.setSession({access_token:out.access_token, refresh_token:out.refresh_token});
+    b.disabled=false; b.textContent='Đăng nhập';
+    if(error){ showLgErr('Có lỗi khi đăng nhập, thử lại.'); return; }
+    enterApp();
+  }catch(e){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Lỗi kết nối: '+e.message); }
 }
 async function enterApp(){
   $('#login').classList.add('hide'); $('#pReg').classList.add('hide'); $('#main').classList.remove('hide');
@@ -671,6 +667,11 @@ function renderParentHome(){
       <button class="iconbtn" id="phLogout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
     </div>
     <div style="padding:0 16px 16px">
+      ${canOfferInstall()?`<div class="row tap" id="phInstallBanner" style="background:var(--primary-soft);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+        <div class="ricon" style="background:var(--primary);color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div>
+        <div class="main"><div class="t" style="color:var(--primary)">Cài app vào màn hình chính</div><div class="meta">Mở nhanh như app thật, không cần vào trình duyệt mỗi lần</div></div>
+        <i class="hgi-stroke hgi-arrow-right-01" style="color:var(--primary)"></i>
+      </div>`:''}
       ${segHtml}
       <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${classHtml}</div></div>
       <div class="section"><div class="lbl">Hoạt động</div><div class="group">
@@ -686,6 +687,7 @@ function renderParentHome(){
   if(phCon.length>1){
     document.querySelectorAll('.seg [data-pid]').forEach(btn=>{ btn.onclick=()=>{ phActiveId=btn.dataset.pid; renderParentHome(); }; });
   }
+  if(canOfferInstall()) $('#phInstallBanner').onclick=openInstallInfo;
   $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
   $('#phCallCenter').onclick=()=>{ window.location.href='tel:'+PH_CONTACT.hotline; };
   $('#phZaloCenter').onclick=()=>{ window.open('https://zalo.me/'+PH_CONTACT.hotline,'_blank'); };
