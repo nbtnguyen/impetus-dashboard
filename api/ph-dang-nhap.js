@@ -1,5 +1,5 @@
 // ============================================================
-//  Đăng nhập bằng số điện thoại · đặt file này tại:  api/ph-dang-nhap.js
+//  Đăng nhập bằng mã số học sinh · đặt file này tại:  api/ph-dang-nhap.js
 //  URL sau khi deploy: https://impetus-dashboard.vercel.app/api/ph-dang-nhap
 //
 //  Dùng lại đúng biến môi trường đã có sẵn trên Vercel:
@@ -7,25 +7,22 @@
 //
 //  Route CÔNG KHAI — vì phụ huynh chưa đăng nhập được lúc gọi route này.
 //  Đăng nhập Supabase Auth chuẩn chỉ nhận email, còn phụ huynh chỉ nhớ
-//  SĐT. Route này tra SĐT → auth_user_id (bảng phu_huynh) → email (Admin
-//  API) → đổi email+password lấy access_token/refresh_token qua chính
-//  API auth chuẩn của Supabase, rồi trả token về cho client tự
-//  setSession(). Email KHÔNG bao giờ trả về phía client — tránh lộ email
-//  của người khác nếu ai đó dò số điện thoại ngẫu nhiên.
-//  Nếu số điện thoại không khớp HOẶC sai mật khẩu → trả về CÙNG MỘT
-//  thông báo lỗi, không phân biệt, để tránh dò xem SĐT nào đã có tài khoản.
+//  mã số học sinh của con. Route này tra mã học sinh (bảng hoc_sinh) ->
+//  phu_huynh khớp hoc_sinh_id -> auth_user_id -> email (Admin API) -> đổi
+//  email+password lấy access_token/refresh_token qua chính API auth
+//  chuẩn của Supabase, rồi trả token về cho client tự setSession().
+//  Email KHÔNG bao giờ trả về phía client — tránh lộ email của người
+//  khác nếu ai đó dò mã học sinh ngẫu nhiên.
+//  Nếu không khớp HOẶC sai mật khẩu → trả về CÙNG MỘT thông báo lỗi,
+//  không phân biệt, để tránh dò xem mã nào đã có tài khoản.
+//
+//  (Đăng nhập bằng số điện thoại đã bỏ theo yêu cầu — phần Đăng ký
+//  vẫn dùng SĐT để xác thực danh tính khi tạo tài khoản, không đổi.)
 // ============================================================
 
 const SUPABASE_URL = 'https://zpaicfpuogmewsulawxx.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwYWljZnB1b2dtZXdzdWxhd3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTE4MTIsImV4cCI6MjA5ODM4NzgxMn0.crkUGJuB2eB7NyprRzg2IQaJ_LfrAwi6H7Oct4UQ5i8';
-const GENERIC_ERR = 'Sai số điện thoại hoặc mật khẩu.';
-
-function normPhone(raw) {
-  let d = String(raw || '').replace(/\D/g, '');
-  if (d.length === 11 && d.startsWith('84')) d = '0' + d.slice(2);
-  if (d.length === 9 && !d.startsWith('0')) d = '0' + d;
-  return d;
-}
+const GENERIC_ERR = 'Sai mã học sinh hoặc mật khẩu.';
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -48,10 +45,10 @@ module.exports = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Thiếu dữ liệu' });
   }
 
-  const phone = normPhone(data.so_dien_thoai);
+  const maHS = String(data.ma_hoc_sinh || '').trim().toUpperCase();
   const password = String(data.password || '');
-  if (!phone || phone.length !== 10 || !password) {
-    return res.status(400).json({ success: false, message: 'Thiếu số điện thoại hoặc mật khẩu' });
+  if (!maHS || !password) {
+    return res.status(400).json({ success: false, message: 'Thiếu mã học sinh hoặc mật khẩu' });
   }
 
   const isNewKey = SR.startsWith('sb_');
@@ -61,8 +58,13 @@ module.exports = async (req, res) => {
   const rest = (p) => SUPABASE_URL + '/rest/v1/' + p;
 
   try {
-    // 1) SĐT -> auth_user_id đã liên kết (bảng phu_huynh)
-    const matchRes = await fetch(rest('phu_huynh?so_dien_thoai=eq.' + encodeURIComponent(phone) + '&auth_user_id=not.is.null&select=auth_user_id&limit=1'), { headers: srHeaders });
+    // 1) mã học sinh -> hoc_sinh.id -> phu_huynh.auth_user_id đã liên kết
+    const hsRes = await fetch(rest('hoc_sinh?ma_hoc_sinh=ilike.' + encodeURIComponent(maHS) + '&select=id&limit=1'), { headers: srHeaders });
+    const hsRows = await hsRes.json();
+    if (!Array.isArray(hsRows) || !hsRows.length) {
+      return res.status(200).json({ success: false, message: GENERIC_ERR });
+    }
+    const matchRes = await fetch(rest('phu_huynh?hoc_sinh_id=eq.' + hsRows[0].id + '&auth_user_id=not.is.null&select=auth_user_id&limit=1'), { headers: srHeaders });
     const matches = await matchRes.json();
     if (!Array.isArray(matches) || !matches.length) {
       return res.status(200).json({ success: false, message: GENERIC_ERR });
