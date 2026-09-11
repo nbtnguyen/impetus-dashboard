@@ -187,6 +187,13 @@ module.exports = async (req, res) => {
 
     const studentCards = roster.map((s) => {
       const du = dgbMap[s.id] || null;
+      if (du && du.co_mat === false) {
+        return `<div class="scard" data-name="${esc((s.ho_ten || '').toLowerCase())}">
+        <div class="head"><div class="ava" style="background:${avaColor(s.ma_hoc_sinh || s.id)}">${esc(initial(s.ho_ten))}</div><div class="name">${esc(s.ho_ten)}</div></div>
+        <div class="tags"><span class="tag warn">Vắng mặt</span></div>
+        <div class="nx">Con hôm nay vắng mặt.</div>
+      </div>`;
+      }
       const tags = [];
       if (du && du.btvn) tags.push(`<span class="tag ${du.btvn === 'hoan_thanh' ? 'ok' : du.btvn === 'chua_hoan_thanh' ? 'warn' : 'off'}">${esc(BTVN_LABEL[du.btvn] || du.btvn)}</span>`);
       if (du && du.dat_muc_tieu === true) tags.push('<span class="tag ok">Đạt mục tiêu</span>');
