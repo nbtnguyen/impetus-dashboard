@@ -404,6 +404,7 @@
 .evhead .att.in,.gcell .att.in,.gwho .att.in{background:var(--ok-soft); color:var(--ok)}
 .evhead .att.out,.gcell .att.out,.gwho .att.out{background:var(--danger-soft); color:var(--danger)}
 .evhead .att.future,.gcell .att.future,.gwho .att.future{background:var(--soft); color:var(--faint)}
+.att.tap{cursor:pointer} .att.tap:active{opacity:.7}
 .evbody{padding:13px 15px 15px}
 .evdivider{margin:0 15px; border-top:1px solid var(--line)}
 .evhead .main .t{font-size:var(--text-name); font-weight:700}
@@ -459,7 +460,7 @@
 <div id="login">
   <div class="lg-brand"><div class="logo">I</div><div class="t"><div class="n">Impe<span>tus</span></div><div class="s">Hệ thống quản lý trung tâm</div></div></div>
   <h1>Đăng nhập</h1><p class="sub">Dùng tài khoản đã tạo trên hệ thống.</p>
-  <div class="field"><label>Mã học sinh (phụ huynh) hoặc email (nhân viên)</label><input id="lg_email" type="text" autocomplete="username" placeholder="VD: HS289"></div>
+  <div class="field"><label>Email hoặc số điện thoại</label><input id="lg_email" type="text" autocomplete="username" placeholder="email@trungtam.vn hoặc 09xxxxxxxx"></div>
   <div class="field"><label>Mật khẩu</label><input id="lg_pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
   <div class="lg-err" id="lg_err"></div>
   <button class="bigbtn" id="lg_btn">Đăng nhập</button>
@@ -595,27 +596,31 @@ $('#pr_btn').onclick=async()=>{
     enterApp();
   }catch(e){ b.disabled=false; b.innerHTML=old; showPrErr('Lỗi kết nối: '+e.message); }
 };
+function looksLikePhone(s){ return !s.includes('@') && /^[0-9+\-\s.]+$/.test(s); }
+function normPhoneClient(raw){ let d=String(raw||'').replace(/\D/g,''); if(d.length===11&&d.startsWith('84')) d='0'+d.slice(2); if(d.length===9&&!d.startsWith('0')) d='0'+d; return d; }
 async function login(){
   const idf=$('#lg_email').value.trim(), pass=$('#lg_pass').value;
   $('#lg_err').classList.remove('show');
-  if(!idf||!pass){ showLgErr('Nhập email/mã học sinh và mật khẩu.'); return; }
+  if(!idf||!pass){ showLgErr('Nhập email/số điện thoại và mật khẩu.'); return; }
   const b=$('#lg_btn'); b.disabled=true; b.innerHTML='<span class="spinner-sm"></span>Đang đăng nhập…';
-  if(idf.includes('@')){
-    const {error}=await db.auth.signInWithPassword({email:idf,password:pass});
-    b.disabled=false; b.textContent='Đăng nhập';
-    if(error){ showLgErr(error.message.includes('Invalid')?'Sai email hoặc mật khẩu.':error.message); return; }
-    enterApp();
+  if(looksLikePhone(idf)){
+    const phone=normPhoneClient(idf);
+    if(phone.length!==10){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Số điện thoại không đúng định dạng.'); return; }
+    try{
+      const res=await fetch('/api/ph-dang-nhap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({so_dien_thoai:phone,password:pass})});
+      const out=await res.json();
+      if(!res.ok||!out.success){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr(out.message||'Sai số điện thoại hoặc mật khẩu.'); return; }
+      const {error}=await db.auth.setSession({access_token:out.access_token, refresh_token:out.refresh_token});
+      b.disabled=false; b.textContent='Đăng nhập';
+      if(error){ showLgErr('Có lỗi khi đăng nhập, thử lại.'); return; }
+      enterApp();
+    }catch(e){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Lỗi kết nối: '+e.message); }
     return;
   }
-  try{
-    const res=await fetch('/api/ph-dang-nhap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ma_hoc_sinh:idf.toUpperCase(),password:pass})});
-    const out=await res.json();
-    if(!res.ok||!out.success){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr(out.message||'Sai mã học sinh hoặc mật khẩu.'); return; }
-    const {error}=await db.auth.setSession({access_token:out.access_token, refresh_token:out.refresh_token});
-    b.disabled=false; b.textContent='Đăng nhập';
-    if(error){ showLgErr('Có lỗi khi đăng nhập, thử lại.'); return; }
-    enterApp();
-  }catch(e){ b.disabled=false; b.textContent='Đăng nhập'; showLgErr('Lỗi kết nối: '+e.message); }
+  const {error}=await db.auth.signInWithPassword({email:idf,password:pass});
+  b.disabled=false; b.textContent='Đăng nhập';
+  if(error){ showLgErr(error.message.includes('Invalid')?'Sai email hoặc mật khẩu.':error.message); return; }
+  enterApp();
 }
 async function enterApp(){
   $('#login').classList.add('hide'); $('#pReg').classList.add('hide'); $('#main').classList.remove('hide');
@@ -667,11 +672,6 @@ function renderParentHome(){
       <button class="iconbtn" id="phLogout" title="Đăng xuất"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
     </div>
     <div style="padding:0 16px 16px">
-      ${canOfferInstall()?`<div class="row tap" id="phInstallBanner" style="background:var(--primary-soft);border-radius:16px;padding:14px 16px;margin-bottom:16px">
-        <div class="ricon" style="background:var(--primary);color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></div>
-        <div class="main"><div class="t" style="color:var(--primary)">Cài app vào màn hình chính</div><div class="meta">Mở nhanh như app thật, không cần vào trình duyệt mỗi lần</div></div>
-        <i class="hgi-stroke hgi-arrow-right-01" style="color:var(--primary)"></i>
-      </div>`:''}
       ${segHtml}
       <div class="section"><div class="lbl">Lớp đang học</div><div class="group">${classHtml}</div></div>
       <div class="section"><div class="lbl">Hoạt động</div><div class="group">
@@ -687,7 +687,6 @@ function renderParentHome(){
   if(phCon.length>1){
     document.querySelectorAll('.seg [data-pid]').forEach(btn=>{ btn.onclick=()=>{ phActiveId=btn.dataset.pid; renderParentHome(); }; });
   }
-  if(canOfferInstall()) $('#phInstallBanner').onclick=openInstallInfo;
   $('#phLogout').onclick=async()=>{ await db.auth.signOut(); location.reload(); };
   $('#phCallCenter').onclick=()=>{ window.location.href='tel:'+PH_CONTACT.hotline; };
   $('#phZaloCenter').onclick=()=>{ window.open('https://zalo.me/'+PH_CONTACT.hotline,'_blank'); };
@@ -1867,8 +1866,13 @@ function evalCur(sid, dateISO){
   const key=`${sid}|${dateISO}`;
   if(gvEvalCtx.draft[key]) return {...gvEvalCtx.draft[key]};
   const saved=gvEvalCtx.evalData.dgbMap[key];
-  if(saved) return {btvn:saved.du_lieu?.btvn||null, dat_muc_tieu:(saved.du_lieu&&'dat_muc_tieu' in saved.du_lieu)?saved.du_lieu.dat_muc_tieu:null, nhan_xet:saved.du_lieu?.nhan_xet||null, nhan_xet_text:(saved.du_lieu&&saved.du_lieu.nhan_xet_text!=null)?saved.du_lieu.nhan_xet_text:null, nhan_xet_sentence:null};
-  return {btvn:null, dat_muc_tieu:null, nhan_xet:null, nhan_xet_text:null, nhan_xet_sentence:null};
+  if(saved) return {btvn:saved.du_lieu?.btvn||null, dat_muc_tieu:(saved.du_lieu&&'dat_muc_tieu' in saved.du_lieu)?saved.du_lieu.dat_muc_tieu:null, nhan_xet:saved.du_lieu?.nhan_xet||null, nhan_xet_text:(saved.du_lieu&&saved.du_lieu.nhan_xet_text!=null)?saved.du_lieu.nhan_xet_text:null, nhan_xet_sentence:null, co_mat_override:(saved.du_lieu&&'co_mat' in saved.du_lieu)?saved.du_lieu.co_mat:undefined};
+  return {btvn:null, dat_muc_tieu:null, nhan_xet:null, nhan_xet_text:null, nhan_xet_sentence:null, co_mat_override:undefined};
+}
+function effectiveCoMat(sid, dateISO, futureDate){
+  const cur=evalCur(sid,dateISO);
+  if(cur.co_mat_override!==undefined) return cur.co_mat_override;
+  return futureDate? null : coMatOn(sid,dateISO,gvEvalCtx.evalData);
 }
 async function loadGvStudentHistory(s){
   const [{data:dgb}, {data:kqt}] = await Promise.all([
@@ -2015,8 +2019,8 @@ function evalCardHtml(s, dateISO){
   const cur=evalCur(s.id, dateISO);
   const today=todayStr();
   const futureDate=dateISO>today;
-  const coMat=futureDate? null : coMatOn(s.id, dateISO, evalData);
-  const attHtml = futureDate? '<span class="att future" style="margin-left:auto">Chưa tới giờ</span>' : (coMat===null? '<span class="att future" style="margin-left:auto">Chưa điểm danh</span>' : `<span class="att ${coMat?'in':'out'}" style="margin-left:auto">${coMat?'Có mặt':'Vắng'}</span>`);
+  const coMat=effectiveCoMat(s.id, dateISO, futureDate);
+  const attHtml = futureDate? '<span class="att future" style="margin-left:auto">Chưa tới giờ</span>' : (coMat===null? `<span class="att future tap" style="margin-left:auto" data-att-toggle="${key}">Chưa điểm danh</span>` : `<span class="att ${coMat?'in':'out'} tap" style="margin-left:auto" data-att-toggle="${key}">${coMat?'Có mặt':'Vắng'} <i class="hgi-stroke hgi-pencil-edit-02" style="font-size:11px;margin-left:2px"></i></span>`);
   const boxText = cur.nhan_xet_text!=null? cur.nhan_xet_text : '';
   return `<div class="evcard" data-card="${key}">
     <div class="evhead">
@@ -2060,6 +2064,21 @@ function evalCardHtml(s, dateISO){
 function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; }
 function wireEvalCards(curDate, root){
   root = root || $('#pageBody');
+  root.querySelectorAll('[data-att-toggle]').forEach(el=>{
+    el.onclick=()=>{
+      const key=el.dataset.attToggle;
+      const [sid,dateISO]=key.split('|');
+      const base=evalCur(sid,dateISO);
+      const futureDate=dateISO>todayStr();
+      base.co_mat_override=!effectiveCoMat(sid,dateISO,futureDate);
+      const s=gvEvalCtx.roster.find(x=>x.id===sid);
+      const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
+      const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
+      base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, base.co_mat_override, dateISO);
+      gvEvalCtx.draft[key]=base;
+      renderEvalScreen(curDate, true);
+    };
+  });
   root.querySelectorAll('.chipset').forEach(cs=>{
     cs.querySelectorAll('.choice').forEach(ch=>{
       ch.onclick=()=>{
@@ -2081,7 +2100,7 @@ function wireEvalCards(curDate, root){
         base.nhan_xet_text=null;
         const s=gvEvalCtx.roster.find(x=>x.id===sid);
         const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
-        const coMat = dateISO>todayStr()? null : coMatOn(sid,dateISO,gvEvalCtx.evalData);
+        const coMat = effectiveCoMat(sid,dateISO,dateISO>todayStr());
         const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
         base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, coMat, dateISO);
         gvEvalCtx.draft[key]=base;
@@ -2108,7 +2127,7 @@ function wireEvalCards(curDate, root){
       if(!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text){
         toast('Chọn đủ BTVN, Đạt mục tiêu và viết/chọn Nhận xét trước khi lưu', false); return;
       }
-      const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text};
+      const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:effectiveCoMat(sid,dateISO,dateISO>todayStr())};
       const {c}=gvEvalCtx;
       btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>';
       const saved=gvEvalCtx.evalData.dgbMap[key];
@@ -2157,8 +2176,8 @@ function evGridRowHtml(s, dateISO){
   const cur=evalCur(s.id, dateISO);
   const today=todayStr();
   const futureDate=dateISO>today;
-  const coMat=futureDate? null : coMatOn(s.id, dateISO, evalData);
-  const attHtml = futureDate? '<span class="att future">Chưa tới giờ</span>' : (coMat===null? '<span class="att future">Chưa điểm danh</span>' : `<span class="att ${coMat?'in':'out'}">${coMat?'Có mặt':'Vắng'}</span>`);
+  const coMat=effectiveCoMat(s.id, dateISO, futureDate);
+  const attHtml = futureDate? '<span class="att future">Chưa tới giờ</span>' : (coMat===null? `<span class="att future tap" data-att-toggle="${key}">Chưa điểm danh</span>` : `<span class="att ${coMat?'in':'out'} tap" data-att-toggle="${key}">${coMat?'Có mặt':'Vắng'} <i class="hgi-stroke hgi-pencil-edit-02" style="font-size:11px;margin-left:2px"></i></span>`);
   const boxText = cur.nhan_xet_text!=null? cur.nhan_xet_text : '';
   const statHtml = dirty
     ? '<span class="savedtag pending" title="Chưa lưu"><span class="statdot"></span></span>'
@@ -2210,6 +2229,22 @@ function updateEvalToolbar(dateISO){
   btn.textContent = n>0? `Lưu tất cả (${n})` : 'Đã lưu hết';
 }
 function wireEvalGridScope(root, curDate){
+  root.querySelectorAll('[data-att-toggle]').forEach(el=>{
+    el.onclick=()=>{
+      const key=el.dataset.attToggle;
+      const [sid,dateISO]=key.split('|');
+      const base=evalCur(sid,dateISO);
+      const futureDate=dateISO>todayStr();
+      base.co_mat_override=!effectiveCoMat(sid,dateISO,futureDate);
+      const s=gvEvalCtx.roster.find(x=>x.id===sid);
+      const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
+      const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
+      base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, base.co_mat_override, dateISO);
+      gvEvalCtx.draft[key]=base;
+      patchEvalGridRow(sid, dateISO);
+      updateEvalToolbar(dateISO);
+    };
+  });
   root.querySelectorAll('.chipset').forEach(cs=>{
     cs.querySelectorAll('.choice').forEach(ch=>{
       ch.onclick=()=>{
@@ -2231,7 +2266,7 @@ function wireEvalGridScope(root, curDate){
         base.nhan_xet_text=null;
         const s=gvEvalCtx.roster.find(x=>x.id===sid);
         const sessUpTo=gvEvalCtx.sessions.filter(d=>d<=dateISO);
-        const coMat = dateISO>todayStr()? null : coMatOn(sid,dateISO,gvEvalCtx.evalData);
+        const coMat = effectiveCoMat(sid,dateISO,dateISO>todayStr());
         const t=tallyUpTo(sid,sessUpTo,gvEvalCtx.evalData);
         base.nhan_xet_text=composeMsg(gvEvalCtx.c, s, base, t, coMat, dateISO);
         gvEvalCtx.draft[key]=base;
@@ -2291,7 +2326,7 @@ async function saveAllDirty(curDate){
   btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
   const rows=ready.map(({s,cur})=>({
     lop_hoc_id:c.id, hoc_sinh_id:s.id, ngay:curDate,
-    du_lieu:{btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text},
+    du_lieu:{btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:effectiveCoMat(s.id,curDate,curDate>todayStr())},
     nguoi_tao:me.id
   }));
   const {data, error}=await db.from('danh_gia_buoi').upsert(rows, {onConflict:'lop_hoc_id,hoc_sinh_id,ngay'}).select('*');
