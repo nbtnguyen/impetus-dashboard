@@ -2022,6 +2022,23 @@ function evalCardHtml(s, dateISO){
   const coMat=effectiveCoMat(s.id, dateISO, futureDate);
   const attHtml = futureDate? '<span class="att future" style="margin-left:auto">Chưa tới giờ</span>' : (coMat===null? `<span class="att future tap" style="margin-left:auto" data-att-toggle="${key}">Chưa điểm danh</span>` : `<span class="att ${coMat?'in':'out'} tap" style="margin-left:auto" data-att-toggle="${key}">${coMat?'Có mặt':'Vắng'} <i class="hgi-stroke hgi-pencil-edit-02" style="font-size:11px;margin-left:2px"></i></span>`);
   const boxText = cur.nhan_xet_text!=null? cur.nhan_xet_text : '';
+  if(coMat===false){
+    return `<div class="evcard" data-card="${key}">
+    <div class="evhead">
+      <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
+      <div class="main"><div class="t">${s.ho_ten}</div></div>
+      ${attHtml}
+      ${saved?'<i class="hgi-stroke hgi-checkmark-circle-02" style="color:var(--ok);font-size:17px;margin-left:8px" title="Đã lưu"></i>':''}
+    </div>
+    <div class="evdivider"></div>
+    <div class="evbody">
+      <div class="field" style="margin-top:0">
+        <div style="font-size:13.5px;color:var(--muted);padding:2px 0 10px">Con vắng mặt hôm nay — không cần đánh giá bài tập/mục tiêu.</div>
+        <button class="btn ${saved?'soft':'primary'} block sendbtn2" data-hs="${s.id}" data-date="${dateISO}">${saved?'Đã ghi nhận vắng mặt':'Lưu — ghi nhận vắng mặt cho phụ huynh'}</button>
+      </div>
+    </div>
+  </div>`;
+  }
   return `<div class="evcard" data-card="${key}">
     <div class="evhead">
       <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
@@ -2124,10 +2141,11 @@ function wireEvalCards(curDate, root){
       const sid=btn.dataset.hs, dateISO=btn.dataset.date;
       const key=`${sid}|${dateISO}`;
       const cur=evalCur(sid,dateISO);
-      if(!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text){
+      const coMat=effectiveCoMat(sid,dateISO,dateISO>todayStr());
+      if(coMat!==false && (!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text)){
         toast('Chọn đủ BTVN, Đạt mục tiêu và viết/chọn Nhận xét trước khi lưu', false); return;
       }
-      const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:effectiveCoMat(sid,dateISO,dateISO>todayStr())};
+      const du_lieu={btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:coMat};
       const {c}=gvEvalCtx;
       btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>';
       const saved=gvEvalCtx.evalData.dgbMap[key];
@@ -2182,6 +2200,19 @@ function evGridRowHtml(s, dateISO){
   const statHtml = dirty
     ? '<span class="savedtag pending" title="Chưa lưu"><span class="statdot"></span></span>'
     : (saved? '<span class="savedtag done" title="Đã lưu"><i class="hgi-stroke hgi-checkmark-circle-02"></i></span>' : '<span class="savedtag pending" title="Chưa lưu"><span class="statdot"></span></span>');
+  if(coMat===false){
+    return `<div class="grow ${dirty?'dirty':''}" data-row="${key}">
+    <div class="gwho"><span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span><div class="info"><div class="t">${s.ho_ten}</div>${attHtml}</div></div>
+    <div class="gcell" style="color:var(--faint);font-size:12.5px">—</div>
+    <div class="gcell" style="color:var(--faint);font-size:12.5px">—</div>
+    <div class="gcell" style="color:var(--faint);font-size:12.5px">—</div>
+    <div class="gcell gmsg" style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:12.5px;color:var(--muted)">Vắng mặt — không cần đánh giá</span>
+      <button class="btn ${saved?'soft':'primary'} sm sendbtn2" data-hs="${s.id}" data-date="${dateISO}">${saved?'Đã ghi nhận':'Lưu vắng mặt'}</button>
+    </div>
+    <div class="gstat">${statHtml}</div>
+  </div>`;
+  }
   return `<div class="grow ${dirty?'dirty':''}" data-row="${key}">
     <div class="gwho"><span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span><div class="info"><div class="t">${s.ho_ten}</div>${attHtml}</div></div>
     <div class="gcell"><div class="chipset" data-hs="${s.id}" data-date="${dateISO}" data-f="btvn">
@@ -2315,8 +2346,9 @@ async function saveAllDirty(curDate){
   const ready=[], invalidNames=[];
   dirtyStudents.forEach(s=>{
     const cur=evalCur(s.id, curDate);
-    if(!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text){ invalidNames.push(s.ho_ten); }
-    else { ready.push({s, cur}); }
+    const coMat=effectiveCoMat(s.id, curDate, curDate>todayStr());
+    if(coMat!==false && (!cur.btvn || cur.dat_muc_tieu===null || !cur.nhan_xet_text)){ invalidNames.push(s.ho_ten); }
+    else { ready.push({s, cur, coMat}); }
   });
   if(!ready.length){
     toast(`Lưu thất bại ${invalidNames.length}/${dirtyStudents.length} em — chưa chọn đủ BTVN/Mục tiêu/Nhận xét`, false);
@@ -2324,9 +2356,9 @@ async function saveAllDirty(curDate){
   }
   const origLabel=btn.textContent;
   btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span>Đang lưu…';
-  const rows=ready.map(({s,cur})=>({
+  const rows=ready.map(({s,cur,coMat})=>({
     lop_hoc_id:c.id, hoc_sinh_id:s.id, ngay:curDate,
-    du_lieu:{btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:effectiveCoMat(s.id,curDate,curDate>todayStr())},
+    du_lieu:{btvn:cur.btvn, dat_muc_tieu:cur.dat_muc_tieu, nhan_xet:cur.nhan_xet, nhan_xet_text:cur.nhan_xet_text, co_mat:coMat},
     nguoi_tao:me.id
   }));
   const {data, error}=await db.from('danh_gia_buoi').upsert(rows, {onConflict:'lop_hoc_id,hoc_sinh_id,ngay'}).select('*');
