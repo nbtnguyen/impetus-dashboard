@@ -1401,7 +1401,7 @@ function renderClasses(){
     }
     return `<div class="lopcard" data-id="${c.id}">
       <div style="display:flex;align-items:center;gap:11px">
-        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div>
+        <div style="width:44px;height:44px;flex:none;border-radius:50%;background:${avaC(c.ten_lop)};color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</div>
         <div class="main" style="flex:1;min-width:0"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>
         <span class="spill ${c.trang_thai}" style="flex:none">${CST[c.trang_thai]||c.trang_thai}</span>
       </div>
@@ -3292,7 +3292,7 @@ function openStudentEnroll(s){
   const avail=classes.filter(c=>!activeIds.has(c.id));
   const singleReg = activeRegs.length===1 ? activeRegs[0] : null;
   const secLbl=t=>`<div style="font-size:12px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;margin:14px 16px 6px">${t}</div>`;
-  const optRow=(c,mode)=>`<div class="actopt" data-id="${c.id}" data-mode="${mode}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`;
+  const optRow=(c,mode)=>`<div class="actopt" data-id="${c.id}" data-mode="${mode}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`;
   let body;
   if(!avail.length){
     body='<div class="state" style="padding:24px"><div class="big">Không còn lớp để thêm</div>Em đã ở trong tất cả lớp.</div>';
@@ -3347,7 +3347,7 @@ function openMoveClass(reg, s){
   const activeIds=new Set((s.dang_ky_lop||[]).filter(d=>d.lop_hoc && d.trang_thai!=='da_nghi').map(d=>d.lop_hoc.id));
   const avail=classes.filter(c=>c.id!==curId && !activeIds.has(c.id));
   $('#actBody').innerHTML=`<div class="achead"><div><div class="atitle">Chuyển sang lớp khác</div><div class="asub">${s.ho_ten} · từ ${reg.lop_hoc?reg.lop_hoc.ten_lop:''}</div></div><button class="aclose" onclick="closeAct()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
-    ${avail.length? avail.map(c=>`<div class="actopt" data-id="${c.id}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để chuyển</div></div>'}`;
+    ${avail.length? avail.map(c=>`<div class="actopt" data-id="${c.id}"><span class="aoic" style="background:${avaC(c.ten_lop)}">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</span><div class="aotxt"><div class="t">${c.ten_lop}</div><div class="d">${vnd(c.hoc_phi_thang)}đ/tháng</div></div></div>`).join('') : '<div class="state" style="padding:24px"><div class="big">Không còn lớp để chuyển</div></div>'}`;
   $('#actBody').querySelectorAll('.actopt').forEach(o=>o.onclick=async()=>{ await db.from('dang_ky_lop').update({lop_hoc_id:o.dataset.id, trang_thai:'dang_hoc'}).eq('id',reg.id); closeAct(); await afterEnrollChange(); toast('Đã chuyển lớp'); });
   showAct();
 }
