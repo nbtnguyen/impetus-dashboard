@@ -178,6 +178,7 @@
   .navitem.active{color:var(--primary)}
   /* Viên "kính" phía sau tab đang chọn — XÁM trung tính (system gray), không nhuộm màu primary. Chỉ icon+chữ đổi màu. */
   .navitem.active::before{content:''; position:absolute; inset:6px 8px; background:rgba(120,120,128,.14); border-radius:var(--r-pill); z-index:-1}
+  .navitem .dot{position:absolute; top:2px; right:calc(50% - 19px); min-width:16px; height:16px; padding:0 4px; border-radius:99px; background:var(--danger); color:#fff; font-size:10px; font-weight:700; display:grid; place-items:center; z-index:3}
 
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
@@ -489,6 +490,7 @@
     <button class="navitem hide" id="navLopToi" data-v="lop_toi"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp dạy</button>
     <button class="navitem hide" id="navTaiKhoan" data-v="tai_khoan"><i class="hgi-stroke hgi-user-circle"></i>Tài khoản</button>
     <button class="navitem hide" id="navTc" data-v="thu_chi"><i class="hgi-stroke hgi-wallet-01"></i>Thu chi</button>
+    <button class="navitem hide" id="navCongViec" data-v="cong_viec"><i class="hgi-stroke hgi-task-01"></i>Công việc</button>
   </div>
 </div>
 
@@ -521,7 +523,7 @@ const vnd=n=>Number(n||0).toLocaleString('vi-VN');
 const fmtDate=d=>d? d.split('-').reverse().join('/') : '—';
 
 let db, me={id:null,name:'',role:'nhan_vien',gvId:null,email:null}, view='hoc_sinh';
-let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[], faceIds=new Set();
+let students=[], classes=[], teachers=[], makeups=[], curStudent=null, curClass=null, diemdanh=[], buoihoc=[], phancong=[], gvProfiles=[], faceIds=new Set(), congviec=[];
 let thuchi=[], tcY=null, tcM=null, tcEditId=null, tcLoai='chi';
 let payments=[], unmatched=[], hpTab='due', hpCtx=null, hpMonths=1, hpMethod='Tiền mặt', hpStart='';
 const BANK={bin:'970432', stk:'150464056', ten:'NGUYEN BA TRUNG', nganHang:'VPBank'}; // TẠM để test SePay; sau đổi lại TPBank: {bin:'970423', stk:'82868886666', ten:'HO KINH DOANH IMPETUS', nganHang:'TPBank'}
@@ -531,6 +533,7 @@ const addMonths=(d,n)=>{const x=new Date(d); x.setMonth(x.getMonth()+n); return 
 const toISO=d=>d.toISOString().slice(0,10);
 const CAT={chi:['Thuê nhà','Điện nước','Lương','Mua sắm/Thiết bị','Marketing','Khác'], thu:['Học phí','Bán sách','Khác']};
 let sqQuery='', sqFilter='all', lopQuery='', formStatus='dang_hoc', formGioiTinh='Nam', formQuanHe='me', formAvatarUrl=null, editingId=null, cformDays=[], cformStatus='dang_tuyen', cEditingId=null, cformTA=[];
+let cvFilter='all', cvEditingId=null;
 
 const canWrite=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isManager=()=>me.role==='quan_ly';
@@ -635,6 +638,7 @@ async function enterApp(){
   if(me.role==='phu_huynh'){ await enterParentApp(); return; }
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
   if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); $('#navTaiKhoan').classList.remove('hide'); }
+  if(isManager()||isGV()){ $('#navCongViec').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
@@ -821,7 +825,7 @@ async function openParentAttendance(){
 }
 
 /* ===== Load ===== */
-async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong(), loadFaceIds()]); }
+async function loadAll(){ await Promise.all([loadStudents(), loadClasses(), loadTeachers(), loadMakeups(), loadThuChi(), loadPayments(), loadUnmatched(), loadDiemDanh(), loadBuoiHoc(), loadPhanCong(), loadFaceIds(), loadCongViec()]); }
 async function loadFaceIds(){ const {data}=await db.from('diem_danh').select('hoc_sinh_id').eq('nguon','may_quet'); faceIds=new Set((data||[]).map(d=>d.hoc_sinh_id).filter(Boolean)); }
 async function loadStudents(){ const {data}=await db.from('hoc_sinh').select('*, phu_huynh(*), dang_ky_lop(id, trang_thai, lop_hoc(id, ten_lop, hoc_phi_thang))').order('ngay_tao',{ascending:false}); students=data||[]; }
 async function loadPayments(){ const {data}=await db.from('thanh_toan').select('*, hoc_sinh(ho_ten, ma_hoc_sinh), dang_ky_lop(lop_hoc(ten_lop))').order('ngay_tao',{ascending:false}); payments=data||[]; }
@@ -865,13 +869,142 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
+  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else if(v==='cong_viec') buildCongViec(); else buildThuChi();
   updateFab();
 }
 function updateFab(){
   const fab=$('#fab');
   if(view==='thu_chi' && isManager()){ fab.classList.remove('hide'); fab.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Ghi khoản'; fab.onclick=()=>openTcForm(null); }
   else fab.classList.add('hide');
+}
+
+/* ===== CÔNG VIỆC (bảng việc chung — quản lý tạo, mọi TA xem & tự nhận làm) ===== */
+async function loadCongViec(){
+  const {data}=await db.from('cong_viec_ta').select('*, giao_vien(ho_ten)').order('ngay',{ascending:false}).order('ngay_tao',{ascending:false});
+  congviec=data||[];
+  updateCvBadge();
+}
+function buildCongViec(){
+  cvFilter = isGV() ? 'chua_lam' : 'all';
+  $('#screen').innerHTML=`
+    <div class="controls" style="padding-top:14px">
+      <div class="pagetitle" style="margin:0 0 12px"><h1>Công việc</h1>${isManager()?'<button class="addbtn" id="addCVBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
+      <div class="pills" id="cvPills" style="margin-top:11px"></div>
+    </div>
+    <div class="list" id="list" style="margin-top:14px"></div>`;
+  if(isManager()) $('#addCVBtn').onclick=()=>openCongViecForm(null);
+  renderCvPills();
+  renderCongViecList();
+}
+function renderCvPills(){
+  const n=congviec.filter(v=>v.trang_thai==='chua_lam').length;
+  const opts=[['all','Tất cả'],['chua_lam','Chưa làm'],['hoan_thanh','Đã xong']];
+  $('#cvPills').innerHTML=opts.map(([f,l])=>`<button class="pillf ${cvFilter===f?'on':''}" data-f="${f}">${l}${f==='chua_lam'&&n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
+  $('#cvPills').onclick=e=>{const b=e.target.closest('.pillf'); if(!b)return; cvFilter=b.dataset.f; renderCvPills(); renderCongViecList();};
+}
+function renderCongViecList(){
+  const list = cvFilter==='all' ? congviec : congviec.filter(v=>v.trang_thai===cvFilter);
+  const box=$('#list');
+  if(!list.length){
+    const msg = cvFilter==='hoan_thanh' ? 'Chưa có việc nào đã xong' : (cvFilter==='chua_lam' ? 'Không còn việc nào chưa làm' : (isManager()?'Chưa tạo việc nào':'Chưa có việc nào'));
+    box.innerHTML=`<div class="state" style="padding:60px 20px;text-align:center;color:var(--faint)"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px">${msg}</div>${isManager()?'Bấm nút ＋ để tạo việc đầu tiên.':''}</div>`;
+    return;
+  }
+  box.innerHTML=`<div class="group">`+list.map(v=>{
+    const sttHtml = v.trang_thai==='chua_lam' ? '<span class="stt" style="color:var(--warn)">Chưa làm</span>' : '<span class="stt" style="color:var(--ok)">Đã xong</span>';
+    const giaoCho = v.giao_vien ? ' · Giao: '+v.giao_vien.ho_ten : '';
+    return `<div class="row tap haslead" data-id="${v.id}">
+      <div class="lead"><div class="addico"><i class="hgi-stroke hgi-task-01"></i></div></div>
+      <div class="main">
+        <div class="t">${v.noi_dung}</div>
+        <div class="d">${shortDate(v.ngay)}${giaoCho}</div>
+      </div>
+      <div style="text-align:right;flex:none">${sttHtml}</div>
+    </div>`;
+  }).join('')+`</div>`;
+  box.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>{
+    const item=congviec.find(x=>x.id===r.dataset.id);
+    if(isGV() && item.trang_thai==='chua_lam') openHoanThanhSheet(item);
+    else openCongViecDetail(item);
+  });
+}
+function openCongViecForm(item){
+  cvEditingId = item?item.id:null;
+  const taList = teachers.filter(t=>t.la_tro_giang);
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">${item?'Sửa công việc':'Tạo việc mới'}</div><div class="asub">Bảng công việc chung — mọi TA đều xem được</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard">
+      <div class="field" style="margin-top:10px"><label>Nội dung công việc <span class="req">*</span></label><textarea id="cv_noidung" rows="3" placeholder="Vd: In lại phiếu điểm danh lớp Starters B, dán lên bảng thông báo">${item?item.noi_dung:''}</textarea></div>
+      <div class="field"><label>Ngày</label><div class="datefield"><input id="cv_ngay" type="date" value="${item?item.ngay:new Date().toISOString().slice(0,10)}"><span class="dfph">Chọn ngày</span></div></div>
+      <div class="field"><label>Giao riêng cho TA (không bắt buộc)</label>
+        <select id="cv_ta">
+          <option value="">— Không giao riêng ai, ai làm cũng được —</option>
+          ${taList.map(t=>`<option value="${t.id}" ${item&&item.giao_vien_id===t.id?'selected':''}>${t.ho_ten}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <button class="btn primary block safe-b" id="cv_save" style="margin-top:16px">${item?'Lưu thay đổi':'Tạo việc'}</button>
+    ${item?'<button class="btn danger block" id="cv_del" style="margin-top:10px">Xóa công việc này</button>':''}`;
+  $('#cv_save').onclick=saveCongViec;
+  if(item) $('#cv_del').onclick=()=>showConfirmDialog('Xóa công việc?','Không thể hoàn tác. Mọi người sẽ không còn thấy việc này nữa.',()=>deleteCongViec(item.id));
+  show('#sheet');
+}
+async function saveCongViec(){
+  const nd=$('#cv_noidung').value.trim(), ngay=$('#cv_ngay').value, ta=$('#cv_ta').value||null;
+  if(!nd) return toast('Chưa nhập nội dung',false);
+  const btn=$('#cv_save'); btn.disabled=true; const old=btn.textContent; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+  const payload={noi_dung:nd, ngay:ngay||new Date().toISOString().slice(0,10), giao_vien_id:ta};
+  let err;
+  if(cvEditingId){ const r=await db.from('cong_viec_ta').update(payload).eq('id',cvEditingId); err=r.error; }
+  else { const r=await db.from('cong_viec_ta').insert(payload); err=r.error; }
+  btn.disabled=false; btn.textContent=old;
+  if(err) return toast(err.message,false);
+  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast(cvEditingId?'Đã lưu':'Đã tạo việc');
+}
+async function deleteCongViec(id){
+  const {error}=await db.from('cong_viec_ta').delete().eq('id',id);
+  if(error) return toast(error.message,false);
+  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast('Đã xóa');
+}
+function openCongViecDetail(item){
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">Chi tiết công việc</div><div class="asub">${shortDate(item.ngay)}${item.giao_vien?' · Giao: '+item.giao_vien.ho_ten:''}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard">
+      <div class="field" style="margin-top:6px"><label>Nội dung</label><div style="font-size:15px;line-height:1.5">${item.noi_dung}</div></div>
+      ${item.trang_thai==='hoan_thanh'?`<div class="field"><label>Phản hồi</label><div style="font-size:15px;line-height:1.5;color:var(--muted)">${item.phan_hoi_ta?item.phan_hoi_ta:'(không ghi gì)'}</div></div>`:''}
+    </div>
+    ${isManager()?`<button class="btn soft block" id="cv_edit" style="margin-top:16px">Sửa</button><button class="btn danger block" id="cv_del2" style="margin-top:10px">Xóa công việc này</button>`:''}`;
+  if(isManager()){
+    $('#cv_edit').onclick=()=>openCongViecForm(item);
+    $('#cv_del2').onclick=()=>showConfirmDialog('Xóa công việc?','Không thể hoàn tác. Mọi người sẽ không còn thấy việc này nữa.',()=>deleteCongViec(item.id));
+  }
+  show('#sheet');
+}
+function openHoanThanhSheet(item){
+  $('#sheetBody').innerHTML=`
+    <div class="achead"><div><div class="atitle">Hoàn thành công việc</div><div class="asub">${shortDate(item.ngay)}${item.giao_vien?' · Giao: '+item.giao_vien.ho_ten:''}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
+    <div class="sheetcard">
+      <div class="field" style="margin-top:6px"><label>Nội dung</label><div style="font-size:15px;line-height:1.5">${item.noi_dung}</div></div>
+      <div class="field"><label>Phản hồi / ghi chú (không bắt buộc)</label><textarea id="cv_phanhoi" rows="3" placeholder="Vd: Đã làm xong lúc 17h10"></textarea></div>
+    </div>
+    <button class="btn primary block safe-b" id="cv_hoanthanh" style="margin-top:16px">Đánh dấu hoàn thành</button>`;
+  $('#cv_hoanthanh').onclick=()=>saveHoanThanh(item.id);
+  show('#sheet');
+}
+async function saveHoanThanh(id){
+  const btn=$('#cv_hoanthanh'); btn.disabled=true; const old=btn.textContent; btn.innerHTML='<span class="spinner-sm"></span> Đang lưu…';
+  const payload={trang_thai:'hoan_thanh', phan_hoi_ta:$('#cv_phanhoi').value.trim()||null, hoan_thanh_luc:new Date().toISOString()};
+  const {error}=await db.from('cong_viec_ta').update(payload).eq('id',id);
+  btn.disabled=false; btn.textContent=old;
+  if(error) return toast(error.message,false);
+  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast('Đã đánh dấu hoàn thành');
+}
+function updateCvBadge(){
+  const el=$('#navCongViec'); if(!el) return;
+  const old=el.querySelector('.dot'); if(old) old.remove();
+  if(!isGV()) return;
+  const n=congviec.filter(v=>v.trang_thai==='chua_lam').length;
+  if(n){ const d=document.createElement('span'); d.className='dot'; d.textContent=n; el.appendChild(d); }
 }
 
 /* ===== HỌC SINH ===== */
