@@ -62,7 +62,7 @@ function pageShell(bodyHtml) {
   .field{margin-bottom:10px}
   .field:last-child{margin-bottom:0}
   .field .t{font-size:12.5px;font-weight:700;color:#191c1f;margin-bottom:3px}
-  .field .v{font-size:13.5px;color:#505a63;line-height:1.5}
+  .field .v{font-size:16px;color:#505a63;line-height:1.55}
   .field .v a{color:#494fdf;word-break:break-all}
   .scard{background:#fff;border-radius:16px;padding:13px 15px;margin-bottom:10px}
   .scard .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
@@ -73,7 +73,7 @@ function pageShell(bodyHtml) {
   .tag.ok{background:#E3F4EC;color:#0E9F6E}
   .tag.warn{background:#FBF0DC;color:#C77700}
   .tag.off{background:#F1F1F1;color:#8d969e}
-  .nx{font-size:13.5px;color:#505a63;line-height:1.5}
+  .nx{font-size:16px;color:#505a63;line-height:1.55}
   .nx.empty{color:#B0B0B0;font-style:italic}
   .foot{text-align:center;font-size:11px;color:#8d969e;margin-top:18px;line-height:1.6}
   .noresult{display:none;text-align:center;padding:24px;color:#8d969e;font-size:13px}
