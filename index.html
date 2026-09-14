@@ -2645,7 +2645,7 @@ function openClassForm(c){
           <span class="addlink" id="addGv">＋ Thêm giáo viên mới</span>
           <div id="gvNew" class="hide" style="margin-top:8px"><div class="two"><input id="gvName" type="text" placeholder="Tên giáo viên"><button class="btn soft" id="gvAdd" style="flex:none">Thêm</button></div></div>
         </div>
-        <div class="field"><label>Trợ giảng (TA)</label><div class="chipset" id="c_ta">${teachers.map(t=>`<button class="choice ${cformTA.includes(t.id)?'on':''}" data-id="${t.id}">${t.ho_ten}</button>`).join('')}</div><div class="hint">Chọn 1 hoặc nhiều TA phụ cho lớp — độc lập với Giáo viên chính.</div></div>
+        <div class="field"><label>Trợ giảng (TA)</label><div class="chipset" id="c_ta">${teachers.filter(t=>t.la_tro_giang).map(t=>`<button class="choice ${cformTA.includes(t.id)?'on':''}" data-id="${t.id}">${t.ho_ten}</button>`).join('')||'<span style="font-size:13px;color:var(--faint)">Chưa có ai được đánh dấu là TA — vào "Quản lý tài khoản GV" để đánh dấu.</span>'}</div><div class="hint">Chọn 1 hoặc nhiều TA phụ cho lớp — độc lập với Giáo viên chính.</div></div>
         <div class="field"><label>Học phí / tháng <span class="req">*</span></label><div class="feewrap"><input id="c_phi" type="number" inputmode="numeric" value="${c?(c.hoc_phi_thang||''):''}" placeholder="600000"><span class="unit">đ</span></div></div>
       </div>
     </div>
