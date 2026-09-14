@@ -178,7 +178,6 @@
   .navitem.active{color:var(--primary)}
   /* Viên "kính" phía sau tab đang chọn — XÁM trung tính (system gray), không nhuộm màu primary. Chỉ icon+chữ đổi màu. */
   .navitem.active::before{content:''; position:absolute; inset:6px 8px; background:rgba(120,120,128,.14); border-radius:var(--r-pill); z-index:-1}
-  .navitem .dot{position:absolute; top:2px; right:calc(50% - 19px); min-width:16px; height:16px; padding:0 4px; border-radius:99px; background:var(--danger); color:#fff; font-size:10px; font-weight:700; display:grid; place-items:center; z-index:3}
 
 
   .scrim{position:fixed; inset:0; background:rgba(16,32,55,.45); opacity:0; pointer-events:none; transition:.25s; z-index:50} .scrim.show{opacity:1; pointer-events:auto}
@@ -222,6 +221,12 @@
   .row .main .d,.row .main .meta{font-size:var(--text-sub); font-weight:500; color:var(--faint); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .row .rchev{color:var(--faint); flex:none}
   .row .addico{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; font-size:19px; flex:none}
+  .cvcheck{width:24px; height:24px; border-radius:50%; border:2px solid var(--line); flex:none; display:grid; place-items:center; cursor:pointer}
+  .cvcheck svg{opacity:0}
+  .cvcheck.done{background:var(--ok); border-color:var(--ok)}
+  .cvcheck.done svg{opacity:1}
+  .cvadd{width:26px; height:26px; border-radius:50%; background:rgba(39,71,217,.12); color:#2747D9; border:0; font-size:15px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none}
+  .cvadd i{font-size:15px}
   .row .ricon{width:36px; height:36px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; flex:none} .row .ricon i{font-size:18px} .row .ricon svg{width:17px; height:17px}
   .row.danger .ricon{background:var(--danger-soft); color:var(--danger)}
   .row.add .t{font-weight:600; font-size:15px}
@@ -490,7 +495,6 @@
     <button class="navitem hide" id="navLopToi" data-v="lop_toi"><i class="hgi-stroke hgi-mortarboard-01"></i>Lớp dạy</button>
     <button class="navitem hide" id="navTaiKhoan" data-v="tai_khoan"><i class="hgi-stroke hgi-user-circle"></i>Tài khoản</button>
     <button class="navitem hide" id="navTc" data-v="thu_chi"><i class="hgi-stroke hgi-wallet-01"></i>Thu chi</button>
-    <button class="navitem hide" id="navCongViec" data-v="cong_viec"><i class="hgi-stroke hgi-task-01"></i>Công việc</button>
   </div>
 </div>
 
@@ -638,7 +642,6 @@ async function enterApp(){
   if(me.role==='phu_huynh'){ await enterParentApp(); return; }
   if(isManager()){ $('#navDash').classList.remove('hide'); $('#navTc').classList.remove('hide'); }
   if(isGV()){ $('#navHS').classList.add('hide'); $('#navLopAll').classList.add('hide'); $('#navLopToi').classList.remove('hide'); $('#navTaiKhoan').classList.remove('hide'); }
-  if(isManager()||isGV()){ $('#navCongViec').classList.remove('hide'); }
   await loadAll();
   switchView(isManager()?'dashboard':isGV()?'lop_toi':'hoc_sinh');
 }
@@ -869,7 +872,7 @@ document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.data
 function switchView(v){
   view=v;
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.v===v));
-  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else if(v==='cong_viec') buildCongViec(); else buildThuChi();
+  if(v==='dashboard') buildDashboard(); else if(v==='hoc_sinh') buildHocSinh(); else if(v==='lop') buildLop(); else if(v==='lop_toi') buildLopToi(); else if(v==='tai_khoan') buildTaiKhoan(); else if(v==='hoc_phi') buildHocPhi(); else buildThuChi();
   updateFab();
 }
 function updateFab(){
@@ -882,50 +885,106 @@ function updateFab(){
 async function loadCongViec(){
   const {data}=await db.from('cong_viec_ta').select('*, giao_vien(ho_ten)').order('ngay',{ascending:false}).order('ngay_tao',{ascending:false});
   congviec=data||[];
-  updateCvBadge();
 }
-function buildCongViec(){
-  cvFilter = isGV() ? 'chua_lam' : 'all';
-  $('#screen').innerHTML=`
-    <div class="controls" style="padding-top:14px">
-      <div class="pagetitle" style="margin:0 0 12px"><h1>Công việc</h1>${isManager()?'<button class="addbtn" id="addCVBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
-      <div class="pills" id="cvPills" style="margin-top:11px"></div>
+function cvDateOf(d){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
+function cvToday(){ return cvDateOf(new Date()); }
+function cvRefreshWherever(){
+  if(view==='dashboard') buildDashboard();
+  else if(view==='lop_toi') renderLopToiList();
+  if($('#detailPage').classList.contains('show')){ renderCvFullPills(); renderCongViecFullList(); }
+}
+
+/* --- Card (Tổng quan / Lớp dạy): tối đa 6 việc, việc đã xong quá 1 ngày tự ẩn khỏi card --- */
+function cvCardTasks(){
+  const t=cvToday();
+  return congviec.filter(v=> v.trang_thai==='chua_lam' || (v.hoan_thanh_luc && cvDateOf(v.hoan_thanh_luc)===t));
+}
+function cvCheckRow(v){
+  const done=v.trang_thai==='hoan_thanh';
+  const giaoCho=v.giao_vien?' · Giao: '+v.giao_vien.ho_ten:'';
+  return `<div class="row tap haslead" data-id="${v.id}">
+    <div class="lead" style="display:flex;align-items:center;justify-content:center"><div class="cvcheck ${done?'done':''}" data-check="${v.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+    <div class="main"><div class="t" style="${done?'text-decoration:line-through;color:var(--faint)':''}">${v.noi_dung}</div><div class="d">${shortDate(v.ngay)}${giaoCho}</div></div>
+  </div>`;
+}
+function cvChipRow(v){
+  const sttHtml = v.trang_thai==='chua_lam' ? '<span class="stt" style="color:var(--warn)">Chưa làm</span>' : '<span class="stt" style="color:var(--ok)">Đã xong</span>';
+  const giaoCho = v.giao_vien ? ' · Giao: '+v.giao_vien.ho_ten : '';
+  return `<div class="row tap haslead" data-id="${v.id}">
+    <div class="lead"><div class="addico"><i class="hgi-stroke hgi-task-01"></i></div></div>
+    <div class="main">
+      <div class="t">${v.noi_dung}</div>
+      <div class="d">${shortDate(v.ngay)}${giaoCho}</div>
     </div>
-    <div class="list" id="list" style="margin-top:14px"></div>`;
-  if(isManager()) $('#addCVBtn').onclick=()=>openCongViecForm(null);
-  renderCvPills();
-  renderCongViecList();
+    <div style="text-align:right;flex:none">${sttHtml}</div>
+  </div>`;
 }
-function renderCvPills(){
+function cvCardBlock(){
+  const all=cvCardTasks();
+  const sorted=[...all].sort((a,b)=>{
+    if(a.trang_thai!==b.trang_thai) return a.trang_thai==='chua_lam'?-1:1;
+    return (b.ngay||'').localeCompare(a.ngay||'');
+  });
+  const shown=sorted.slice(0,6), rest=sorted.length-6;
+  const rowsHtml = isManager() ? shown.map(cvCheckRow).join('') : shown.map(cvChipRow).join('');
+  return `<div id="cvCardWrap">
+    <div class="dsec" style="display:flex;align-items:center;justify-content:space-between">
+      <span class="tap" id="cvSecTap" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer">Công việc<i class="hgi-stroke hgi-arrow-right-01" style="font-size:12px"></i></span>
+      ${isManager()?'<button class="cvadd" id="cvAddBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}
+    </div>
+    ${shown.length?`<div class="group">${rowsHtml}</div>`:'<div style="color:var(--faint);font-size:14px;padding:6px 2px">Chưa có việc nào.</div>'}
+    ${rest>0?`<button class="btn soft block" id="cvMoreBtn" style="margin-top:10px">Xem thêm (${rest})</button>`:''}
+  </div>`;
+}
+function wireCvCard(){
+  const wrap=$('#cvCardWrap'); if(!wrap) return;
+  wrap.querySelectorAll('.cvcheck[data-check]').forEach(el=>el.onclick=(e)=>{ e.stopPropagation(); cvQuickToggle(el.dataset.check); });
+  wrap.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openCongViecDetail(congviec.find(x=>x.id===r.dataset.id)));
+  const addBtn=$('#cvAddBtn'); if(addBtn) addBtn.onclick=(e)=>{ e.stopPropagation(); openCongViecForm(null); };
+  const moreBtn=$('#cvMoreBtn'); if(moreBtn) moreBtn.onclick=openCongViecFull;
+  const secTap=$('#cvSecTap'); if(secTap) secTap.onclick=openCongViecFull;
+}
+async function cvQuickToggle(id){
+  const item=congviec.find(x=>x.id===id); if(!item) return;
+  const done = item.trang_thai!=='hoan_thanh';
+  const payload = done ? {trang_thai:'hoan_thanh', hoan_thanh_luc:new Date().toISOString()} : {trang_thai:'chua_lam', hoan_thanh_luc:null};
+  const {error}=await db.from('cong_viec_ta').update(payload).eq('id',id);
+  if(error) return toast(error.message,false);
+  await loadCongViec();
+  cvRefreshWherever();
+}
+
+/* --- Trang đầy đủ (mở từ "Xem thêm" trên card) — pill Tất cả/Chưa làm/Đã xong --- */
+function openCongViecFull(){
+  cvFilter = isGV() ? 'chua_lam' : 'all';
+  $('#detailBody').innerHTML=`
+    <div class="pagetitle" style="margin:6px 0 4px"><h1>Công việc</h1>${isManager()?'<button class="addbtn" id="cvFullAddBtn"><i class="hgi-stroke hgi-add-01"></i></button>':''}</div>
+    <div class="pills" id="cvFullPills" style="margin-top:11px"></div>
+    <div id="cvFullList" style="margin-top:14px"></div>`;
+  if(isManager()) $('#cvFullAddBtn').onclick=()=>openCongViecForm(null);
+  renderCvFullPills();
+  renderCongViecFullList();
+  showDetailPage(view==='dashboard'?'Tổng quan':'Lịch dạy', ()=>{ closeDetailPage(); cvRefreshWherever(); });
+}
+function renderCvFullPills(){
   const n=congviec.filter(v=>v.trang_thai==='chua_lam').length;
   const opts=[['all','Tất cả'],['chua_lam','Chưa làm'],['hoan_thanh','Đã xong']];
-  $('#cvPills').innerHTML=opts.map(([f,l])=>`<button class="pillf ${cvFilter===f?'on':''}" data-f="${f}">${l}${f==='chua_lam'&&n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
-  $('#cvPills').onclick=e=>{const b=e.target.closest('.pillf'); if(!b)return; cvFilter=b.dataset.f; renderCvPills(); renderCongViecList();};
+  $('#cvFullPills').innerHTML=opts.map(([f,l])=>`<button class="pillf ${cvFilter===f?'on':''}" data-f="${f}">${l}${f==='chua_lam'&&n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
+  $('#cvFullPills').onclick=e=>{const b=e.target.closest('.pillf'); if(!b)return; cvFilter=b.dataset.f; renderCvFullPills(); renderCongViecFullList();};
 }
-function renderCongViecList(){
+function renderCongViecFullList(){
   const list = cvFilter==='all' ? congviec : congviec.filter(v=>v.trang_thai===cvFilter);
-  const box=$('#list');
+  const box=$('#cvFullList'); if(!box) return;
   if(!list.length){
     const msg = cvFilter==='hoan_thanh' ? 'Chưa có việc nào đã xong' : (cvFilter==='chua_lam' ? 'Không còn việc nào chưa làm' : (isManager()?'Chưa tạo việc nào':'Chưa có việc nào'));
     box.innerHTML=`<div class="state" style="padding:60px 20px;text-align:center;color:var(--faint)"><div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px">${msg}</div>${isManager()?'Bấm nút ＋ để tạo việc đầu tiên.':''}</div>`;
     return;
   }
-  box.innerHTML=`<div class="group">`+list.map(v=>{
-    const sttHtml = v.trang_thai==='chua_lam' ? '<span class="stt" style="color:var(--warn)">Chưa làm</span>' : '<span class="stt" style="color:var(--ok)">Đã xong</span>';
-    const giaoCho = v.giao_vien ? ' · Giao: '+v.giao_vien.ho_ten : '';
-    return `<div class="row tap haslead" data-id="${v.id}">
-      <div class="lead"><div class="addico"><i class="hgi-stroke hgi-task-01"></i></div></div>
-      <div class="main">
-        <div class="t">${v.noi_dung}</div>
-        <div class="d">${shortDate(v.ngay)}${giaoCho}</div>
-      </div>
-      <div style="text-align:right;flex:none">${sttHtml}</div>
-    </div>`;
-  }).join('')+`</div>`;
-  box.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>{
-    openCongViecDetail(congviec.find(x=>x.id===r.dataset.id));
-  });
+  box.innerHTML=`<div class="group">`+list.map(cvChipRow).join('')+`</div>`;
+  box.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>openCongViecDetail(congviec.find(x=>x.id===r.dataset.id)));
 }
+
+/* --- Tạo/sửa (quản lý) --- */
 function openCongViecForm(item){
   cvEditingId = item?item.id:null;
   const taList = teachers.filter(t=>t.la_tro_giang);
@@ -957,12 +1016,12 @@ async function saveCongViec(){
   else { const r=await db.from('cong_viec_ta').insert(payload); err=r.error; }
   btn.disabled=false; btn.textContent=old;
   if(err) return toast(err.message,false);
-  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast(cvEditingId?'Đã lưu':'Đã tạo việc');
+  await loadCongViec(); closeSheets(); cvRefreshWherever(); toast(cvEditingId?'Đã lưu':'Đã tạo việc');
 }
 async function deleteCongViec(id){
   const {error}=await db.from('cong_viec_ta').delete().eq('id',id);
   if(error) return toast(error.message,false);
-  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast('Đã xóa');
+  await loadCongViec(); closeSheets(); cvRefreshWherever(); toast('Đã xóa');
 }
 function openCongViecDetail(item){
   const chuaLam = item.trang_thai==='chua_lam';
@@ -989,14 +1048,7 @@ async function saveHoanThanh(id){
   const {error}=await db.from('cong_viec_ta').update(payload).eq('id',id);
   btn.disabled=false; btn.textContent=old;
   if(error) return toast(error.message,false);
-  await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast('Đã đánh dấu hoàn thành');
-}
-function updateCvBadge(){
-  const el=$('#navCongViec'); if(!el) return;
-  const old=el.querySelector('.dot'); if(old) old.remove();
-  if(!isGV()) return;
-  const n=congviec.filter(v=>v.trang_thai==='chua_lam').length;
-  if(n){ const d=document.createElement('span'); d.className='dot'; d.textContent=n; el.appendChild(d); }
+  await loadCongViec(); closeSheets(); cvRefreshWherever(); toast('Đã đánh dấu hoàn thành');
 }
 
 /* ===== HỌC SINH ===== */
@@ -1665,7 +1717,7 @@ async function buildLopToi(){
       <div class="pagetitle" style="margin:0 0 4px"><h1>Lịch dạy</h1></div>
     </div>
     <div class="list" id="list"><div class="state"><div class="skel line w40" style="margin:0 auto"></div></div></div>`;
-  if(!mine.length && !me.laTroGiang){ $('#list').innerHTML='<div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>'; return; }
+  if(!mine.length && !me.laTroGiang){ $('#list').innerHTML=`<div style="padding:0 0 4px">${cvCardBlock()}</div><div class="state"><div class="big">Chưa được phân công lớp nào</div>Liên hệ quản lý để được xếp lớp.</div>`; wireCvCard(); return; }
   const now=new Date();
   await loadAndRenderMonth(now.getFullYear(), now.getMonth()+1, true);
 }
@@ -1716,6 +1768,7 @@ function renderLopToiList(){
         </div>
       </div>
     </div>
+    <div style="padding:0 16px">${cvCardBlock()}</div>
     <div class="list" id="list">
       <div class="section" style="margin-top:0">
         ${buildDateStripHtml(dates, sel)}
@@ -1735,6 +1788,7 @@ function renderLopToiList(){
   $('#list').querySelectorAll('[data-share-copy]').forEach(el=>{ el.onclick=()=>openShareSheet(classes.find(c=>c.id===el.dataset.shareCopy), el.dataset.date, el.dataset.token); });
   $('#list').querySelectorAll('[data-share-revoke]').forEach(el=>{ el.onclick=()=>revokeShareLink(classes.find(c=>c.id===el.dataset.shareRevoke), el.dataset.date, el.dataset.id); });
   const onChip=$('#gvDstrip .dchip.on'); if(onChip) onChip.scrollIntoView({inline:'center', block:'nearest'});
+  wireCvCard();
 }
 
 /* ---- Chi tiết lớp (bản GV) ---- */
@@ -3079,7 +3133,7 @@ function buildDashboard(){
   const classesToday=classes.filter(c=>c.trang_thai!=='da_dong' && (c.cac_ngay_trong_tuan||'').split(',').includes(todayCode))
     .sort((a,b)=>(a.gio_bat_dau||'').localeCompare(b.gio_bat_dau||''));
   const attendanceRows = classesToday.length
-    ? classesToday.map(c=>{
+    ? '<div class="group">' + classesToday.map(c=>{
         const roster=students.filter(s=>(s.trang_thai==='dang_hoc'||s.trang_thai==='bao_luu') && (s.dang_ky_lop||[]).some(d=>d.trang_thai!=='da_nghi' && d.lop_hoc && d.lop_hoc.id===c.id));
         const expected=roster.length;
         const present=roster.filter(s=>presentIds.has(c.id+'|'+s.id)).length;
@@ -3102,8 +3156,8 @@ function buildDashboard(){
         const parts=[timeStr, classTeacherLabel(c)];
         if(started && expected) parts.push(present+'/'+expected);
         const meta=parts.map((p,i)=>i===0?p:`<span class="sep">·</span>${p}`).join('');
-        return `<div class="group"><div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar" style="background:${avaC(c.ten_lop)};font-size:12px">${(c.level||c.ten_lop).slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>${statusHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}</div>`;
-      }).join('')
+        return `<div class="row tap haslead classrow" data-cid="${c.id}"><div class="lead"><div class="avatar" style="background:${avaC(c.ten_lop)};font-size:12px">${(c.ten_lop||'?').slice(0,3).toUpperCase()}</div></div><div class="main"><div class="t">${c.ten_lop}</div><div class="meta">${meta}</div></div>${statusHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>${missingHtml}`;
+      }).join('') + '</div>'
     : '<div style="color:#9AA4B2;font-size:14px;padding:6px 2px">Hôm nay không có lớp nào.</div>';
   const warnRows = owing.length
     ? '<div class="group">'+owing.slice(0,8).map(s=>{
@@ -3136,6 +3190,7 @@ function buildDashboard(){
         <div class="tile warn" data-go="hs:can_hoc_bu"><div class="n">${canBu}</div><div class="l">Em cần học bù</div></div>
         <div class="tile" data-go="hoc_phi"><div class="n" style="color:var(--danger)">${(typeof dueList==='function')?dueList().length:0}</div><div class="l">Đến hạn đóng</div></div>
       </div>
+      ${cvCardBlock()}
       <div class="dsec">Lớp học hôm nay</div>
       ${attendanceRows}
       <div class="dsec">Tuyển sinh — chờ test / học thử</div>
@@ -3164,6 +3219,7 @@ function buildDashboard(){
     else if(g==='hoc_phi'){ switchView('hoc_phi'); }
     else if(g.startsWith('hs:')){ sqQuery=''; sqFilter=g.slice(3); switchView('hoc_sinh'); }
   });
+  wireCvCard();
 }
 
 /* ===== THU CHI (chỉ quản lý) ===== */
