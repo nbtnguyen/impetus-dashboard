@@ -923,9 +923,7 @@ function renderCongViecList(){
     </div>`;
   }).join('')+`</div>`;
   box.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>{
-    const item=congviec.find(x=>x.id===r.dataset.id);
-    if(isGV() && item.trang_thai==='chua_lam') openHoanThanhSheet(item);
-    else openCongViecDetail(item);
+    openCongViecDetail(congviec.find(x=>x.id===r.dataset.id));
   });
 }
 function openCongViecForm(item){
@@ -967,28 +965,22 @@ async function deleteCongViec(id){
   await loadCongViec(); closeSheets(); if(view==='cong_viec'){ renderCvPills(); renderCongViecList(); } toast('Đã xóa');
 }
 function openCongViecDetail(item){
+  const chuaLam = item.trang_thai==='chua_lam';
   $('#sheetBody').innerHTML=`
     <div class="achead"><div><div class="atitle">Chi tiết công việc</div><div class="asub">${shortDate(item.ngay)}${item.giao_vien?' · Giao: '+item.giao_vien.ho_ten:''}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
     <div class="sheetcard">
       <div class="field" style="margin-top:6px"><label>Nội dung</label><div style="font-size:15px;line-height:1.5">${item.noi_dung}</div></div>
-      ${item.trang_thai==='hoan_thanh'?`<div class="field"><label>Phản hồi</label><div style="font-size:15px;line-height:1.5;color:var(--muted)">${item.phan_hoi_ta?item.phan_hoi_ta:'(không ghi gì)'}</div></div>`:''}
+      ${chuaLam
+        ? `<div class="field"><label>Phản hồi / ghi chú (không bắt buộc)</label><textarea id="cv_phanhoi" rows="3" placeholder="Vd: Đã làm xong lúc 17h10"></textarea></div>`
+        : `<div class="field"><label>Phản hồi</label><div style="font-size:15px;line-height:1.5;color:var(--muted)">${item.phan_hoi_ta?item.phan_hoi_ta:'(không ghi gì)'}</div></div>`}
     </div>
-    ${isManager()?`<button class="btn soft block" id="cv_edit" style="margin-top:16px">Sửa</button><button class="btn danger block" id="cv_del2" style="margin-top:10px">Xóa công việc này</button>`:''}`;
+    ${chuaLam?`<button class="btn primary block safe-b" id="cv_hoanthanh" style="margin-top:16px">Đánh dấu hoàn thành</button>`:''}
+    ${isManager()?`<button class="btn soft block" id="cv_edit" style="margin-top:${chuaLam?'10px':'16px'}">Sửa</button><button class="btn danger block" id="cv_del2" style="margin-top:10px">Xóa công việc này</button>`:''}`;
+  if(chuaLam) $('#cv_hoanthanh').onclick=()=>saveHoanThanh(item.id);
   if(isManager()){
     $('#cv_edit').onclick=()=>openCongViecForm(item);
     $('#cv_del2').onclick=()=>showConfirmDialog('Xóa công việc?','Không thể hoàn tác. Mọi người sẽ không còn thấy việc này nữa.',()=>deleteCongViec(item.id));
   }
-  show('#sheet');
-}
-function openHoanThanhSheet(item){
-  $('#sheetBody').innerHTML=`
-    <div class="achead"><div><div class="atitle">Hoàn thành công việc</div><div class="asub">${shortDate(item.ngay)}${item.giao_vien?' · Giao: '+item.giao_vien.ho_ten:''}</div></div><button class="aclose" onclick="closeSheets()"><i class="hgi-stroke hgi-cancel-01"></i></button></div>
-    <div class="sheetcard">
-      <div class="field" style="margin-top:6px"><label>Nội dung</label><div style="font-size:15px;line-height:1.5">${item.noi_dung}</div></div>
-      <div class="field"><label>Phản hồi / ghi chú (không bắt buộc)</label><textarea id="cv_phanhoi" rows="3" placeholder="Vd: Đã làm xong lúc 17h10"></textarea></div>
-    </div>
-    <button class="btn primary block safe-b" id="cv_hoanthanh" style="margin-top:16px">Đánh dấu hoàn thành</button>`;
-  $('#cv_hoanthanh').onclick=()=>saveHoanThanh(item.id);
   show('#sheet');
 }
 async function saveHoanThanh(id){
