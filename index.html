@@ -3726,6 +3726,76 @@ function closeAct(){ $('#actSheet').classList.remove('show'); if(!$('#sheet').cl
 $('#actGrip').onclick=closeAct;
 $('#scrim').onclick=()=>{ if($('#actSheet').classList.contains('show')){ closeAct(); } else closeSheets(); };
 let toastT; function toast(m,ok=true){ $('#toastMsg').textContent=m; $('#toast').className='toast show'+(ok?'':' err'); clearTimeout(toastT); toastT=setTimeout(()=>$('#toast').classList.remove('show'),2400); }
+
+/* ===== Vuốt: (1) trái/phải chuyển tab chính · (2) mép trái vuốt phải = Quay lại · (3) kéo xuống = đóng sheet ===== */
+(function(){
+  const EDGE=24, TAB_TH=70, BACK_TH=70, SHEET_TH=110;
+  function overlayOpen(){ return $('#page').classList.contains('show')||$('#detailPage').classList.contains('show')||$('#sheet').classList.contains('show')||$('#actSheet').classList.contains('show'); }
+
+  // (1) Vuốt trái/phải trên nội dung tab → chuyển bottom nav kế tiếp/trước đó
+  (function(){
+    const el=document.getElementById('screen'); if(!el) return;
+    let sx=0, sy=0, on=false;
+    el.addEventListener('touchstart', e=>{
+      if(overlayOpen() || e.target.closest('.pills, .dstrip, .evgrid, .evtoolbar, .chipset, select, input, textarea')){ on=false; return; }
+      sx=e.touches[0].clientX; sy=e.touches[0].clientY; on=true;
+    }, {passive:true});
+    el.addEventListener('touchend', e=>{
+      if(!on) return; on=false;
+      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)<TAB_TH || Math.abs(dx)<Math.abs(dy)*1.4) return;
+      const items=[...document.querySelectorAll('.navitem')].filter(n=>!n.classList.contains('hide'));
+      const i=items.findIndex(n=>n.classList.contains('active'));
+      if(i<0) return;
+      const ni=dx<0 ? i+1 : i-1;
+      if(ni>=0 && ni<items.length) switchView(items[ni].dataset.v);
+    }, {passive:true});
+  })();
+
+  // (2) Vuốt phải từ mép trái màn hình → Quay lại (trang con #page / #detailPage)
+  (function(){
+    let sx=0, sy=0, on=false;
+    document.addEventListener('touchstart', e=>{
+      const x=e.touches[0].clientX;
+      on = x<=EDGE && ($('#page').classList.contains('show')||$('#detailPage').classList.contains('show'));
+      if(on){ sx=x; sy=e.touches[0].clientY; }
+    }, {passive:true});
+    document.addEventListener('touchend', e=>{
+      if(!on) return; on=false;
+      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+      if(dx<BACK_TH || Math.abs(dx)<Math.abs(dy)*1.4) return;
+      if($('#page').classList.contains('show')) $('#pageCancel').click();
+      else if($('#detailPage').classList.contains('show')) $('#detailBack').click();
+    }, {passive:true});
+  })();
+
+  // (3) Kéo xuống trên bottom sheet / action sheet → đóng (thả sớm thì tự bật lại vị trí cũ)
+  function wireDragClose(sel, closeFn){
+    const el=document.querySelector(sel); if(!el) return;
+    let sy=0, dragging=false, moved=0;
+    el.addEventListener('touchstart', e=>{
+      if(!el.classList.contains('show')) return;
+      if(el.scrollTop>0 && !e.target.closest('.grip')) return;
+      sy=e.touches[0].clientY; dragging=true; moved=0;
+    }, {passive:true});
+    el.addEventListener('touchmove', e=>{
+      if(!dragging) return;
+      const dy=e.touches[0].clientY-sy;
+      if(dy<=0){ moved=0; return; }
+      moved=dy;
+      el.style.transition='none';
+      el.style.transform=`translateX(-50%) translateY(${dy}px)`;
+    }, {passive:true});
+    el.addEventListener('touchend', ()=>{
+      if(!dragging) return; dragging=false;
+      el.style.transition=''; el.style.transform='';
+      if(moved>SHEET_TH) closeFn();
+      moved=0;
+    }, {passive:true});
+  }
+  wireDragClose('#sheet', closeSheets);
+  wireDragClose('#actSheet', closeAct);
+})();
 </script>
 </body>
 </html>
