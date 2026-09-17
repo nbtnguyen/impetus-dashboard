@@ -545,8 +545,25 @@ const canSeeParent=()=>['nhan_vien','quan_ly'].includes(me.role);
 const isGV=()=>me.role==='giao_vien';
 function myClasses(){ if(!me.gvId) return []; return classes.filter(c=> c.giao_vien_nn_id===me.gvId || c.giao_vien_vn_id===me.gvId || phancong.some(p=>p.lop_hoc_id===c.id && p.giao_vien_id===me.gvId)); }
 
+let sessionExpiredShown=false;
+function handleSessionExpired(){
+  if(sessionExpiredShown) return;
+  if(!$('#login') || !$('#login').classList.contains('hide')) return; // chưa đăng nhập, không phải lỗi phiên hết hạn
+  sessionExpiredShown=true;
+  const ov=document.createElement('div');
+  ov.id='sessExpOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(20,20,24,.72);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<div style="background:#fff;border-radius:20px;max-width:320px;width:100%;padding:26px 22px;text-align:center;font-family:inherit">
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px;color:#111">Phiên đăng nhập đã hết hạn</div>
+    <div style="font-size:14px;color:#667085;line-height:1.5;margin-bottom:20px">Có thể do tài khoản này đang đăng nhập ở thiết bị khác. Đăng nhập lại để tiếp tục — nội dung chưa lưu trên màn hình này có thể bị mất.</div>
+    <button id="sessExpBtn" style="width:100%;padding:13px 0;border:0;border-radius:100px;background:#494fdf;color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer">Đăng nhập lại</button>
+  </div>`;
+  document.body.appendChild(ov);
+  $('#sessExpBtn').onclick=async()=>{ try{ await db.auth.signOut(); }catch(e){} location.reload(); };
+}
+const supaFetch=(...args)=>fetch(...args).then(res=>{ if(res.status===401) handleSessionExpired(); return res; });
 if(!window.supabase){ showLgErr('Không tải được thư viện. Kiểm tra mạng rồi mở lại.'); }
-else { db=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); init(); }
+else { db=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {global:{fetch:supaFetch}}); init(); }
 function showLgErr(m){ $('#lg_err').textContent=m; $('#lg_err').classList.add('show'); }
 
 async function init(){ const {data:{session}}=await db.auth.getSession(); if(session) enterApp(); }
@@ -1825,7 +1842,7 @@ async function renderGvClassDetail(c){
   const today=todayStr();
   const now=new Date(); const year=now.getFullYear(), month=now.getMonth()+1;
   const [{data:reg}, {data:kqt}, {data:hbRaToday}, {data:hbVaoToday}] = await Promise.all([
-    db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id),
+    db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai, anh_url)').eq('lop_hoc_id',c.id),
     db.from('ket_qua_thang').select('hoc_sinh_id').eq('lop_hoc_id',c.id).eq('thang',month).eq('nam',year),
     db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').eq('lop_hoc_id',c.id).eq('ngay_vang',today),
     db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').eq('lop_hoc_bu_id',c.id).eq('ngay_bu',today)
@@ -1862,7 +1879,7 @@ async function renderGvClassDetail(c){
     <div class="section"><div class="lbl">Học sinh trong lớp</div><div class="group" id="gvRoster"></div></div>`;
   $('#gvRoster').innerHTML = roster.map(s=>`
     <div class="row tap haslead" data-s="${s.id}">
-      <span class="avatar sm" style="background:${avaC(s.ma_hoc_sinh)}">${ini1(s.ho_ten)}</span>
+      <div class="lead">${avaHtml(s,'avatar sm')}</div>
       <div class="main"><div class="t">${s.ho_ten}</div><div class="meta">${s.ma_hoc_sinh}</div></div>
       ${s.trang_thai==='bao_luu'?'<span class="spill bao_luu">Bảo lưu</span>':'<span class="spill dang_hoc">Đang học</span>'}
       <i class="hgi-stroke hgi-arrow-right-01 rchev"></i>
@@ -2749,7 +2766,7 @@ async function openClassDetail(c){
   if(isManager()){ const e=$('#editC'); if(e) e.onclick=()=>openClassForm(c); }
   if(canWrite()){ const en=$('#enroll'); if(en) en.onclick=()=>openEnroll(c); }
   showDetailPage('Lớp học');
-  const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai)').eq('lop_hoc_id',c.id);
+  const {data:reg}=await db.from('dang_ky_lop').select('id, trang_thai, hoc_sinh(id, ma_hoc_sinh, ho_ten, trang_thai, anh_url)').eq('lop_hoc_id',c.id);
   // Ẩn học sinh đã nghỉ (ở lớp này hoặc đã nghỉ hẳn) khỏi danh sách lớp — dữ liệu vẫn còn nguyên trong tab Học sinh.
   const list=(reg||[]).filter(r=>r.hoc_sinh && r.trang_thai!=='da_nghi' && r.hoc_sinh.trang_thai!=='da_nghi');
   const officials=list.filter(r=>r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu');
@@ -2778,7 +2795,7 @@ async function openClassDetail(c){
       const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
       sttHtml = disp!=='dang_hoc' ? `<span class="stt ${disp}">${ST[disp]||disp}</span>` : '';
     }
-    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead"><div class="avatar sm" style="background:${avaC(r.hoc_sinh.ma_hoc_sinh)}">${ini1(r.hoc_sinh.ho_ten)}</div></div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
+    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead">${avaHtml(r.hoc_sinh,'avatar sm')}</div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
   }).join('');
   R.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>{ const r=list.find(x=>x.id===el.dataset.id); openStudentDetail(students.find(s=>s.id===r.hoc_sinh.id)||r.hoc_sinh); }; });
 }
@@ -2824,7 +2841,7 @@ function openClassForm(c){
           <span class="addlink" id="addGv">＋ Thêm giáo viên mới</span>
           <div id="gvNew" class="hide" style="margin-top:8px"><div class="two"><input id="gvName" type="text" placeholder="Tên giáo viên"><button class="btn soft" id="gvAdd" style="flex:none">Thêm</button></div></div>
         </div>
-        <div class="field"><label>Trợ giảng (TA)</label><div class="chipset" id="c_ta">${teachers.filter(t=>t.la_tro_giang).map(t=>`<button class="choice ${cformTA.includes(t.id)?'on':''}" data-id="${t.id}">${t.ho_ten}</button>`).join('')}</div><div class="hint">Chọn 1 hoặc nhiều TA phụ cho lớp — độc lập với Giáo viên chính.</div></div>
+        <div class="field"><label>Trợ giảng (TA)</label><div class="chipset" id="c_ta">${teachers.filter(t=>t.la_tro_giang).map(t=>`<button class="choice ${cformTA.includes(t.id)?'on':''}" data-id="${t.id}">${t.ho_ten}</button>`).join('')||'<span style="font-size:13px;color:var(--faint)">Chưa có ai được đánh dấu là TA — vào "Quản lý tài khoản GV" để đánh dấu.</span>'}</div><div class="hint">Chọn 1 hoặc nhiều TA phụ cho lớp — độc lập với Giáo viên chính.</div></div>
         <div class="field"><label>Học phí / tháng <span class="req">*</span></label><div class="feewrap"><input id="c_phi" type="number" inputmode="numeric" value="${c?(c.hoc_phi_thang||''):''}" placeholder="600000"><span class="unit">đ</span></div></div>
       </div>
     </div>
