@@ -1556,8 +1556,8 @@ function gvSessionButtonHtml(c, date, data){
   const photoCount=data.photoCountMap[`${c.id}|${date}`]||0;
   html += `<button class="btn soft block" data-photo="${c.id}" data-date="${date}" style="margin-top:8px">Ảnh buổi học${photoCount?' ('+photoCount+')':''}</button>`;
   html += shareLinkHtml(c, date, data);
-  const sessions=classSessionDatesInMonth(c,data.year,data.month);
-  if(sessions.length && sessions[sessions.length-1]===date){
+  // Nút Nhận xét tháng: hiện từ ngày 20 đến hết tháng (theo ngày của buổi học)
+  if(parseInt(date.slice(8,10),10)>=20){
     html += `<button class="btn soft block" data-report="${c.id}" style="background:var(--primary-soft);color:var(--primary);margin-top:8px">Nhận xét tháng</button>`;
   }
   return html;
