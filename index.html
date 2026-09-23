@@ -286,7 +286,7 @@
      vì .page mặc định giới hạn max-width:440px cho mọi trang push (dùng cho mobile).
      Chỉ toggle bằng JS đúng lúc renderEvalScreen() ở chế độ lưới — không đổi .page cho các
      trang push khác (xem renderEvalScreen/closePage). Xem DESIGN-SYSTEM mục 26. */
-  @media (min-width:1024px){ .page.evwide{max-width:1060px} }
+  @media (min-width:1024px){ .page.evwide{max-width:1200px} }
 
   /* Ô ngày — bắt buộc bọc .datefield (lỗi Safari iPhone hiện "hôm nay" ở ô rỗng) */
   .field input[type="date"],.field input[type="time"]{overflow:hidden; -webkit-appearance:none; appearance:none; min-height:46px; line-height:1.3; text-align:left; min-width:0; max-width:100%; box-sizing:border-box}
@@ -436,10 +436,10 @@
 .choice.on.warn{background:var(--warn)}
 /* ===== Đánh giá buổi học — lưới desktop ≥1024px (DESIGN-SYSTEM mục 26) ===== */
 .evtoolbar{display:flex; align-items:center; gap:var(--sp-3); background:var(--surface); border-radius:var(--r-card); padding:var(--sp-3) var(--sp-4); margin:0 2px 12px; position:sticky; top:0; z-index:5}
-.evtoolbar .estat{flex:1; font-size:14px; color:var(--muted)}
+.evtoolbar .estat{flex:1; font-size:15px; color:var(--muted)}
 .evtoolbar .estat b{color:var(--ink)}
 .evtoolbar .edirty{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--warn); margin-right:6px}
-.evtoolbar .btn.sm{padding:9px 16px; font-size:14.5px}
+.evtoolbar .btn.sm{padding:9px 16px; font-size:15px}
 .evgrid{background:var(--surface); border-radius:var(--r-group); overflow-x:auto}
 .grow{display:grid; grid-template-columns:196px 106px 106px 118px 1fr 40px; gap:var(--sp-3); align-items:start; padding:var(--sp-3) var(--sp-4); position:relative; min-width:1080px}
 .grow + .grow::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
@@ -450,8 +450,8 @@
 .gwho .t{font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px}
 .gcell{padding-top:1px}
 .gcell .chipset{display:flex; flex-direction:column; gap:5px}
-.gcell .choice{display:block; width:100%; box-sizing:border-box; text-align:center; padding:6px 6px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.gmsg textarea{width:100%; min-width:0; box-sizing:border-box; border:0; background:var(--bg); color:var(--ink); border-radius:var(--r-input); font-size:14px; padding:8px 10px; resize:vertical; line-height:1.55; min-height:96px; font-family:inherit; overflow-y:auto}
+.gcell .choice{display:block; width:100%; box-sizing:border-box; text-align:center; padding:6px 6px; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gmsg textarea{width:100%; min-width:0; box-sizing:border-box; border:0; background:var(--bg); color:var(--ink); border-radius:var(--r-input); font-size:15px; padding:8px 10px; resize:vertical; line-height:1.55; min-height:96px; font-family:inherit; overflow-y:auto}
 .gstat{display:flex; justify-content:center; padding-top:5px}
 .savedtag{display:inline-flex; align-items:center}
 .savedtag.done{color:var(--ok); font-size:16px}
