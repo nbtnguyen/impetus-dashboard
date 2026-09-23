@@ -1503,6 +1503,20 @@ function classSessionDatesInMonth(c, year, month){
   }
   return res;
 }
+// Supabase mặc định chỉ trả tối đa 1000 dòng/lần gọi — tài khoản Trợ giảng dùng chung
+// được gán vào rất nhiều lớp nên dễ vượt mốc này trong 1 tháng. Hàm này gọi lặp lại
+// bằng .range() cho tới khi lấy hết, tránh bị cắt mất dữ liệu mà không báo lỗi gì.
+async function fetchAllRows(queryFn, pageSize=1000){
+  let all=[]; let from=0;
+  while(true){
+    const {data, error} = await queryFn().range(from, from+pageSize-1);
+    if(error) throw error;
+    all = all.concat(data||[]);
+    if(!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
 async function loadGvHomeData(mine, year, month){
   const today=todayStr();
   const now=new Date();
@@ -1522,8 +1536,8 @@ async function loadGvHomeData(mine, year, month){
   }
   let evalSet=new Set(), kqtSet=new Set(), hbRa=[], hbVao=[], nxlbSet=new Set(), shareMap={}, photoCountMap={};
   if(classIds.length){
-    const [{data:dgb}, {data:kqt}, {data:ra}, {data:vao}, {data:nxlb}, {data:shares}, {data:photos}] = await Promise.all([
-      db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today),
+    const [dgb, {data:kqt}, {data:ra}, {data:vao}, {data:nxlb}, {data:shares}, {data:photos}] = await Promise.all([
+      fetchAllRows(()=>db.from('danh_gia_buoi').select('lop_hoc_id, hoc_sinh_id, ngay').in('lop_hoc_id', classIds).gte('ngay', monthStart).lte('ngay', today)),
       db.from('ket_qua_thang').select('lop_hoc_id, hoc_sinh_id').in('lop_hoc_id', classIds).eq('thang', month).eq('nam', year),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc_bu:lop_hoc!phieu_hoc_bu_lop_hoc_bu_id_fkey(ten_lop)').in('lop_hoc_id', classIds).gte('ngay_vang', weekStart).lte('ngay_vang', weekEnd),
       db.from('phieu_hoc_bu').select('*, hoc_sinh(ho_ten), lop_hoc:lop_hoc!phieu_hoc_bu_lop_hoc_id_fkey(ten_lop)').in('lop_hoc_bu_id', classIds).gte('ngay_bu', weekStart).lte('ngay_bu', weekEnd),
