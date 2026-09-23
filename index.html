@@ -1527,7 +1527,7 @@ async function loadGvHomeData(mine, year, month){
   const classIds=mine.map(c=>c.id);
   const rosterByClass={}; classIds.forEach(id=>rosterByClass[id]=[]);
   if(classIds.length){
-    const {data:regs}=await db.from('dang_ky_lop').select('trang_thai, lop_hoc_id, hoc_sinh(id, ho_ten, ma_hoc_sinh, trang_thai)').in('lop_hoc_id', classIds);
+    const regs=await fetchAllRows(()=>db.from('dang_ky_lop').select('trang_thai, lop_hoc_id, hoc_sinh(id, ho_ten, ma_hoc_sinh, trang_thai)').in('lop_hoc_id', classIds));
     (regs||[]).forEach(r=>{
       if(!r.hoc_sinh || r.trang_thai==='da_nghi') return;
       if(!(r.hoc_sinh.trang_thai==='dang_hoc'||r.hoc_sinh.trang_thai==='bao_luu')) return;
