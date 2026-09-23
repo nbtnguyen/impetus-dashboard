@@ -883,6 +883,44 @@ function buoiHocIdsForDate(isoDate, lopHocId){
     return vn.toISOString().slice(0,10)===isoDate;
   }).map(b=>b.id));
 }
+// Số buổi "đã học" (có mặt) theo từng tháng cho 1 lớp — kết hợp điểm danh máy quét (diem_danh)
+// + override tay của GV khi nhận xét buổi (danh_gia_buoi.du_lieu.co_mat, ưu tiên override nếu có).
+// Chỉ tính các buổi đã diễn ra (bat_dau <= hiện tại). Trả về { [hoc_sinh_id]: {thangMap:{'YYYY-MM':n}, total} }
+async function soBuoiDaHocTheoThang(lopHocId, hocSinhIds){
+  const result={}; hocSinhIds.forEach(id=>{ result[id]={thangMap:{}, total:0}; });
+  if(!lopHocId || !hocSinhIds.length) return result;
+  const {data:sessions}=await db.from('buoi_hoc').select('id, bat_dau').eq('lop_hoc_id', lopHocId).lte('bat_dau', new Date().toISOString());
+  if(!sessions || !sessions.length) return result;
+  const sessMeta={};
+  sessions.forEach(s=>{ const vn=new Date(new Date(s.bat_dau).getTime()+7*3600*1000); const ngay=vn.toISOString().slice(0,10); sessMeta[s.id]={ngay, thang:ngay.slice(0,7)}; });
+  const sessionIds=sessions.map(s=>s.id);
+  const [{data:dd}, {data:dgb}] = await Promise.all([
+    db.from('diem_danh').select('buoi_hoc_id, hoc_sinh_id, trang_thai').in('buoi_hoc_id', sessionIds).in('hoc_sinh_id', hocSinhIds),
+    db.from('danh_gia_buoi').select('hoc_sinh_id, ngay, du_lieu').eq('lop_hoc_id', lopHocId).in('hoc_sinh_id', hocSinhIds)
+  ]);
+  const ddSet=new Set((dd||[]).filter(d=>d.trang_thai==='co_mat').map(d=>`${d.hoc_sinh_id}|${d.buoi_hoc_id}`));
+  const overrideMap={};
+  (dgb||[]).forEach(e=>{ if(e.du_lieu && 'co_mat' in e.du_lieu) overrideMap[`${e.hoc_sinh_id}|${e.ngay}`]=e.du_lieu.co_mat; });
+  hocSinhIds.forEach(hsId=>{
+    sessions.forEach(s=>{
+      const meta=sessMeta[s.id];
+      const ovKey=`${hsId}|${meta.ngay}`;
+      const present = (ovKey in overrideMap) ? overrideMap[ovKey] : ddSet.has(`${hsId}|${s.id}`);
+      if(present){ result[hsId].thangMap[meta.thang]=(result[hsId].thangMap[meta.thang]||0)+1; result[hsId].total++; }
+    });
+  });
+  return result;
+}
+function thangShortLabel(ym){ return 'T'+parseInt(ym.split('-')[1],10); }
+function soBuoiCompact(thangMap){ return Object.keys(thangMap).sort().map(k=>`${thangShortLabel(k)}: ${thangMap[k]}`).join(' · '); }
+function soBuoiRowHtml(label, count){ return `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);padding:2px 0"><span>${label}</span><b style="color:var(--ink);font-weight:600">${count} buổi</b></div>`; }
+function soBuoiBreakdownBlockHtml(info){
+  const keys=Object.keys(info.thangMap).sort();
+  if(!keys.length) return '';
+  const rows=keys.map(k=>soBuoiRowHtml('Tháng '+parseInt(k.split('-')[1],10), info.thangMap[k])).join('');
+  const totalRow = keys.length>1 ? `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);margin-top:4px;padding-top:5px"><span>Tổng</span><b style="color:var(--ink);font-weight:600">${info.total} buổi</b></div>` : '';
+  return `<div style="background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:6px">${rows}${totalRow}</div>`;
+}
 
 /* ===== Nav ===== */
 document.querySelectorAll('.navitem').forEach(n=>n.onclick=()=>switchView(n.dataset.v));
@@ -1115,7 +1153,7 @@ function studentPayLines(s){
     if(!d.lop_hoc || d.trang_thai==='da_nghi') return;
     let maxKy=null, pending=null;
     payments.forEach(p=>{ if(p.loai!=='hoc_phi'||p.dang_ky_lop_id!==d.id) return; if(p.trang_thai==='da_thu'&&p.ky_den){ if(!maxKy||p.ky_den>maxKy) maxKy=p.ky_den; } if(p.trang_thai==='cho_thanh_toan') pending=p; });
-    lines.push({hsId:s.id, ma:s.ma_hoc_sinh, hoTen:s.ho_ten, enrollId:d.id, lopTen:d.lop_hoc.ten_lop, fee:Number(d.lop_hoc.hoc_phi_thang)||0, giam:Number(s.giam_gia_phan_tram)||0, maxKyDen:maxKy, pending});
+    lines.push({hsId:s.id, ma:s.ma_hoc_sinh, hoTen:s.ho_ten, enrollId:d.id, lopHocId:d.lop_hoc.id, lopTen:d.lop_hoc.ten_lop, fee:Number(d.lop_hoc.hoc_phi_thang)||0, giam:Number(s.giam_gia_phan_tram)||0, maxKyDen:maxKy, pending});
   });
   return lines;
 }
@@ -1138,7 +1176,7 @@ function openStudentDetail(s){
   const ph=canSeeParent()? ((s.phu_huynh&&s.phu_huynh[0])||null) : null;
   const enr=(s.dang_ky_lop||[]).filter(d=>d.lop_hoc);
   const enrRows = enr.length
-    ? enr.map(d=>`<div class="row tap enrrow" data-id="${d.id}"><div class="main"><div class="t">${d.lop_hoc.ten_lop}</div></div><span class="stt ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div>`).join('')
+    ? enr.map(d=>`<div class="row tap enrrow" style="flex-direction:column;align-items:stretch;gap:0" data-id="${d.id}"><div style="display:flex;align-items:center;width:100%"><div class="main"><div class="t">${d.lop_hoc.ten_lop}</div></div><span class="stt ${d.trang_thai}">${ST[d.trang_thai]||d.trang_thai}</span></div><div id="buoiwrap-${d.id}"></div></div>`).join('')
     : '<div class="row"><span class="meta">Chưa xếp lớp nào.</span></div>';
   const addLopRow = canWrite()?'<div class="row tap add" id="addLop"><div class="addico">+</div><div class="main"><div class="t">Thêm / chuyển lớp</div></div></div>':'';
   const mk=makeups.filter(m=>m.hoc_sinh_id===s.id);
@@ -1213,6 +1251,14 @@ function openStudentDetail(s){
   if(canWrite()){ const ah=$('#addHb'); if(ah) ah.onclick=()=>openMakeupForm(s); }
   if(canDel){ const ds=$('#delS'); if(ds) ds.onclick=()=>confirmDeleteStudent(s); }
   $('#detailBody').querySelectorAll('.enrrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openEnrollActions((s.dang_ky_lop||[]).find(d=>d.id===r.dataset.id), s); });
+  // Số buổi đã học theo tháng cho từng lớp — điền thêm sau khi có dữ liệu
+  enr.forEach(d=>{
+    soBuoiDaHocTheoThang(d.lop_hoc.id, [s.id]).then(map=>{
+      const wrap=document.getElementById('buoiwrap-'+d.id); if(!wrap) return;
+      const info=map[s.id];
+      wrap.innerHTML = (info && info.total) ? soBuoiBreakdownBlockHtml(info) : '';
+    });
+  });
   $('#detailBody').querySelectorAll('.hbrow').forEach(r=>{ if(canWrite()) r.onclick=()=>openMakeupActions(makeups.find(m=>m.id===r.dataset.id)); });
   $('#detailBody').querySelectorAll('.miniqr, .miniico').forEach(b=>b.onclick=()=>{ const l=studentPayLines(s).find(x=>x.enrollId===b.dataset.enroll); if(l) openPayLineActions(l); });
   if(canWrite()){
@@ -2795,9 +2841,18 @@ async function openClassDetail(c){
       const disp=trial? r.hoc_sinh.trang_thai : r.trang_thai;
       sttHtml = disp!=='dang_hoc' ? `<span class="stt ${disp}">${ST[disp]||disp}</span>` : '';
     }
-    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead">${avaHtml(r.hoc_sinh,'avatar sm')}</div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
+    return `<div class="row tap haslead" data-id="${r.id}"><div class="lead">${avaHtml(r.hoc_sinh,'avatar sm')}</div><div class="main"><div class="t">${r.hoc_sinh.ho_ten}</div><div class="meta" id="meta-${r.id}">${r.hoc_sinh.ma_hoc_sinh}</div></div>${sttHtml}<i class="hgi-stroke hgi-arrow-right-01 rchev"></i></div>`;
   }).join('');
   R.querySelectorAll('.row').forEach(el=>{ el.onclick=()=>{ const r=list.find(x=>x.id===el.dataset.id); openStudentDetail(students.find(s=>s.id===r.hoc_sinh.id)||r.hoc_sinh); }; });
+  // Số buổi đã học theo tháng — điền thêm sau, không chặn hiển thị danh sách
+  soBuoiDaHocTheoThang(c.id, list.map(r=>r.hoc_sinh.id)).then(map=>{
+    list.forEach(r=>{
+      const info=map[r.hoc_sinh.id]; if(!info || !info.total) return;
+      const compact=soBuoiCompact(info.thangMap); if(!compact) return;
+      const metaEl=document.getElementById('meta-'+r.id); if(!metaEl) return;
+      metaEl.innerHTML += `<span class="sep">·</span>${compact}`;
+    });
+  });
 }
 function openEnroll(c){
   db.from('dang_ky_lop').select('hoc_sinh_id').eq('lop_hoc_id',c.id).then(({data})=>{
@@ -3579,10 +3634,20 @@ function openMarkPaidForm(e){
       <div class="field"><label>Số tháng đóng</label><div class="chipset" id="mpseg"><button class="choice on" data-m="1">1 tháng</button><button class="choice" data-m="2">2 tháng</button><button class="choice" data-m="3">3 tháng</button></div></div>
       <div class="field"><label>Tính từ tháng</label><input id="mpstart" type="month" value="${hpStart}"><div class="hint">Đóng từ trước khi có app thì chọn đúng tháng bắt đầu.</div></div>
       <div id="mpcalc"></div>
-      <div class="two"><div class="field"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div><div class="field"><label>Số buổi đã học</label><input id="mpbuoi" type="number" inputmode="numeric" min="0" placeholder="Tùy chọn"></div></div>
+      <div class="two"><div class="field"><label>Số tiền thực thu (đ)</label><input id="mpamount" type="number" inputmode="numeric"><div class="hint">Tự tính sẵn theo học phí — sửa được nếu thu khác.</div></div><div class="field"><label>Số buổi đã học</label><input id="mpbuoi" type="number" inputmode="numeric" min="0" placeholder="Tùy chọn"><div class="hint" id="mpbuoiHint">Tùy chọn.</div></div></div>
+      <div id="mpbuoiBreakdown"></div>
     </div>
     <button class="btn primary block safe-b" id="mpmk" style="margin-top:16px">Xác nhận đã đóng</button>`;
   drawMarkCalc();
+  if(e.lopHocId){
+    soBuoiDaHocTheoThang(e.lopHocId, [e.hsId]).then(map=>{
+      const info=map[e.hsId]; if(!info || !info.total) return;
+      const inp=$('#mpbuoi'); if(inp && !inp.value) inp.value=info.total;
+      const hint=$('#mpbuoiHint'); if(hint) hint.textContent='Gợi ý theo điểm danh — sửa được nếu khác.';
+      const chips=Object.keys(info.thangMap).sort().map(k=>`<span style="background:var(--soft);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--muted);margin-right:6px;display:inline-block;margin-top:6px">Tháng ${parseInt(k.split('-')[1],10)} · ${info.thangMap[k]} buổi</span>`).join('');
+      const bd=$('#mpbuoiBreakdown'); if(bd) bd.innerHTML=chips;
+    });
+  }
   $('#mpmethod').addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b)return; hpMethod=b.dataset.v; document.querySelectorAll('#mpmethod button').forEach(x=>x.classList.toggle('on',x===b));});
   $('#mpseg').addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b)return; hpMonths=+b.dataset.m; document.querySelectorAll('#mpseg button').forEach(x=>x.classList.toggle('on',x===b)); drawMarkCalc();});
   $('#mpstart').addEventListener('change',drawMarkCalc);
