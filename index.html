@@ -575,6 +575,11 @@ function isIOSDevice(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) && 
 function canOfferInstall(){ return !isStandalonePWA(); }
 window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredInstallPrompt=e; });
 window.addEventListener('appinstalled', ()=>{ deferredInstallPrompt=null; });
+// App quay lại từ nền khi đang đứng ở tab "Lớp dạy" (GV) → fetch lại gvHomeData mới nhất,
+// tránh nút "Tạo link kết quả" hiện trạng thái cũ do dữ liệu đã đổi trong lúc app ở nền.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && view==='lop_toi') buildLopToi();
+});
 async function openInstallInfo(){
   if(deferredInstallPrompt){
     deferredInstallPrompt.prompt();
