@@ -87,7 +87,7 @@
   .logo{width:30px; height:30px; border-radius:9px; background:linear-gradient(150deg,var(--primary),#6b81f5); display:grid; place-items:center; color:#fff; font-weight:800; font-size:15px; box-shadow:0 4px 10px rgba(39,71,217,.3)}
   .brand .name{font-weight:800; font-size:17px; letter-spacing:-.02em} .brand .name span{color:var(--primary)}
   .brand .me{margin-left:auto; display:flex; align-items:center; gap:8px}
-  .brand .me .who{text-align:right; font-size:11.5px; line-height:1.25}
+  .brand .me .who{text-align:right; font-size:var(--text-fine); line-height:1.25}
   .brand .me .who b{font-weight:700; font-size:12.5px} .brand .me .who .r{color:var(--muted); font-weight:600}
   .iconbtn{width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; cursor:pointer; color:var(--muted)}
   .titlerow{display:flex; align-items:baseline; gap:9px; margin-top:14px}
@@ -101,7 +101,7 @@
   .dashhead .meblock:active{opacity:.7}
   .dashhead .meblock .who{text-align:right; line-height:1.25}
   .dashhead .meblock .who .n{font-weight:700; font-size:13.5px; color:var(--ink)}
-  .dashhead .meblock .who .s{font-size:11.5px; color:var(--faint); font-weight:600}
+  .dashhead .meblock .who .s{font-size:var(--text-fine); color:var(--faint); font-weight:600}
   .dashhead .meblock .av{width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:15px; flex:none}
   .pagetitle{display:flex; align-items:center; justify-content:space-between}
   .pagetitle h1{font-size:var(--text-page); font-weight:700; letter-spacing:-.03em; margin:0}
@@ -120,8 +120,8 @@
   .who{flex:1; min-width:0} .who .nm{font-weight:700; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .who .sub{display:flex; align-items:center; gap:7px; margin-top:5px; flex-wrap:wrap}
   .idtag{display:inline-flex; align-items:center; gap:5px; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; color:#27324a; background:#F1F3F8; border:1px solid #E0E4EC; padding:2px 7px 2px 6px; border-radius:7px} .idtag svg{color:var(--primary)}
-  .lopchip{font-size:11.5px; font-weight:600; color:#3a4660; background:var(--primary-soft); padding:2px 8px; border-radius:6px}
-  .pill{flex:none; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:999px}
+  .lopchip{font-size:var(--text-fine); font-weight:600; color:#3a4660; background:var(--primary-soft); padding:2px 8px; border-radius:6px}
+  .pill{flex:none; font-size:var(--text-fine); font-weight:700; padding:4px 10px; border-radius:999px}
   .pill.dang_hoc,.pill.hoc{color:var(--ok); background:var(--ok-soft)} .pill.bao_luu,.pill.luu{color:var(--warn); background:var(--warn-soft)} .pill.da_nghi,.pill.nghi{color:var(--off); background:var(--off-soft)}
   .pill.cho_test{color:#7C3AED; background:#F1EBFC} .pill.hoc_thu{color:#0E7490; background:#E1F1F6}
 
@@ -133,7 +133,7 @@
   .acc{border:1px solid var(--line); border-radius:14px; margin-top:10px; overflow:hidden; background:var(--surface)}
   .acc-h{width:100%; display:flex; align-items:center; gap:8px; padding:13px 14px; border:0; background:transparent; font:inherit; font-size:14.5px; font-weight:700; color:var(--ink); cursor:pointer; text-align:left}
   .acc-h .chev{margin-left:auto; color:var(--faint); transition:transform .2s} .acc.open .acc-h .chev{transform:rotate(180deg)}
-  .acc-badge{font-size:11.5px; font-weight:700; color:var(--danger); background:var(--danger-soft); padding:2px 8px; border-radius:999px}
+  .acc-badge{font-size:var(--text-fine); font-weight:700; color:var(--danger); background:var(--danger-soft); padding:2px 8px; border-radius:999px}
   .acc-b{display:none; padding:0 14px 14px} .acc.open .acc-b{display:block} .acc-b .row:first-child{border-top:0}
   .payline{display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line)} .payline:first-child{border-top:0}
   .payline .pn{flex:1; min-width:0} .payline .pn .t{font-weight:600; font-size:14px} .payline .pn .d{font-size:12px; margin-top:2px; color:var(--muted)}
@@ -444,7 +444,7 @@
 .grow{display:grid; grid-template-columns:196px 106px 106px 118px 1fr 40px; gap:var(--sp-3); align-items:start; padding:var(--sp-3) var(--sp-4); position:relative; min-width:1080px}
 .grow + .grow::before{content:""; position:absolute; top:0; left:16px; right:16px; height:1px; background:var(--line)}
 .grow.head{background:var(--bg); padding:9px 16px}
-.grow.head span{font-size:11.5px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.04em}
+.grow.head span{font-size:var(--text-fine); font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.04em}
 .gwho{display:flex; align-items:flex-start; gap:9px; padding-top:1px; min-width:0}
 .gwho .info{min-width:0}
 .gwho .t{font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px}
@@ -2326,7 +2326,7 @@ function evalCardHtml(s, dateISO){
         <span class="choice ${cur.nhan_xet==='kha'?'on':''}" data-v="kha">Khá</span>
         <span class="choice ${cur.nhan_xet==='can_cai_thien'?'on warn':''}" data-v="can_cai_thien">Cần cải thiện</span>
       </div>
-      <div style="font-size:11.5px;color:var(--faint);margin-top:5px">Bấm lại đúng mức đang chọn để đổi câu mẫu khác</div>
+      <div style="font-size:var(--text-fine);color:var(--faint);margin-top:5px">Bấm lại đúng mức đang chọn để đổi câu mẫu khác</div>
       </div>
       <div class="field"><label>Gửi phụ huynh</label>
       <div class="sendbox">
@@ -3663,7 +3663,7 @@ function openMarkPaidForm(e){
       const info=map[e.hsId]; if(!info || !info.total) return;
       const inp=$('#mpbuoi'); if(inp && !inp.value) inp.value=info.total;
       const hint=$('#mpbuoiHint'); if(hint) hint.textContent='Gợi ý theo điểm danh — sửa được nếu khác.';
-      const chips=Object.keys(info.thangMap).sort().map(k=>`<span style="background:var(--soft);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--muted);margin-right:6px;display:inline-block;margin-top:6px">Tháng ${parseInt(k.split('-')[1],10)} · ${info.thangMap[k]} buổi</span>`).join('');
+      const chips=Object.keys(info.thangMap).sort().map(k=>`<span style="background:var(--soft);border-radius:999px;padding:4px 10px;font-size:var(--text-fine);font-weight:600;color:var(--muted);margin-right:6px;display:inline-block;margin-top:6px">Tháng ${parseInt(k.split('-')[1],10)} · ${info.thangMap[k]} buổi</span>`).join('');
       const bd=$('#mpbuoiBreakdown'); if(bd) bd.innerHTML=chips;
     });
   }
